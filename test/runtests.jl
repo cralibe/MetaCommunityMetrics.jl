@@ -2,5 +2,6 @@ using MetaCommunityMetrics
 using Test
 
 @testset "MetaCommunityMetrics.jl" begin
-    # Write your tests here.
+    @test MetaCommunityMetrics.greet_your_package_name() == "Hello MetaCommunityMetrics!"
+    @test MetaCommunityMetrics.greet_your_package_name() != "Hello world!"
 end
