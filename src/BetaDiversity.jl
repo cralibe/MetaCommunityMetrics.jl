@@ -1,109 +1,187 @@
 using Pkg
 Pkg.activate(".")
 
-using Distributions
-using Plots
-using LinearAlgebra
-using GaussianRandomFields
 using Distances
 using DataFrames
-using CSV
-using StatsBase
-using DataStructures
-using ProgressMeter
+using Statistics
 using Pipe: @pipe
-using Combinatorics
+
 ###Beta Diveristy
-#a function to calculate beta diversity, only for binary data
-function beta_diversity(beta_div_matrix)
-    if sum((beta_div_matrix .- mean(beta_div_matrix, dims=1)).^2) == 0
+
+#a function to calculate beta diversity, for binary/quantitative data
+function beta_diversity(mat::Matrix; quant::Bool)
+    #Error handling
+    if isempty(mat)
+        throw(ArgumentError("Input matrix is empty."))
+    end
+    
+    # Check if there is variation in the data matrix
+    if sum((mat .- mean(mat, dims=1)).^2) == 0
         println("The data matrix has no variation in beta space")
-        component=DataFrames.DataFrame(
-        BDtotal=0, 
-        Repl=0, 
-        RichDif=0)    
-    else
-            
-        a=beta_div_matrix * transpose(beta_div_matrix)
-        b=beta_div_matrix * (1 .- transpose(beta_div_matrix))
-        c=(1 .- beta_div_matrix) * transpose(beta_div_matrix)
+        return DataFrames.DataFrame(BDtotal=0, Repl=0, RichDif=0)
+    end
+    
+    if !quant #Binary data, presence-absence data
+        # Calculate Podani family, Jaccard-based indices
+        mat = ifelse.(mat .> 0, 1, 0)
+        a = mat * transpose(mat)
+        b = mat * (1 .- transpose(mat))
+        c=(1 .- mat) * transpose(mat)
         min_bc=min.(b, c)
         repl=2 .* min_bc
         rich=abs.(b - c)
-        
-
+            
         #Jaccard-based components
         repl = repl ./ (a + b + c)
         rich = rich ./ (a + b + c)
         D = (b + c) ./ (a + b + c)
 
-        n=size(beta_div_matrix,1) #Count the number of rows
+        n = size(mat,1) #Count the number of rows
+        
         total_div = (sum(D)/2) / (n * (n - 1))
         repl_div = (sum(repl)/2) / (n * (n - 1))
         rich_div = (sum(rich)/2) / (n * (n - 1))
 
-        component=DataFrames.DataFrame(
+    else # Quantitative data
+            
+        n = size(mat, 1)
+        repl = zeros(n, n)
+        rich = zeros(n, n)
+        D = zeros(n, n)
+
+        # Calculate Podani family, Ruzicka-based indices
+        for i in 2:n
+            for j in 1:(i - 1)
+                tmp = mat[i, :] - mat[j, :]
+                A = sum(min.(mat[i,:], mat[j,:]))
+                B = sum(tmp[tmp .> 0])
+                C = -sum(tmp[tmp .< 0])
+                    
+                den = A + B + C 
+
+                repl[i,j] = 2 * (min(B,C)) / den
+                rich[i,j] = abs(B - C) / den
+                D[i,j] = (B + C) / den
+            end
+        end
+
+        # Convert matrices to distance objects
+        repl = @pipe repl|>
+        [i > j ? _[i, j] : 0 for i in 1:size(_, 1), j in 1:size(_, 2)]
+        rich = @pipe rich|>
+        [i > j ? _[i, j] : 0 for i in 1:size(_, 1), j in 1:size(_, 2)]
+        D = @pipe D|>
+        [i > j ? _[i, j] : 0 for i in 1:size(_, 1), j in 1:size(_, 2)]
+
+        # Calculate diversity metrics
+        repl_div = sum(repl) / (n * (n - 1))
+        rich_div = sum(rich) / (n * (n - 1))
+        total_div = sum(D) / (n * (n - 1))
+
+    end
+
+    # Return results as a DataFrame
+    return DataFrames.DataFrame(
             BDtotal=total_div, 
             Repl=repl_div, 
             RichDif=rich_div)
-    end 
+    
 end
-
 #temporal mean of spatial beta-diversity,  beta-diversity among sites averaged across time
-function mean_spatial_beta_div(dynamic_df)
+function mean_spatial_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool)
+    #Create the required data frame
+    df = DataFrames.DataFrame(
+        N=abundance,
+        Time=time,
+        Patch=patch,
+        Species=species)
+    #Identify species that are present in all patches and time steps
+    persist_sp_df=#idetify species with a total N >0 across  all patches all time steps. 
+    @pipe df |> #read in the model outputs from every landscape
+    groupby(_, :Species) |> #group the dataframe by every species
+    combine(_, :N => sum => :Total_N) |> #calculate the total abundance of every spesice within the whole sampling period
+    filter(row -> row[:Total_N] > 0, _) #select rows that has a N>0.
+
+    #Identify sites that are not empty at a time step
+    non_empty_site = @pipe df |>
+    groupby(_, [:Time, :Patch]) |>  # Group by time and patch
+    combine(_, :N => sum => :Total_N) |>  # Sum N values within each time and patch combination
+    filter(row -> row.Total_N > 0, _) 
+
     #Prepare a presence-absence matrix for beta diversity calculation
-    beta_matrix = dynamic_df[:,[:Presence, :Species, :Time, :Patch]]#select column N, Species, Time, Patch    
-    mean_spatial_beta_div_dict = Dict{Int, Matrix}()  # a dictionary to store data frames for each time points with all the sites
-    mean_spatial_beta_div_df = DataFrames.DataFrame()  #a data frame to store beta diversity components from evey time point
+    dynamic_df = @pipe df |>
+    innerjoin(persist_sp_df, _, on=:Species) |>  # Join with the original data to filter species
+    select(_, Not(:Total_N)) |>  # Remove the total N column
+    innerjoin(_, non_empty_site, on=[:Time, :Patch])|>  # Remove empty sites at one time step
+    select(_, Not(:Total_N)) 
 
-    for t in unique(beta_matrix[:, :Time])
-        #printIn("Time$t")
-        #subset_df=beta_matrix[:,[:Presence, :Species, :Time, :Patch]]
-        subset_df=filter(row -> row[:Time]==t, beta_matrix)
-        df_wide =unstack(subset_df, :Patch, :Species, :Presence) #pivot wider
-        #df_wide .= coalesce.(df_wide, 0) #Fill the missing values will zeros
-        df_wide=df_wide[:,2:end] #Remove the patch column
-        df_wide=Matrix(df_wide)
+    spatial_beta_div_df = DataFrames.DataFrame()  #a data frame to store beta diversity components from evey time point
+
+    for t in unique(dynamic_df.Time)
+        #println("Time$t")
+        subset_df=filter(row -> row[:Time]==t, dynamic_df)
+        df_wide =@pipe unstack(subset_df, :Patch, :Species, :N) |> #pivot wider
+        _[:,2:end] |> #Remove the patch column
+        Matrix(_)#convert to matrix
         df_wide .= coalesce.(df_wide, 0) #replace missing values with zeros
-        #Add the data frame to the dictionary with the time point as the key
-        mean_spatial_beta_div_dict[t] = df_wide
-    end
-
-    for i in eachindex(mean_spatial_beta_div_dict)
-        component=beta_diversity(mean_spatial_beta_div_dict[i])
-        mean_spatial_beta_div_df= [mean_spatial_beta_div_df; component]
+        #Calculate beta diversity components
+        components = beta_diversity(df_wide, quant)
+        spatial_beta_div_df= [spatial_beta_div_df; components]
     end
 
     mean_spatial_beta_div_summary = DataFrames.DataFrame(
-        mean_spatial_BDtotal = mean(mean_spatial_beta_div_df.BDtotal),
-        mean_spatial_Repl = mean(mean_spatial_beta_div_df.Repl),
-        mean_spatial_RichDif = mean(mean_spatial_beta_div_df.RichDif))
+        mean_spatial_BDtotal = mean(spatial_beta_div_df.BDtotal),
+        mean_spatial_Repl = mean(spatial_beta_div_df.Repl),
+        mean_spatial_RichDif = mean(spatial_beta_div_df.RichDif))
+
+    return mean_spatial_beta_div_summary
 end
 #spatial mean of temporal beta-diversity, beta-diversity along all time points averaged across site
-function mean_temporal_beta_div(dynamic_df)
+function mean_temporal_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool)
+    #Create the required data frame
+    df = DataFrames.DataFrame(
+        N=abundance,
+        Time=time,
+        Patch=patch,
+        Species=species)
+    #Identify species that are present in all patches and time steps
+    persist_sp_df=#idetify species with a total N >0 across  all patches all time steps. 
+    @pipe df |> #read in the model outputs from every landscape
+    groupby(_, :Species) |> #group the dataframe by every species
+    combine(_, :N => sum => :Total_N) |> #calculate the total abundance of every spesice within the whole sampling period
+    filter(row -> row[:Total_N] > 0, _) #select rows that has a N>0.
+
+    #Identify sites that are not empty at a time step
+    non_empty_site = @pipe df |>
+    groupby(_, [:Time, :Patch]) |>  # Group by time and patch
+    combine(_, :N => sum => :Total_N) |>  # Sum N values within each time and patch combination
+    filter(row -> row.Total_N > 0, _) 
+
     #Prepare a presence-absence matrix for beta diversity calculation
-    beta_matrix = dynamic_df[:,[:Presence, :Species, :Time, :Patch]]#select column N, Species, Time, Patch
+    dynamic_df = @pipe df |>
+    innerjoin(persist_sp_df, _, on=:Species) |>  # Join with the original data to filter species
+    select(_, Not(:Total_N)) |>  # Remove the total N column
+    innerjoin(_, non_empty_site, on=[:Time, :Patch])|>  # Remove empty sites at one time step
+    select(_, Not(:Total_N)) 
 
-    mean_temporal_beta_div_dict = Dict{Int, Matrix}()  # a dictionary to store data frames for every site with all time points
-    mean_temporal_beta_div_df = DataFrames.DataFrame()  #a data frame to store beta diversity components at all patches
+    temporal_beta_div_df = DataFrames.DataFrame()  #a data frame to store beta diversity components at all patches
 
-    for p in unique(beta_matrix[:,:Patch])
-        subset_df = filter(row -> row[:Patch]==p, beta_matrix)
-        df_wide = unstack(subset_df, :Time, :Species, :Presence) #pivot wider
-        df_wide = df_wide[:,2:end] #Remove the patch column
-        df_wide = Matrix(df_wide)
+    for p in unique(dynamic_df.Patch)
+        subset_df = filter(row -> row[:Patch]==p, dynamic_df)
+        df_wide = @pipe unstack(subset_df, :Time, :Species, :N) |> #pivot wider
+        _[:,2:end] |> #Remove the patch column
+        Matrix(_)
         df_wide .= coalesce.(df_wide, 0)
-        #Add the data frame to the dictionary with the site as the key
-        mean_temporal_beta_div_dict[p] = df_wide
+         #Calculate beta diversity components
+        components = beta_diversity(df_wide, quant)
+        temporal_beta_div_df= [temporal_beta_div_df; components]
     end
 
-    for i in eachindex(mean_temporal_beta_div_dict)
-        component = beta_diversity(mean_temporal_beta_div_dict[i])
-        mean_temporal_beta_div_df = [mean_temporal_beta_div_df; component]
-    end
     mean_temporal_beta_div_summary = DataFrames.DataFrame(
-        mean_temporal_BDtotal = mean(mean_temporal_beta_div_df.BDtotal),
-        mean_temporal_Repl = mean(mean_temporal_beta_div_df.Repl),
-        mean_temporal_RichDif = mean(mean_temporal_beta_div_df.RichDif))
+        mean_temporal_BDtotal = mean(temporal_beta_div_df.BDtotal),
+        mean_temporal_Repl = mean(temporal_beta_div_df.Repl),
+        mean_temporal_RichDif = mean(temporal_beta_div_df.RichDif))
+    
+    return mean_temporal_beta_div_summary
 end
 
