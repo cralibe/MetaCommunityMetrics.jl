@@ -2,9 +2,13 @@ using Documenter
 using MetaCommunityMetrics
 
 makedocs(
-    sitename = "MetaCommunityMetrics",
+    sitename = "MetaCommunityMetrics Documentation",
     format = Documenter.HTML(),
-    modules = [MetaCommunityMetrics]
+    modules = [MetaCommunityMetrics],
+    pages = [
+        "Home" => "index.md"
+        "API" => "api.md"
+    ]
 )
 
 # Documenter can also automatically deploy documentation to gh-pages.

@@ -1,13 +1,42 @@
-using Pkg
-Pkg.activate(".")
+#using Pkg
+#Pkg.activate(".")
 
-using Distances
-using DataFrames
-using Statistics
-using Pipe: @pipe
+#using Distances
+#using DataFrames
+#using Statistics
+#using Pipe: @pipe
 
 ###Beta Diveristy
 
+"""
+    beta_diversity(mat::Matrix; quant::Bool) -> DataFrame
+Calculate beta diversity for given ecological data. This function supports both binary (presence/absence) and quantitative data. It returns a DataFrame containing the calculated beta diversity indices.
+
+# Arguments
+- `mat::Matrix`: A matrix where each row represents a sample and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.
+- `quant::Bool`: A boolean flag that indicates whether the data is quantitative. Default is `false`, which means the data is treated as binary.
+
+# Returns
+- `DataFrame`: A DataFrame with the following columns:
+- `BDtotal`: Total beta diversity.
+- `Repl`: Replacement component of diversity.
+- `RichDif`: Richness difference component of diversity.
+
+# Example
+# Example
+Load sample data included in the package and calculate beta diversity:
+```julia
+using CSV, DataFrames
+using Pipe: @pipe
+sample_data_path = joinpath(pkgdir(MetaCommunityMetrics), "data", "rodent_abundance_data.csv") # assign the path to the sample data
+sample_matrix = @pipe CSV.read(sample_data_path, DataFrame; header=true) |> #read in the sample data
+        filter(row -> row[:Sampling_date_order] == 1, _) |> # filter rows where Sampling_date_order == 1 and plot == 1
+        select(_, Not(1:6)) |> # remove the first four columns
+        Matrix(_) #covert the dataframe to a matrix
+binary_result = beta_diversity(sample_matrix; quant=false) #calculate beta diversity for binary data
+quant_result = beta_diversity(sample_matrix; quant=true) #calculate beta diversity for quantitative data
+
+"""
 #a function to calculate beta diversity, for binary/quantitative data
 function beta_diversity(mat::Matrix; quant::Bool)
     #Error handling
@@ -88,6 +117,7 @@ function beta_diversity(mat::Matrix; quant::Bool)
     
 end
 #temporal mean of spatial beta-diversity,  beta-diversity among sites averaged across time
+
 function mean_spatial_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool)
     #Create the required data frame
     df = DataFrames.DataFrame(
@@ -185,3 +215,6 @@ function mean_temporal_beta_div(abundance::Vector, time::Vector, patch::Vector, 
     return mean_temporal_beta_div_summary
 end
 
+using Pkg
+using Pipe: @pipe
+Pkg.dev(path="/Users/jennycheung/.julia/dev/MetaCommunityMetrics")
