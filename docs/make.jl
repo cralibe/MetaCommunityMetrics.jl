@@ -6,14 +6,11 @@ makedocs(
     format = Documenter.HTML(),
     modules = [MetaCommunityMetrics],
     pages = [
-        "Home" => "index.md"
-        "API" => "api.md"
+        "Home" => "index.md",
+        "Beta Diversity" => "BetaDiversity.md"
     ]
 )
 
-# Documenter can also automatically deploy documentation to gh-pages.
-# See "Hosting Documentation" and deploydocs() in the Documenter manual
-# for more information.
-#=deploydocs(
-    repo = "<repository url>"
-)=#
+deploydocs(
+    repo = "github.com/cralibe/MetaCommunityMetrics.jl.git",
+)
