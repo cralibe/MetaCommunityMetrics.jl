@@ -15,6 +15,8 @@ makedocs(
 if haskey(ENV, "CI")
     deploydocs(
         repo = "github.com/username/MetaCommunityMetrics.jl.git",
+        target = "site",
+        branch = "gh-pages",
         deploy_config = Dict("GITHUB_TOKEN" => ENV["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"]),
     )
 end
