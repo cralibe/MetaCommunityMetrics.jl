@@ -11,6 +11,10 @@ makedocs(
     ]
 )
 
-deploydocs(
-    repo = "github.com/cralibe/MetaCommunityMetrics.jl.git",
-)
+# Conditionally deploy only if in CI environment
+if haskey(ENV, "CI")
+    deploydocs(
+        repo = "github.com/username/MetaCommunityMetrics.jl.git",
+        deploy_config = Dict("GITHUB_TOKEN" => ENV["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"]),
+    )
+end
