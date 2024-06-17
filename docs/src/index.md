@@ -4,7 +4,7 @@ Welcome to the documentation for MetaCommunityMetrics. This package provides a c
 
 ## Contents
 - [Getting Started](#getting-started)
-- [API Documentation](BetaDiversity.md)
+- [Functions](#functions)
 
 ## Getting Started
 
@@ -17,4 +17,7 @@ using Pkg
 Pkg.add("MetaCommunityMetrics")
 using MetaCommunityMetrics
 ```
+
+## Functions
+This section provides detailed documentation for all the public functions, types, and modules available in `MetaCommunityMetrics`. The documentation is automatically extracted from the source code docstrings.
 

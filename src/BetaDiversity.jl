@@ -1,7 +1,10 @@
 """
     beta_diversity(mat::Matrix; quant::Bool) -> DataFrame
 
-Calculate beta diversity for given ecological data. This function supports both binary (presence/absence) and quantitative data. It returns a DataFrame containing the calculated beta diversity indices. Empty patches have to be removed befroe calculation. Please refer to the example.
+Calculate beta diversity for a given ecological data. This function supports both binary (presence/absence) and quantitative data.
+For binary data, the function calculates Podani family, Jaccard-based indices. For quantitative data, the function calculates Podani family, Ruzicka-based indices.
+the function returns a DataFrame containing the calculated beta diversity indices. 
+Empty patches have to be removed before calculation. Please refer to the example.
 
 # Arguments
 - `mat::Matrix`: A matrix where each row represents a sample and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.
@@ -9,33 +12,27 @@ Calculate beta diversity for given ecological data. This function supports both 
 
 # Returns
 - `DataFrame`: A DataFrame with the following columns:
-- `BDtotal`: Total beta diversity.
-- `Repl`: Replacement component of diversity.
-- `RichDif`: Richness difference component of diversity.
+- `BDtotal`: Total beta diversity, which captures the overall dissimilarity between local communities.
+- `Repl`: Replacement component of diversity, which reflects how many species are different in one site compared to another, ignoring the species that are mere additions or subtractions.
+- `RichDif`: Richness difference component of diversity, which captures the disparity in biodiversity in terms of the count of species present, without taking into account the specific identities or distributions of those species.
 
-# Example
-Load sample data included in the package and calculate beta diversity:
-```julia
-using CSV, DataFrames
-using Pipe: @pipe
-
-sample_matrix = @pipe CSV.read("data/rodent_abundance_data.csv", DataFrame; header=true) |> #read in the sample data
-        filter(row -> row[:Sampling_date_order] == 1, _) |> # filter rows where Sampling_date_order == 1 and plot == 1
-        select(_, Not(1:6)) |> # remove the first four columns
-        filter(row -> sum(row) != 0, _) |> # Filter out rows where the sum of the row elements is zero (an empty patch)
-        Matrix(_) #covert the dataframe to a matrix
-
-binary_result = beta_diversity(sample_matrix; quant=false) #calculate beta diversity for binary data
-quant_result = beta_diversity(sample_matrix; quant=true) #calculate beta diversity for quantitative data
-
-println(binary_result, quant_result)
-```
 """
 function beta_diversity(mat::Matrix; quant::Bool)
     #Error handling
     if isempty(mat)
         throw(ArgumentError("Input matrix is empty."))
     end
+
+    # Error if any row has a sum of 0
+    if any(sum(mat, dims=2) .== 0)
+        throw(ArgumentError("One or more rows have a sum of zero, indicating no data for these rows."))
+    end
+
+    # Error if any column has a sum of 0
+    if any(sum(mat, dims=1) .== 0)
+        throw(ArgumentError("One or more columns have a sum of zero, indicating insufficient variation."))
+    end
+
     
     # Check if there is variation in the data matrix
     if sum((mat .- mean(mat, dims=1)).^2) == 0
@@ -113,7 +110,7 @@ end
 """
     mean_spatial_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool) -> DataFrame
 
-Calculate beta diversity for given ecological data. This function supports both binary (presence/absence) and quantitative data. It returns a DataFrame containing the calculated beta diversity indices. Empty patches have to be removed befroe calculation. Please refer to the example.
+Calculate the mean spatial beta diversity components of a metacommunity over time based on species abundances or presence-absences.
 
 # Arguments
 - `abundance::Vector`: A vector containing abundance data for each species across different samples.
@@ -122,38 +119,18 @@ Calculate beta diversity for given ecological data. This function supports both 
 - `species::Vector`: A vector indicating the species associated with each abundance entry.
 - `quant::Bool`: Optional boolean flag to indicate whether the data should be treated as quantitative (default is `false`, treating data as binary presence/absence).
     
-    # Returns
-    - `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all time points. Columns are `mean_spatial_BDtotal`, `mean_spatial_Repl`, and `mean_spatial_RichDif`.
+# Returns
+- `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all time points. Columns are `mean_spatial_BDtotal`, `mean_spatial_Repl`, and `mean_spatial_RichDif`.
 """
-function mean_spatial_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool)
+function mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool)
     #Create the required data frame
     df = DataFrames.DataFrame(
         N=abundance,
         Time=time,
         Patch=patch,
         Species=species)
-    #Identify species that are present in all patches and time steps
-    persist_sp_df=#idetify species with a total N >0 across  all patches all time steps. 
-    @pipe df |> #read in the model outputs from every landscape
-    groupby(_, :Species) |> #group the dataframe by every species
-    combine(_, :N => sum => :Total_N) |> #calculate the total abundance of every spesice within the whole sampling period
-    filter(row -> row[:Total_N] > 0, _) #select rows that has a N>0.
-
-    #Identify sites that are not empty at a time step
-    non_empty_site = @pipe df |>
-    groupby(_, [:Time, :Patch]) |>  # Group by time and patch
-    combine(_, :N => sum => :Total_N) |>  # Sum N values within each time and patch combination
-    filter(row -> row.Total_N > 0, _) 
-
-    #Prepare a presence-absence matrix for beta diversity calculation
-    dynamic_df = @pipe df |>
-    innerjoin(persist_sp_df, _, on=:Species) |>  # Join with the original data to filter species
-    select(_, Not(:Total_N)) |>  # Remove the total N column
-    innerjoin(_, non_empty_site, on=[:Time, :Patch])|>  # Remove empty sites at one time step
-    select(_, Not(:Total_N)) 
 
     spatial_beta_div_df = DataFrames.DataFrame()  #a data frame to store beta diversity components from evey time point
-
     for t in unique(dynamic_df.Time)
         #println("Time$t")
         subset_df=filter(row -> row[:Time]==t, dynamic_df)
@@ -161,8 +138,9 @@ function mean_spatial_beta_div(abundance::Vector, time::Vector, patch::Vector, s
         _[:,2:end] |> #Remove the patch column
         Matrix(_)#convert to matrix
         df_wide .= coalesce.(df_wide, 0) #replace missing values with zeros
+
         #Calculate beta diversity components
-        components = beta_diversity(df_wide, quant)
+        components = beta_diversity(df_wide; quant=quant)
         spatial_beta_div_df= [spatial_beta_div_df; components]
     end
 
@@ -177,19 +155,20 @@ end
 """
     mean_temporal_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool) -> DataFrame
 
-Calculate beta diversity for given ecological data. This function supports both binary (presence/absence) and quantitative data. It returns a DataFrame containing the calculated beta diversity indices. Empty patches have to be removed befroe calculation. Please refer to the example.
+Calculate the mean temporal beta diversity components acorss all patches based on species abundances or presence-absences.
 
 # Arguments
-- `mat::Matrix`: A matrix where each row represents a sample and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.
-- `quant::Bool`: A boolean flag that indicates whether the data is quantitative. Default is `false`, which means the data is treated as binary.
-        
+- `abundance::Vector`: A vector containing abundance data for each species across different samples.
+- `time::Vector`: A vector indicating the time each sample was taken.
+- `patch::Vector`: A vector indicating the spatial location (patch) of each sample.
+- `species::Vector`: A vector indicating the species associated with each abundance entry.
+- `quant::Bool`: Optional boolean flag to indicate whether the data should be treated as quantitative (default is `false`, treating data as binary presence/absence).
+    
 # Returns
-- `DataFrame`: A DataFrame with the following columns:
-- `BDtotal`: Total beta diversity.
-- `Repl`: Replacement component of diversity.
-- `RichDif`: Richness difference component of diversity.      
+- `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all pactches. Columns are `mean_temporal_BDtotal`, `mean_temporal_Repl`, and `mean_temporal_RichDif`.
 """
-function mean_temporal_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool)
+function mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};
+     quant::Bool)
     #Create the required data frame
     df = DataFrames.DataFrame(
         N=abundance,
