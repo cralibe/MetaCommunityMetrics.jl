@@ -2,7 +2,7 @@ module MetaCommunityMetrics
 
 using DataFrames
 using CSV
-using Pipe: @pipe
+using Pipe
 using Statistics
 using Distances
 using Clustering

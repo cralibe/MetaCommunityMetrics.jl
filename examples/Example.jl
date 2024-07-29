@@ -1,10 +1,11 @@
 #### A series of examples for using the functions provided by the MetaCommunity.jl
 ###Loading the required packages
 using Pkg
-Pkg.activate(.)
+#Pkg.activate(".")
 using CSV, DataFrames
 using Pipe: @pipe
-using MetaCommunity
+#using MetaCommunityMetrics
+
 
 ##Suggested data wrangling before using any functions from the MetaCommunity package
 #Load sample data included in the package and calculate beta diversity
@@ -34,6 +35,7 @@ select(_, Not(:Total_Abundance)) |> #remove the Total_Abundance column to avoid 
 transform(_, :Abundance => ByRow(x->ifelse.(x> 0, 1, 0)) => :Presence) #create a presence-absence column from the abundance column
 
 first(metacomm_df, 5)#View the first five rows of the metacomm_df
+
 #Simulating coordinates for the sample data. This step is not nessary if: (1) you have the coordinates data, (2) you don't need to caluculating DNCI, or (3) you are doing the groupings for the DNCI by yourself.
 # Set grid dimensions
 num_rows = 4
@@ -105,6 +107,7 @@ mean_spatial_beta_div_result = mean_spatial_beta_div(metacomm_df.Abundance, meta
 
 
 ##Example 3: Calculating the mean temporal beta diveristy (average across all patches) if a metacommunity
+mean_temporal_beta_div_result = mean_temporal_beta_div(metacomm_df.Abundance, metacomm_df.Sampling_date_order, metacomm_df.plot, metacomm_df.Species; quant=true)
 
 ##Example 4: Calculating the variability metrics of a metacommunity
 
