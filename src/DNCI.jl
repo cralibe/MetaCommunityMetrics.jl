@@ -14,156 +14,116 @@ using ProgressMeter
 using Pipe: @pipe
 using Combinatorics
 
+"""
+    create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int}) -> Dict{Int, DataFrame}
 
-###Dispersal niche continnum index
-#load in all the functions related to the dispersal niche continuum index
-include("DNCI.jl")
-include("Clustering.jl")
+Create clusters for each unique time step in a dataset. Only presnece-absence data can be used.
 
-function DNCI_with_clustering(presence_df, patch_coord_df) #the patch_coord_df need to specific a column 
-    #with "North" and "South".
-    ##Preparing the data for clustering
-    #create a vector to contains singletons (species occurring at one site only)
-    singletons_df=@pipe presence_df|>
-    groupby(_,[:Species,:Time])|>
-    combine(_,:Presence=>sum=>:Total_Presence)|>
-    filter(row -> row[:Total_Presence] == 1, _)|>
-    select(_,:Species)|>
-    unique(_)|>
-    Matrix(_)
+# Arguments
+- `time::Vector`: A vector indicating the time each sample was taken.
+- `latitude::Vector`: A vector indicating the latitude of each sample.
+- `longitude::Vector`: A vector indicating the longitude of each sample.
+- `patch::Vector`: A vector indicating the spatial location (patch) of each sample.
 
-    #Remove singletons and left join with the XY coordinates of the patches and the two ecoregions
-    presence_xy_df=
-    @pipe presence_df|>
-    filter(row -> !(row[:Species] in singletons_df), _)|> #remove singletons
-    leftjoin(_,patch_coord_df,on=:Patch)|>
-    groupby(_,[:Patch,:Time,:Longitude,:Latitude, :LN])|>
-    combine(_,:Presence=>sum=>:Total_Richness)
+# Returns
+- `Dict{Int, DataFrame}`: A dictionary where each key is a unique time from the dataset and each value is a DataFrame for that time with an added `Group` column indicating the assigned cluster.
 
-    #Seperate the data according to the two ecoregions
-    presence_xy_df_North = presence_xy_df[presence_xy_df.LN .== "North", :] 
-    presence_xy_df_South = presence_xy_df[presence_xy_df.LN .== "South", :]
+# Details
+This function performs hierarchical clustering on geographical coordinates for each unique time step. It aims to balance the clusters based on the number of sites and species richness, ensuring that no group has less than five sites and that there are at least two groups. If conditions for clustering balance are not met (like groups having less than five sites or only one group), it iteratively adjusts the clusters by reassigning sites to improve group balance.
 
-    ##Clustering
-    northern_groups_dict = create_clusters(presence_xy_df_North)
-    southern_groups_dict = create_clusters(presence_xy_df_South)
-    all_patches_groups_dict = create_clusters(presence_xy_df)
+# Example
+```julia
+using CSV, DataFrames
+using DataFramesMeta
+using Pipe: @pipe
 
-    #Concatenate the groupings dictionaries into dataframes
-    #For north and south, respectively
-    northern_groups_df=vcat(values(northern_groups_dict)...)
-    southern_groups_df=vcat(values(southern_groups_dict)...)
-    two_ecoregions_groups_df = vcat(northern_groups_df,southern_groups_df) #grouping based on the two ecoregions
-    two_ecoregions_groups_df.Group[two_ecoregions_groups_df.LN .== "South"] .+= maximum(unique(northern_groups_df.Group)) #to avoid overlapping group numbers between the two ecoregions.
-    #For all patches
-    all_patches_groups_df=vcat(values(all_patches_groups_dict)...)
+sample_df = @pipe CSV.read("data/rodent_abundance_data.csv", DataFrame; header=true) |>#read in the sample data
+            select(_, Not(:Column1))|> #select the columns 
+            stack(_, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :species, value_name = :abundance)
 
-    #Checking if the two ecoregions sharing a similar species pool.
-    #=two_group=@pipe presence_df|>
-    filter(row -> !(row[:Species] in singletons_df), _)|> #remove singletons
-    leftjoin(_,patch_coord_df,on=:Patch)|>
-    filter(row -> row[:Presence] >0, _)|>#remove species that are not present in the sites
-    groupby(_,:LN)
-
-    set1=Set(two_group[1].Species)
-    set2=Set(two_group[2].Species)
-    shared_elements = intersect(set1, set2) #find the shared species between the two ecoregions
-    #they shared 93 species in the observed data.=#
-
-    ##Preparing data for the DNCI calculation
-    #For the north and south
-    two_ecoregions_groups_presence_df=@pipe presence_df |>
-    unstack(_, :Species, :Presence)|> #unstack the data to create a presence-absence matrix
-    transform!(_, names(_) .=> (c -> coalesce.(c, 0)) .=> names(_))|> #replace missing values with zeros
-    leftjoin(_,two_ecoregions_groups_df,on= [:Patch, :Time])|>#left join the data with the grouping data
-    select(_, :Patch, :Time, :Group, :LN, Not([:Patch, :Time, :Group, :LN, :Longitude, :Latitude, :Total_Richness]))
-    #For all patches
-    all_patches_groups_presence_df=@pipe presence_df |>
-    unstack(_, :Species, :Presence)|> #unstack the data to create a presence-absence matrix
-    transform!(_, names(_) .=> (c -> coalesce.(c, 0)) .=> names(_))|> #replace missing values with zeros
-    leftjoin(_,all_patches_groups_df,on= [:Patch, :Time])|>#left join the data with the all patches grouping data
-    select(_, :Patch, :Time, :Group, :LN, Not([:Patch, :Time, :Group, :LN, :Longitude, :Latitude, :Total_Richness]))
+preped_data= @pipe sample_df |>         
+@transform(_, :presence = ifelse.(:abundance .>= 1, 1, 0)) |>
+groupby(_, [:Sampling_date_order, :species]) |> 
+combine(_,:presence=>sum=>:total_presence) |>
+filter(row -> row[:total_presence] !<= 1, _) |> #remove singletons (species occurring at one site only)
+leftjoin(_,sample_df, on = [:Sampling_date_order, :species]) |> #join the data back to the original data
 
 
-    #Calculate the DNCI
-    #North
-    DNCI_result_north = Dict{Int, DataFrame}()
-    @showprogress 1 "Calculating DNCI for patches in the northern region..." for t in unique(two_ecoregions_groups_presence_df.Time)
-        println("Calculating DNCI for time $t")
-            df = @pipe two_ecoregions_groups_presence_df|>
-            filter(row -> row[:LN] == "North", _)|>
-            filter(row -> row[:Time] == t, _)
+# Generate random latitude and longitude values
+n = nrow(sample_df)
+latitude = rand(35.0:0.01:36.0, n) # Adjust range as needed
+longitude = rand(-120.0:0.01:-119.0, n) # Adjust range as needed
+
+# Add the coordinates to the DataFrame
+sample_df[:, :latitude] = latitude
+sample_df[:, :longitude] = longitude
+
+# Create groups for each time step
+grouped_data = create_clusters(sample_df.Sampling_date_order, sample_df.latitude, sample_df.longitude, sample_df.plot)
+
+```
+"""
+# A function to create groups for each year
+function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int})
+    grouping_dict = Dict{Int, DataFrame}()
+
+    #Create a DataFrame
+    df = DataFrame(Time = time, Latitude = latitude, Longitude = longitude, Patch = patch)
+
+    for t in unique(df[:, :Time])
+        subset_df = filter(row -> row[:Time] == t, df)
+        coordinates = select(subset_df, [:Latitude, :Longitude])
+        distances = Distances.pairwise(Euclidean(), Matrix(coordinates), dims=1)
+        
+        num_clusters = max(div(length(unique(subset_df.Patch)), 5), 2) # Ensure that the number of clusters is at least 2 and each group has at least 5 sites
+        condition_met = false
+
+        while !condition_met && num_clusters > 1
+            agglo_result = hclust(distances, linkage=:complete)
+            assignments = cutree(agglo_result, k=num_clusters)
+            subset_df.Group = assignments
+            subset_df = check_condition_and_fix(subset_df)
+            condition_met = check_conditions(subset_df)
             
-            comm = Matrix(df[:,6:end])
-            groups = df.Group
-
-        if size(comm, 1) != length(groups)
-            error("Error: The number of rows in the data frame does not match the number of groups at time $t")
-        end
-            
-            DNCI_result_north[t] = DNCI_multigroup(comm,groups,t)
-    end
-    #South
-    DNCI_result_south = Dict{Int, DataFrame}()
-    @showprogress 1 "Calculating DNCI for patches in the southern region..." for t in unique(two_ecoregions_groups_presence_df.Time)
-        println("Calculating DNCI for time $t")
-            df = @pipe two_ecoregions_groups_presence_df|>
-            filter(row -> row[:LN] == "South", _)|>
-            filter(row -> row[:Time] == t, _)
-            
-            comm = Matrix(df[:,6:end])
-            groups = df.Group
-
-        if size(comm, 1) != length(groups)
-            error("Error: The number of rows in the data frame does not match the number of groups at time $t")
-        end
-            
-            DNCI_result_south[t] = DNCI_multigroup(comm,groups,t)
-    end
-    #All patches
-    DNCI_result_all_patches = Dict{Int, DataFrame}()
-    @showprogress 1 "Calculating DNCI for all patches..." for t in unique(all_patches_groups_presence_df.Time)
-        println("Calculating DNCI for time $t")
-        df = @pipe all_patches_groups_presence_df|>
-            filter(row -> row[:Time] == t, _)
-
-            
-        comm = Matrix(df[:,6:end])
-        groups = df.Group
-
-        if size(comm, 1) != length(groups)
-            error("Error: The number of rows in the data frame does not match the number of groups at time $t")
+            if !condition_met
+                num_clusters -= 1
+                if num_clusters < 2
+                    println("Warning: Cluster count fell below 2, which is not permissible for clustering. Groups assigned as missing.")
+                    subset_df.Group .= missing
+                end
+            end
         end
 
-        DNCI_result_all_patches[t] = DNCI_multigroup(comm,groups,t)
+        grouping_dict[t] = subset_df
     end
+    if length(grouping_dict) != length(unique(df.Time))
+        println("Warning: Some time steps are missing!!!")
+    end    
+    return grouping_dict
+end
 
-    #Concatenate the final result into dataframes
-    DNCI_result_north_df = vcat(values(DNCI_result_north)...)
-    DNCI_result_north_df.region = fill("North", size(DNCI_result_north_df, 1))
-    DNCI_result_south_df = vcat(values(DNCI_result_south)...)
-    DNCI_result_south_df.region = fill("South", size(DNCI_result_south_df, 1))
-    DNCI_result_all_patche_df = vcat(values(DNCI_result_all_patches)...)
-    DNCI_result_all_patche_df.region = fill("All", size(DNCI_result_all_patche_df, 1))
+# A function to plot the groups
+function plot_clusters(grouped_data::DataFrame)
+    # Extract latitude, longitude, and cluster columns
+    latitudes = grouped_data.Latitude
+    longitudes = grouped_data.Longitude
+    cluster_ids = grouped_data.Group
 
-    DNCI_final_result= vcat(DNCI_result_north_df, DNCI_result_south_df, DNCI_result_all_patche_df)
+    # Get unique cluster IDs and assign numeric identifiers
+    unique_clusters = unique(cluster_ids)
+    cluster_map = Dict(cluster => i for (i, cluster) in enumerate(unique_clusters))
 
-    #Output the DNCI summary
-    DNCI_summary=DataFrames.DataFrame(mean_DNCI_north = mean(DNCI_result_north_df.DNCI),
-    min_DNCI_north = minimum(DNCI_result_north_df.DNCI),
-    max_DNCI_north = maximum(DNCI_result_north_df.DNCI),
-    mean_DNCI_south = mean(DNCI_result_south_df.DNCI),
-    min_DNCI_south = minimum(DNCI_result_south_df.DNCI),
-    max_DNCI_south = maximum(DNCI_result_south_df.DNCI),
-    mean_DNCI_all = mean(DNCI_result_all_patche_df.DNCI),
-    min_DNCI_all = minimum(DNCI_result_all_patche_df.DNCI),
-    max_DNCI_all = maximum(DNCI_result_all_patche_df.DNCI))
+    # Assign numeric identifiers to cluster IDs
+    numeric_ids = [cluster_map[cluster] for cluster in cluster_ids]
 
+    # Define color palette for clusters (you can modify this or use any other color palette)
+    colors = distinguishable_colors(length(unique_clusters), colorant"blue")
 
-   return DNCI_summary, DNCI_final_result
+    # Plot the points, color by cluster ID
+    scatter(longitudes, latitudes, marker_z=numeric_ids,
+            xlabel="Longitude", ylabel="Latitude", title="Cluster Visualization $(subset_df.Time[1])",
+            legend=false, markerstrokecolor=:black, markerstrokewidth=0.5,
+            markersize=5, color=colors[numeric_ids], label=false)
 end
 
 
-
-
-#pairwise_df=load("/home/jenny/phyto/niche_overlap_index_output/niche_overlap_matrix.jld2","pairwise_df")
