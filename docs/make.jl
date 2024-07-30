@@ -1,3 +1,14 @@
+using Pkg
+
+# Activate the docs environment
+Pkg.activate(@__DIR__)
+
+# Develop the MetaCommunityMetrics package
+Pkg.develop(path="../")
+
+# Instantiate dependencies
+Pkg.instantiate()
+
 using Documenter
 using MetaCommunityMetrics
 
