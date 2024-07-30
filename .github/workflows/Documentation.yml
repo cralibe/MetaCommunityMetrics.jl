@@ -19,34 +19,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        fetch-depth: 0  # Ensures history is available for all branches and tags
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Ensure the entire history is available
 
-    - name: Set up Julia
-      uses: julia-actions/setup-julia@v2
-      with:
-        version: '1.6'  # Specify your Julia version here, '1.x' for latest 1.x release
+      - name: Set up Julia
+        uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.6'  # Specify your Julia version here
 
-    - name: Cache Julia packages
-      uses: actions/cache@v2
-      env:
-        cache-name: cache-artifacts
-      with:
-        path: |
-          ~/.julia/artifacts
-          ~/.julia/packages
-          ~/.julia/registries
-        key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/Project.toml', '**/Manifest.toml') }}
-        restore-keys: |
-          ${{ runner.os }}-build-${{ env.cache-name }}-
-          ${{ runner.os }}-build-
-          ${{ runner.os }}-
+      - name: Install dependencies
+        run: julia --project=docs/ -e 'using Pkg; Pkg.instantiate()'
 
-    - name: Install dependencies
-      run: julia --project=docs/ -e 'using Pkg; Pkg.instantiate(); Pkg.precompile()'
-
-    - name: Build and deploy docs
-      env:
-        GITHUB_TOKEN: ${{ secrets.CRALIBE_TOKEN_1 }}  # Ensure your secret token name matches here
-      run: julia --project=docs/ docs/make.jl
+      - name: Build and deploy docs
+        env:
+          GITHUB_TOKEN: ${{ secrets.CRALIBE_TOKEN_1 }}
+        run: julia --project=docs/ docs/make.jl
