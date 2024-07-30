@@ -1,4 +1,11 @@
-### These functions is for internal use and supports the public functions.
+# src/Internal.jl
+
+module Internal
+
+using DataFrames
+
+# Internal function
+# These functions is for internal use and supports the public functions.
 
 ## Internal fuctions for DNCI.jl
 #A function assign single site to the nearest group
@@ -165,4 +172,6 @@ function check_condition_and_fix(grouped_df)
     end
 
     return grouped_df
+end
+
 end

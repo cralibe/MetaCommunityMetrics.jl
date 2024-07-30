@@ -1,3 +1,6 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-MetaCommunityMetrics = { path = "../" }
+MetaCommunityMetrics = "3ccb93f7-bd98-4150-a201-b30c241572df"
+
+[compat]
+julia = "1.6"

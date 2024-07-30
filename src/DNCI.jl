@@ -1,3 +1,7 @@
+# src/DNCI.jl
+
+using ..Internal
+
 """
     create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int}) -> Dict{Int, DataFrame}
 

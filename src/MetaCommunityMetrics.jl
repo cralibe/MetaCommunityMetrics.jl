@@ -1,3 +1,5 @@
+# src/MetaCommunityMetrics.jl
+
 module MetaCommunityMetrics
 
 using DataFrames
@@ -13,6 +15,11 @@ using StatsBase
 using DataStructures
 using ProgressMeter
 using Combinatorics
+using Plots
+
+# Include the internal utilities
+include("Internal.jl")
+using .Internal  
 
 
 export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div
@@ -20,9 +27,8 @@ export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temp
 # Public function
 include("BetaDiversity.jl")
 #include("DNCI.jl")
-#include("Internal.jl")
 include("functions.jl")
-# Internal fuction, not exported
 
-        
+
+
 end
