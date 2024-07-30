@@ -1,10 +1,7 @@
 using Pkg
 
-# Activate the docs environment
-Pkg.activate(@__DIR__)
-
-# Develop the MetaCommunityMetrics package
-Pkg.develop(path="../")
+# Activate the development environment
+Pkg.activate(joinpath(@__DIR__, "../dev_env"))
 
 # Instantiate dependencies
 Pkg.instantiate()
