@@ -2,22 +2,22 @@ using Documenter
 using MetaCommunityMetrics
 
 makedocs(
-    sitename = "MetaCommunityMetrics Documentation",
+    sitename = "MetaCommunityMetrics",
     format = Documenter.HTML(),
     modules = [MetaCommunityMetrics],
     pages = [
         "Home" => "index.md",
-        "Beta Diversity" => "BetaDiversity.md"
+        "Beta Diversity" => "BetaDiversity.md",
         "Dispersal–niche continuum index" => "DNCI.md"
-    ]
+    ],
+    root = "docs/src"
 )
 
-# Conditionally deploy only if in CI environment
 if haskey(ENV, "CI")
     deploydocs(
-        repo = "github.com/username/MetaCommunityMetrics.jl.git",
-        target = "site",
+        repo = "github.com/cralibe/MetaCommunityMetrics.jl.git",
         branch = "gh-pages",
-        deploy_config = Dict("GITHUB_TOKEN" => ENV["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"]),
+        target = ".",  # Deploy to the root of the gh-pages branch
+        deploy_config = Dict("GITHUB_TOKEN" => ENV["CRALIBE_TOKEN_1"])
     )
 end
