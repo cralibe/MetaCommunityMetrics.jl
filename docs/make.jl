@@ -16,7 +16,7 @@ if haskey(ENV, "CI")
     deploydocs(
         repo = "github.com/cralibe/MetaCommunityMetrics.jl.git",  # Replace with your repo
         branch = "gh-pages",
-        target = ".",  # Deploy to the root of the gh-pages branch
+        target = "build",  # Deploy to the root of the gh-pages branch
         deploy_config = Dict("GITHUB_TOKEN" => ENV["CRALIBE_TOKEN_1"])
     )
 end

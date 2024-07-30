@@ -1,19 +1,3 @@
-using Pkg
-Pkg.activate(".")
-
-using Distributions
-using Plots
-using LinearAlgebra
-using GaussianRandomFields
-using Distances
-using DataFrames
-using CSV
-using StatsBase
-using DataStructures
-using ProgressMeter
-using Pipe: @pipe
-using Combinatorics
-
 """
     create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int}) -> Dict{Int, DataFrame}
 
