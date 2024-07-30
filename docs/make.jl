@@ -9,8 +9,7 @@ makedocs(
         "Home" => "index.md",
         "Beta Diversity" => "BetaDiversity.md",
         "Dispersal–niche continuum index" => "DNCI.md"
-    ],
-    root = "docs/src"
+    ]
 )
 
 if haskey(ENV, "CI")
