@@ -1,35 +1,33 @@
+# .github/workflows/documentation.yml
 name: Documentation
 
 on:
   push:
     branches:
       - main
-    paths:
-      - 'docs/**'
-      - 'src/**'
-  pull_request:
-    paths:
-      - 'docs/**'
-      - 'src/**'
 
 jobs:
-  Documenter:
+  build:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
+    - uses: actions/checkout@v2
 
-      - name: Set up Julia
-        uses: julia-actions/setup-julia@v1
-        with:
-          version: '1.6'
+    - name: Set up Julia
+      uses: julia-actions/setup-julia@v1
+      with:
+        version: '1.6'
 
-      - name: Install dependencies
-        run: |
-          julia --project=docs -e 'using Pkg; Pkg.instantiate()'
-          julia --project=docs -e 'using Pkg; Pkg.add("Documenter"); Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+    - name: Install dependencies
+      run: |
+        julia -e 'using Pkg; Pkg.add("Documenter")'
+        julia -e 'using Pkg; Pkg.instantiate()'
 
-      - name: Build and deploy docs
-        env:
-          GITHUB_TOKEN: ${{ secrets.CRALIBE_GITHUB_TOKEN_1 }}
-        run: julia --project=docs docs/make.jl
+    - name: Build documentation
+      run: julia --project=docs/ docs/make.jl
+
+    - name: Deploy to GitHub Pages
+      uses: peaceiris/actions-gh-pages@v3
+      with:
+        github_token: ${{ secrets.CRALIBE_GITHUB_TOKEN_1 }}
+        publish_dir: docs/build
