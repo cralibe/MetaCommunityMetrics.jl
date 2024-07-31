@@ -1,8 +1,7 @@
-push!(LOAD_PATH,"../src/")
-
 # docs/make.jl
-
-using Documenter, MetaCommunityMetrics
+push!(LOAD_PATH, "../src/")
+using Documenter
+using MetaCommunityMetrics
 
 makedocs(
     sitename = "MetaCommunityMetrics Documentation",
