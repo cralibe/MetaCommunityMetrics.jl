@@ -52,8 +52,6 @@ grouped_data = create_clusters(sample_df.Sampling_date_order, sample_df.latitude
 
 ```
 """
-
-# A function to create groups for each year
 function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int})
     grouping_dict = Dict{Int, DataFrame}()
 
@@ -95,10 +93,7 @@ end
 """
     plot_clusters(grouped_data::DataFrame)
 
-Plot the clustering result from the function create_clusters() on a scatter plot according to geographic coordinates.
-
-# Description
-This function generates a scatter plot visualizing the geographic distribution of different clusters. 
+This function plots the clustering result from the function create_clusters() on a scatter plot according to geographic coordinates.
 Each point represents a location, and points are colored based on their group/cluster ID.
 
 # Arguments
@@ -152,57 +147,35 @@ function plot_clusters(grouped_data::DataFrame)
             markersize=5, color=colors[numeric_ids], label=false)
 end
 
+"""
+    DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true)
 
-#A function to calculate DNCI for only two groups
-function DNCI_ses(comm::Matrix, groups::Vector, t::Int, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
-    current_time = t
-    group=sort(unique(groups))
-    if  all(comm .== comm[1]) #check to see if every element in the matrix is the same
-        metric = DataFrames.DataFrame(time = current_time,
-        group1= group[1], 
-        group2 = group[2], 
-        DNCI = 0, 
-        CI_DNCI = 0, 
-        S_DNCI = 0)
-    else 
-    
-        # Check if the number of groups is equal to 2
-        if length(group) != 2
-            error("length(groups) must be 2")
-        end
-        results = PerSIMPER(comm, groups)
-        E = results["EcartCarreLog"]
+Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a metric proposed by Vilmi(2021) (doi: 10.1111/ecog.05356).
 
-        if mean(E.Blue) == -20.0 && std(E.Blue, corrected=true) == 0 #For the special case when permuations from the dispersal and niche model are very similar.
-            #Calculate SES.d and SES.n based on E values from PERSIMPER function
-            SES_d = zeros(size(E.Orange,1))
-            SES_n = zeros(size(E.Green,1))
-        else
-            #Calculate SES.d and SES.n based on E values from PERSIMPER function
-            SES_d = zeros(size(E.Orange,1))
-            SES_n = zeros(size(E.Green,1))
-            #Calculate SES.d and SES.n based on E values from PERSIMPER function
-            SES_d = (E.Orange .- mean(E.Blue))/std(E.Blue, corrected=true) #scaled for n-1
-            SES_n = (E.Green .- mean(E.Blue))/std(E.Blue, corrected=true)  # greater value of E.Green indicates greater dissimilarity with the niche null model, and dispersal matters more.
-        end
-        #Calculate DNCI
-        DNCI = mean(SES_d)-mean(SES_n)
-        #sd related to DNCI
-        S_DNCI = sqrt(std(SES_d, corrected=true)^2+std(SES_n, corrected=true)^2)
-        #the confidence interval based on S.DNCI
-        CI_DNCI = 2*S_DNCI
-        #Final results
-        metric = DataFrames.DataFrame(time = current_time,
-                                    group1= group[1], 
-                                    group2 = group[2], 
-                                    DNCI = DNCI, 
-                                    CI_DNCI = CI_DNCI, 
-                                    S_DNCI = S_DNCI)
-    end                               
-    return metric
-end
+# Arguments
+- `comm::Matrix`: A presence-absence data matrix where rows represent observations (e.g., sites or samples) and columns represent species.
+- `groups::Vector`: A vector indicating the group membership for each row in the `comm` matrix.
+- `Nperm::Int=1000`: The number of permutations for significance testing. Default is 1000.
+- `count::Bool=true`: A flag indicating whether the numeber of permutations is printed. Default is `false`.
+
+# Returns
+- `DataFrame`: A DataFrame containing the DNCI results for each pair of groups.
+
+
+# Examples
+```julia
+# Example usage of DNCI_multigroup
+comm = [1 0 0; 1 1 0; 0 1 1; 0 0 1]
+groups = ["A", "A", "B", "B"]
+Nperm = 1000
+count = true
+
+result = DNCI_multigroup(comm, groups, Nperm, count)
+println(result)
+
+"""
 #A function to calculate DNCI for two groups and more
-function DNCI_multigroup(comm::Matrix, groups::Vector, t::Int, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
+function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
     group_combinations = collect(combinations(unique(sort(groups)),2))
 
     ddelta = DataFrame()
@@ -247,7 +220,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, t::Int, Nperm::Int=1000, 
 
        
 
-        DNCI_result = DNCI_ses(paired_x, group_pair, t)
+        DNCI_result = DNCI_ses(paired_x, group_pair, Nperm, count)
 
         append!(ddelta, DNCI_result, promote=true)
     end

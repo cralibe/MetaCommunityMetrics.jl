@@ -1,4 +1,4 @@
-#BetaDiveristy,jl
+# src/BetaDiveristy.jl
 
 """
     beta_diversity(mat::Matrix; quant::Bool) -> DataFrame

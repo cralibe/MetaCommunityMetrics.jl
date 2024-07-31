@@ -347,25 +347,18 @@ function simper(comm::Matrix, groups::Vector)
     spcontr = Matrix{Float64}(undef, 0, 0)
     
     # Iterate over each pair of sites in the community matrix
-    for i in 1:size(comm, 2)
+    for col_index in 1:size(comm, 2)
         # Extract the ith column of the community matrix
-        column_i = comm[:, i:i]
+        column_i = comm[:, col_index:col_index]
         ZAP = 1e-15 #a threshold for setting small distances to zero in the distance matrix
         n_rows = size(column_i, 1)
         d = zeros(n_rows, n_rows)  # Initialize distance matrix
-        
-        for i in 1:n_rows
-            for j in 1:n_rows
-                if j<i
-                    # Compute Manhattan distance between rows i and j
-                    distance = sum(abs.(column_i[i] .- column_i[j]))
-                    if distance < ZAP #setting small distances to zero 
-                        d[i, j] = 0
-                    end
-                    d[i, j] = distance
-                else
-                    d[i, j] = 0
-                end
+         # Calculate pairwise distances only for the lower triangular part
+        for i in 2:n_rows
+            for j in 1:i-1
+                # Compute Manhattan distance between rows i and j
+                distance = sum(abs.(column_i[i] .- column_i[j]))
+                d[i, j] = distance < ZAP ? 0 : distance
             end
         end
         # Extract the lower triangle of the distance matrix and store it as a vector
@@ -373,9 +366,9 @@ function simper(comm::Matrix, groups::Vector)
         lower_triangle = reshape(lower_triangle, length(lower_triangle), 1)
         # Concatenate the lower triangle vector to spcontr
         if isempty(spcontr)
-        spcontr = lower_triangle
+            spcontr = lower_triangle
         else
-        spcontr = hcat(spcontr, lower_triangle)
+            spcontr = hcat(spcontr, lower_triangle)
         end
     end
     # Divide every value in each column of spcontr by the corresponding element in result
@@ -608,6 +601,53 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=fa
                         "dnBlue" => dn2, 
                         "dnGreen" => dn3)
     return final_result
+end
+
+#A function to calculate DNCI for only two groups
+function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
+    group=sort(unique(groups))
+    if  all(comm .== comm[1]) #check to see if every element in the matrix is the same
+        metric = DataFrames.DataFrame(time = current_time,
+        group1= group[1], 
+        group2 = group[2], 
+        DNCI = 0, 
+        CI_DNCI = 0, 
+        S_DNCI = 0)
+    else 
+    
+        # Check if the number of groups is equal to 2
+        if length(group) != 2
+            error("length(groups) must be 2")
+        end
+        results = PerSIMPER(comm, groups, Nperm, count)
+        E = results["EcartCarreLog"]
+
+        if mean(E.Blue) == -20.0 && std(E.Blue, corrected=true) == 0 #For the special case when permuations from the dispersal and niche model are very similar.
+            #Calculate SES.d and SES.n based on E values from PERSIMPER function
+            SES_d = zeros(size(E.Orange,1))
+            SES_n = zeros(size(E.Green,1))
+        else
+            #Calculate SES.d and SES.n based on E values from PERSIMPER function
+            SES_d = zeros(size(E.Orange,1))
+            SES_n = zeros(size(E.Green,1))
+            #Calculate SES.d and SES.n based on E values from PERSIMPER function
+            SES_d = (E.Orange .- mean(E.Blue))/std(E.Blue, corrected=true) #scaled for n-1
+            SES_n = (E.Green .- mean(E.Blue))/std(E.Blue, corrected=true)  # greater value of E.Green indicates greater dissimilarity with the niche null model, and dispersal matters more.
+        end
+        #Calculate DNCI
+        DNCI = mean(SES_d)-mean(SES_n)
+        #sd related to DNCI
+        S_DNCI = sqrt(std(SES_d, corrected=true)^2+std(SES_n, corrected=true)^2)
+        #the confidence interval based on S.DNCI
+        CI_DNCI = 2*S_DNCI
+        #Final results
+        metric = DataFrames.DataFrame(group1= group[1], 
+                                    group2 = group[2], 
+                                    DNCI = DNCI, 
+                                    CI_DNCI = CI_DNCI, 
+                                    S_DNCI = S_DNCI)
+    end                               
+    return metric
 end
 
 end
