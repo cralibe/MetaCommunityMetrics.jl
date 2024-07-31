@@ -21,6 +21,7 @@ jobs:
     - name: Install dependencies
       run: |
         julia -e 'using Pkg; Pkg.add("Documenter")'
+        julia -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()))'
         julia -e 'using Pkg; Pkg.instantiate()'
 
     - name: Build documentation
