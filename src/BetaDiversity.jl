@@ -1,3 +1,5 @@
+#BetaDiveristy,jl
+
 """
     beta_diversity(mat::Matrix; quant::Bool) -> DataFrame
 
@@ -181,7 +183,7 @@ function mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, 
 end
 
 """
-    mean_temporal_beta_div(abundance::Vector, time::Vector, patch::Vector, species::Vector; quant::Bool) -> DataFrame
+    mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool) -> DataFrame
 
 Calculate the mean temporal beta diversity components acorss all patches based on species abundances or presence-absences.
 

@@ -22,13 +22,11 @@ include("Internal.jl")
 using .Internal  
 
 
-export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div
-
 # Public function
 include("BetaDiversity.jl")
 #include("DNCI.jl")
 include("functions.jl")
 
-
+export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div
 
 end

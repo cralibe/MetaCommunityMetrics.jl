@@ -2,6 +2,7 @@
 
 using ..Internal
 
+
 """
     create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int}) -> Dict{Int, DataFrame}
 
@@ -51,6 +52,7 @@ grouped_data = create_clusters(sample_df.Sampling_date_order, sample_df.latitude
 
 ```
 """
+
 # A function to create groups for each year
 function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int})
     grouping_dict = Dict{Int, DataFrame}()
@@ -90,7 +92,43 @@ function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude
     return grouping_dict
 end
 
-# A function to plot the groups
+"""
+    plot_clusters(grouped_data::DataFrame)
+
+Plot the clustering result from the function create_clusters() on a scatter plot according to geographic coordinates.
+
+# Description
+This function generates a scatter plot visualizing the geographic distribution of different clusters. 
+Each point represents a location, and points are colored based on their group/cluster ID.
+
+# Arguments
+- `grouped_data::DataFrame`: A DataFrame containing the columns `Latitude`, `Longitude`, and `Group`. 
+    - `Latitude`: A column of latitude coordinates.
+    - `Longitude`: A column of longitude coordinates.
+    - `Group`: A column indicating the cluster ID for each point.
+
+# Returns
+Returns
+- This function displays a scatter plot of the clusters.
+
+# Details
+- The function extracts the `Latitude`, `Longitude`, and `Group` columns from the provided DataFrame.
+- Unique cluster IDs are assigned numeric identifiers.
+- A color palette is generated using distinguishable colors to differentiate the clusters.
+- The scatter plot is created with points colored by their cluster ID.
+
+# Example
+```julia
+using DataFrames
+# Create a sample DataFrame
+data = DataFrame(Latitude = [34.05, 36.16, 40.71, 34.05],
+                 Longitude = [-118.24, -115.15, -74.01, -118.24],
+                 Group = ["A", "B", "A", "B"])
+
+# Plot clusters
+plot_clusters(data)
+```
+"""
 function plot_clusters(grouped_data::DataFrame)
     # Extract latitude, longitude, and cluster columns
     latitudes = grouped_data.Latitude
@@ -115,3 +153,104 @@ function plot_clusters(grouped_data::DataFrame)
 end
 
 
+#A function to calculate DNCI for only two groups
+function DNCI_ses(comm::Matrix, groups::Vector, t::Int, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
+    current_time = t
+    group=sort(unique(groups))
+    if  all(comm .== comm[1]) #check to see if every element in the matrix is the same
+        metric = DataFrames.DataFrame(time = current_time,
+        group1= group[1], 
+        group2 = group[2], 
+        DNCI = 0, 
+        CI_DNCI = 0, 
+        S_DNCI = 0)
+    else 
+    
+        # Check if the number of groups is equal to 2
+        if length(group) != 2
+            error("length(groups) must be 2")
+        end
+        results = PerSIMPER(comm, groups)
+        E = results["EcartCarreLog"]
+
+        if mean(E.Blue) == -20.0 && std(E.Blue, corrected=true) == 0 #For the special case when permuations from the dispersal and niche model are very similar.
+            #Calculate SES.d and SES.n based on E values from PERSIMPER function
+            SES_d = zeros(size(E.Orange,1))
+            SES_n = zeros(size(E.Green,1))
+        else
+            #Calculate SES.d and SES.n based on E values from PERSIMPER function
+            SES_d = zeros(size(E.Orange,1))
+            SES_n = zeros(size(E.Green,1))
+            #Calculate SES.d and SES.n based on E values from PERSIMPER function
+            SES_d = (E.Orange .- mean(E.Blue))/std(E.Blue, corrected=true) #scaled for n-1
+            SES_n = (E.Green .- mean(E.Blue))/std(E.Blue, corrected=true)  # greater value of E.Green indicates greater dissimilarity with the niche null model, and dispersal matters more.
+        end
+        #Calculate DNCI
+        DNCI = mean(SES_d)-mean(SES_n)
+        #sd related to DNCI
+        S_DNCI = sqrt(std(SES_d, corrected=true)^2+std(SES_n, corrected=true)^2)
+        #the confidence interval based on S.DNCI
+        CI_DNCI = 2*S_DNCI
+        #Final results
+        metric = DataFrames.DataFrame(time = current_time,
+                                    group1= group[1], 
+                                    group2 = group[2], 
+                                    DNCI = DNCI, 
+                                    CI_DNCI = CI_DNCI, 
+                                    S_DNCI = S_DNCI)
+    end                               
+    return metric
+end
+#A function to calculate DNCI for two groups and more
+function DNCI_multigroup(comm::Matrix, groups::Vector, t::Int, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
+    group_combinations = collect(combinations(unique(sort(groups)),2))
+
+    ddelta = DataFrame()
+
+    for i in 1:size(group_combinations,1)
+        # Create an empty dictionary to hold the split data
+        splitx = Dict()
+
+        # Assume comm is a matrix and groups is a vector indicating the group for each row in comm
+        for row in 1:size(comm, 1)  # Iterate over the rows of the matrix
+            group = groups[row]  # Identify the group of the current row
+            current_row = comm[row, :]   # Extract the entire row as a vector, make it a 1-row matrix
+            row_matrix = reshape(current_row, 1, length(current_row))  # Reshape row to be a 1-row matrix
+
+            # Check if the group already exists in the dictionary
+            if haskey(splitx, group)
+            # Vertically concatenate the new row matrix with the existing matrix for this group
+            splitx[group] = vcat(splitx[group], row_matrix)
+            else
+            # Initialize the group with the current row as a 1-row matrix
+                splitx[group] = row_matrix
+            end
+        end
+
+        # Safely access and concatenate matrices from two groups
+        if haskey(splitx, group_combinations[i][1]) && haskey(splitx, group_combinations[i][2])
+            paired_x = vcat(splitx[group_combinations[i][1]], splitx[group_combinations[i][2]])
+        else
+            error("One of the groups does not exist in the dictionary.")
+        end
+        # Calculate a logical array indicating non-zero sum columns
+        non_zero_sum_columns = sum(paired_x, dims=1) .!= 0
+        # Convert logical index to actual column indices
+        column_indices = findall(x -> x, non_zero_sum_columns[:]) 
+    
+        # Subset the matrix using these indices
+        paired_x = paired_x[:,column_indices]
+
+        group_pair = vcat(
+        fill(group_combinations[i][1], size(splitx[group_combinations[i][1]], 1)),
+        fill(group_combinations[i][2], size(splitx[group_combinations[i][2]], 1)))
+
+       
+
+        DNCI_result = DNCI_ses(paired_x, group_pair, t)
+
+        append!(ddelta, DNCI_result, promote=true)
+    end
+    return ddelta
+end
+  

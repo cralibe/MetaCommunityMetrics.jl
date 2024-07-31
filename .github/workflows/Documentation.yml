@@ -8,8 +8,6 @@ on:
       - 'docs/**'
       - 'src/**'
   pull_request:
-    branches:
-      - main
     paths:
       - 'docs/**'
       - 'src/**'
@@ -17,23 +15,21 @@ on:
 jobs:
   Documenter:
     runs-on: ubuntu-latest
-
     steps:
-      - uses: actions/checkout@v2
-        with:
-          fetch-depth: 0  # Ensure the entire history is available
+      - name: Checkout repository
+        uses: actions/checkout@v2
 
       - name: Set up Julia
         uses: julia-actions/setup-julia@v1
         with:
-          version: '1.9'  # Specify your Julia version here
+          version: '1.6'
 
       - name: Install dependencies
         run: |
-          julia --project=docs/ -e 'using Pkg; Pkg.instantiate()'
-          julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path="../"))'
+          julia --project=docs -e 'using Pkg; Pkg.instantiate()'
+          julia --project=docs -e 'using Pkg; Pkg.add("Documenter"); Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
 
       - name: Build and deploy docs
         env:
-          GITHUB_TOKEN: ${{ secrets.CRALIBE_TOKEN_1 }}
-        run: julia --project=docs/ docs/make.jl
+          GITHUB_TOKEN: ${{ secrets.CRALIBE_GITHUB_TOKEN_1 }}
+        run: julia --project=docs docs/make.jl
