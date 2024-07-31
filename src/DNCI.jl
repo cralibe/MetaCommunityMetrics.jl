@@ -165,8 +165,14 @@ Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a met
 # Examples
 ```julia
 # Example usage of DNCI_multigroup
-comm = [1 0 0; 1 1 0; 0 1 1; 0 0 1]
-groups = ["A", "A", "B", "B"]
+comm = [1 0 0 1 0;
+        1 1 0 0 0;
+        0 1 1 0 0;
+        0 0 1 1 1;
+        1 0 0 0 1;
+        0 1 1 0 1]
+
+groups = ["A", "A", "B", "B", "C", "C"]
 Nperm = 1000
 count = true
 
@@ -174,7 +180,6 @@ result = DNCI_multigroup(comm, groups, Nperm, count)
 println(result)
 
 """
-#A function to calculate DNCI for two groups and more
 function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
     group_combinations = collect(combinations(unique(sort(groups)),2))
 
