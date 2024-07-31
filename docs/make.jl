@@ -1,30 +1,11 @@
-using Pkg
+push!(LOAD_PATH,"../src/")
 
-# Activate the development environment
-Pkg.activate(joinpath(@__DIR__, "../dev_env"))
+# docs/make.jl
 
-# Instantiate dependencies
-Pkg.instantiate()
-
-using Documenter
-using MetaCommunityMetrics
+using Documenter, MetaCommunityMetrics
 
 makedocs(
-    sitename = "MetaCommunityMetrics",
-    format = Documenter.HTML(),
+    sitename = "MetaCommunityMetrics Documentation",
     modules = [MetaCommunityMetrics],
-    pages = [
-        "Home" => "index.md",
-        "Beta Diversity" => "BetaDiversity.md",
-        "Dispersal–niche continuum index" => "DNCI.md"
-    ]
+    format = Documenter.HTML()
 )
-
-if haskey(ENV, "CI")
-    deploydocs(
-        repo = "github.com/cralibe/MetaCommunityMetrics.jl.git",  # Replace with your repo
-        branch = "gh-pages",
-        target = "site",  # Deploy to the root of the gh-pages branch
-        deploy_config = Dict("GITHUB_TOKEN" => ENV["CRALIBE_TOKEN_1"])
-    )
-end
