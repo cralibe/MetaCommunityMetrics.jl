@@ -30,6 +30,5 @@ include("NicheOverlapIndex.jl")
 include("OccupiedPatchesProportion.jl")
 include("functions.jl")
 
-export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div
-
+export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div, create_clusters, plot_clusters, DNCI_multigroup, niche_overlap, prop_patches
 end
