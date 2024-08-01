@@ -148,7 +148,7 @@ function plot_clusters(grouped_data::DataFrame)
 end
 
 """
-    DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true)
+    DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) -> DataFrame
 
 Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a metric proposed by Vilmi(2021) (doi: 10.1111/ecog.05356).
 
@@ -178,7 +178,7 @@ count = true
 
 result = DNCI_multigroup(comm, groups, Nperm, count)
 println(result)
-
+```
 """
 function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
     group_combinations = collect(combinations(unique(sort(groups)),2))
