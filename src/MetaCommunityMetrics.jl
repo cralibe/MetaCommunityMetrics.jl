@@ -27,6 +27,7 @@ using .Internal
 include("BetaDiversity.jl")
 include("DNCI.jl")
 include("NicheOverlapIndex.jl")
+include("OccupiedPatchesProportion.jl")
 include("functions.jl")
 
 export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div

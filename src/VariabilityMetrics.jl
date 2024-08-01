@@ -1,9 +1,4 @@
-using Pkg
-Pkg.activate(".")
-
-using Pipe: @pipe
-using DataFrames
-
+# src/VariabilityMetrics.jl 
 ###Community Dynamics metrics
 
 function CV_fun(abundance) # a function to calculated the general coffecieint of variation
