@@ -11,11 +11,11 @@ using Statistics
 using StatsBase
 using Random
 
-# Internal function
-# These functions is for internal use and supports the public functions.
+### Internal function
+## These functions is for internal use and supports the public functions.
 
 ## Internal fuctions for DNCI.jl
-#A function assign single site to the nearest group
+# A function assign single site to the nearest group
 function assign_single_site_to_nearest_group(grouped_df, single_site, min_group)
     # Extract latitude and longitude of the single site
     single_lat = single_site.Latitude[1]
@@ -43,7 +43,7 @@ function assign_single_site_to_nearest_group(grouped_df, single_site, min_group)
     return nearest_group_id
 end
 
-#A function that find the nearest site to the group with the fewest sites
+# A function that find the nearest site to the group with the fewest sites
 function find_nearest_site(grouped_df, min_group)
     # Extract coordinates of sites in the group with the fewest species
     sites_in_min_group = grouped_df[grouped_df.Group .== min_group, :]
@@ -88,7 +88,7 @@ function find_nearest_site(grouped_df, min_group)
         
     return site_with_minimum_distance
 end
-#A function that checks the condition for the groupings only
+# A function that checks the condition for the groupings only
 function check_conditions(subset_df::DataFrame)
     unique_groups = unique(subset_df.Group)
     sites_per_group = Dict(g => sum(subset_df.Group .== g) for g in unique_groups)
@@ -112,7 +112,7 @@ function check_conditions(subset_df::DataFrame)
     return true
 end
 
-#A function that checks the condition for the groupings and fix the groupings
+# A function that checks the condition for the groupings and fix the groupings
 function check_condition_and_fix(grouped_df)
     max_iterations = 1000  # Define a maximum number of iterations to prevent infinite loops
     iteration = 0
@@ -181,7 +181,7 @@ function check_condition_and_fix(grouped_df)
     return grouped_df
 end
 
-#A function to generate random binary matrices acoording to the assigned algorithm
+# A function to generate random binary matrices acoording to the assigned algorithm
 function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for present/absence data
     
     #Assign for different permutation algorithms
@@ -297,7 +297,7 @@ function nullmodel_quasiswap(comm::AbstractMatrix{Int}, times::Int)
     return nullmodels
 end
 
-#A function to compare the original matrix with the null models in terms of row and column sums
+# A function to compare the original matrix with the null models in terms of row and column sums
 function check_sums(original::AbstractMatrix{Int}, nullmodels::Vector{Matrix{Int}}, ALGO::AbstractString)
     original_row_sums = sum(original, dims=2)
     original_col_sums = sum(original, dims=1)
@@ -422,7 +422,7 @@ function simper(comm::Matrix, groups::Vector)
     return average_values
 end
 
-# A function to correct dp4 matrix
+# A function to correct dp4 matrix in the PerSIMPER function
 function correct_permutation(comm::Matrix)
     SWAPcount = 1
     v = true
@@ -474,7 +474,7 @@ function correct_permutation(comm::Matrix)
     return dp4
 end
 
-#Per SIMPER function : identification of the main assembly process adpated from Corentin Gibert
+#PerSIMPER function : identification of the main assembly process; adpated from Corentin Gibert
 function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=false) #only for present/absence data
 
     AnaSimp = simper(comm, groups)#Species contribution to average between-group dissimilarity on the compared groups

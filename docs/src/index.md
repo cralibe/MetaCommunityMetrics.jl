@@ -55,5 +55,10 @@ niche_overlap(abundance::AbstractVector, species::Union{AbstractVector, String},
 prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})
 ```
 
+### Community Dynamics metrics
+```@docs
+CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
+CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
+```
 
 
