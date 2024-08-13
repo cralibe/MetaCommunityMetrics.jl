@@ -152,7 +152,7 @@ function check_condition_and_fix(grouped_df)
         end
         
         if condition_met
-            println("Condition met, stopping iteration.")
+            #println("Condition met, stopping iteration.")
             break
         else
              
@@ -174,9 +174,9 @@ function check_condition_and_fix(grouped_df)
         iteration += 1
     end
 
-    if iteration == max_iterations
+    #=if iteration == max_iterations
         println("Reached maximum iterations without meeting condition.")
-    end
+    end=#
 
     return grouped_df
 end
@@ -475,7 +475,7 @@ function correct_permutation(comm::Matrix)
 end
 
 #PerSIMPER function : identification of the main assembly process; adpated from Corentin Gibert
-function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=false) #only for present/absence data
+function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false) #only for present/absence data
 
     AnaSimp = simper(comm, groups)#Species contribution to average between-group dissimilarity on the compared groups
 
@@ -604,7 +604,7 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=fa
 end
 
 #A function to calculate DNCI for only two groups
-function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
+function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) #for presence-absence data only
     group=sort(unique(groups))
     if  all(comm .== comm[1]) #check to see if every element in the matrix is the same
         metric = DataFrames.DataFrame(time = current_time,
@@ -619,7 +619,7 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=tru
         if length(group) != 2
             error("length(groups) must be 2")
         end
-        results = PerSIMPER(comm, groups, Nperm, count)
+        results = PerSIMPER(comm, groups, Nperm; count)
         E = results["EcartCarreLog"]
 
         if mean(E.Blue) == -20.0 && std(E.Blue, corrected=true) == 0 #For the special case when permuations from the dispersal and niche model are very similar.

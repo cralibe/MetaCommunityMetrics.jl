@@ -4,7 +4,7 @@ using ..Internal
 
 
 """
-    create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int}) -> Dict{Int, DataFrame}
+    create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int}, total_richness::Vector{Int}) -> Dict{Int, DataFrame}
 
 Create clusters for each unique time step in a dataset. Only presnece-absence data can be used.
 
@@ -13,6 +13,7 @@ Create clusters for each unique time step in a dataset. Only presnece-absence da
 - `latitude::Vector`: A vector indicating the latitude of each sample.
 - `longitude::Vector`: A vector indicating the longitude of each sample.
 - `patch::Vector`: A vector indicating the spatial location (patch) of each sample.
+- `total_richness::Vector`: A vector indicating the total species richness at each plot at each time step.
 
 # Returns
 - `Dict{Int, DataFrame}`: A dictionary where each key is a unique time from the dataset and each value is a DataFrame for that time with an added `Group` column indicating the assigned cluster.
@@ -20,44 +21,13 @@ Create clusters for each unique time step in a dataset. Only presnece-absence da
 # Details
 This function performs hierarchical clustering on geographical coordinates for each unique time step. It aims to balance the clusters based on the number of sites and species richness, ensuring that no group has less than five sites and that there are at least two groups. If conditions for clustering balance are not met (like groups having less than five sites or only one group), it iteratively adjusts the clusters by reassigning sites to improve group balance.
 
-# Example
-```julia
-using CSV, DataFrames
-using DataFramesMeta
-using Pipe: @pipe
-
-sample_df = @pipe CSV.read("data/rodent_abundance_data.csv", DataFrame; header=true) |>#read in the sample data
-            select(_, Not(:Column1))|> #select the columns 
-            stack(_, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :species, value_name = :abundance)
-
-preped_data= @pipe sample_df |>         
-@transform(_, :presence = ifelse.(:abundance .>= 1, 1, 0)) |>
-groupby(_, [:Sampling_date_order, :species]) |> 
-combine(_,:presence=>sum=>:total_presence) |>
-filter(row -> row[:total_presence] !<= 1, _) |> #remove singletons (species occurring at one site only)
-leftjoin(_,sample_df, on = [:Sampling_date_order, :species]) |> #join the data back to the original data
-
-
-# Generate random latitude and longitude values
-n = nrow(sample_df)
-latitude = rand(35.0:0.01:36.0, n) # Adjust range as needed
-longitude = rand(-120.0:0.01:-119.0, n) # Adjust range as needed
-
-# Add the coordinates to the DataFrame
-sample_df[:, :latitude] = latitude
-sample_df[:, :longitude] = longitude
-
-# Create groups for each time step
-grouped_data = create_clusters(sample_df.Sampling_date_order, sample_df.latitude, sample_df.longitude, sample_df.plot)
-
-```
 """
-function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int})
+function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int}, total_richness::Vector{Int})
     grouping_dict = Dict{Int, DataFrame}()
 
     #Create a DataFrame
-    df = DataFrame(Time = time, Latitude = latitude, Longitude = longitude, Patch = patch)
-
+    df = DataFrame(Time = time, Latitude = latitude, Longitude = longitude, Patch = patch, Total_Richness = total_richness)
+    
     for t in unique(df[:, :Time])
         subset_df = filter(row -> row[:Time] == t, df)
         coordinates = select(subset_df, [:Latitude, :Longitude])
@@ -70,8 +40,8 @@ function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude
             agglo_result = hclust(distances, linkage=:complete)
             assignments = cutree(agglo_result, k=num_clusters)
             subset_df.Group = assignments
-            subset_df = check_condition_and_fix(subset_df)
-            condition_met = check_conditions(subset_df)
+            subset_df = Internal.check_condition_and_fix(subset_df)
+            condition_met = Internal.check_conditions(subset_df)
             
             if !condition_met
                 num_clusters -= 1
@@ -91,61 +61,47 @@ function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude
 end
 
 """
-    plot_clusters(grouped_data::DataFrame)
+    plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::Union{AbstractVector, String}) 
 
-This function plots the clustering result from the function create_clusters() on a scatter plot according to geographic coordinates.
-Each point represents a location, and points are colored based on their group/cluster ID.
+Plots clusters of data points on a scatter plot using their geographic coordinates and cluster assignments.
 
 # Arguments
-- `grouped_data::DataFrame`: A DataFrame containing the columns `Latitude`, `Longitude`, and `Group`. 
-    - `Latitude`: A column of latitude coordinates.
-    - `Longitude`: A column of longitude coordinates.
-    - `Group`: A column indicating the cluster ID for each point.
-
-# Returns
-Returns
-- This function displays a scatter plot of the clusters.
+- `latitude::Vector{Float64}`: A vector of latitude coordinates.
+- `longitude::Vector{Float64}`: A vector of longitude coordinates.
+- `group::Union{AbstractVector, String}`: A vector or string indicating the cluster assignments for each data point.
 
 # Details
-- The function extracts the `Latitude`, `Longitude`, and `Group` columns from the provided DataFrame.
-- Unique cluster IDs are assigned numeric identifiers.
-- A color palette is generated using distinguishable colors to differentiate the clusters.
-- The scatter plot is created with points colored by their cluster ID.
+- The function assigns a unique color to each cluster and plots the points based on their geographic coordinates.
+- The points are colored according to their cluster assignment.
+- The plot includes black borders around the markers for better visibility.
 
 # Example
 ```julia
-using DataFrames
-# Create a sample DataFrame
-data = DataFrame(Latitude = [34.05, 36.16, 40.71, 34.05],
-                 Longitude = [-118.24, -115.15, -74.01, -118.24],
-                 Group = ["A", "B", "A", "B"])
+latitudes = [35.0, 35.0, 35.5, 35.5, 35.5, 36.0, 36.0]
+longitudes = [-110.0, -109.5, -109.5, -109.0, -108.0, -109.5, -108.0]
+groups = [1, 1, 1, 1, 2, 1, 2]
 
-# Plot clusters
-plot_clusters(data)
+plot_clusters(latitudes, longitudes, groups)
 ```
 """
-function plot_clusters(grouped_data::DataFrame)
-    # Extract latitude, longitude, and cluster columns
-    latitudes = grouped_data.Latitude
-    longitudes = grouped_data.Longitude
-    cluster_ids = grouped_data.Group
-
+function plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::Union{AbstractVector, String})
     # Get unique cluster IDs and assign numeric identifiers
-    unique_clusters = unique(cluster_ids)
+    unique_clusters = unique(group)
     cluster_map = Dict(cluster => i for (i, cluster) in enumerate(unique_clusters))
 
     # Assign numeric identifiers to cluster IDs
-    numeric_ids = [cluster_map[cluster] for cluster in cluster_ids]
+    numeric_ids = [cluster_map[cluster] for cluster in group]
 
-    # Define color palette for clusters (you can modify this or use any other color palette)
+    # Define color palette for clusters
     colors = distinguishable_colors(length(unique_clusters), colorant"blue")
 
     # Plot the points, color by cluster ID
-    scatter(longitudes, latitudes, marker_z=numeric_ids,
-            xlabel="Longitude", ylabel="Latitude", title="Cluster Visualization $(subset_df.Time[1])",
+    scatter(longitude, latitude, marker_z=numeric_ids,
+            xlabel="Longitude", ylabel="Latitude", title="Cluster Visualization",
             legend=false, markerstrokecolor=:black, markerstrokewidth=0.5,
             markersize=5, color=colors[numeric_ids], label=false)
 end
+
 
 """
     DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) -> DataFrame
@@ -180,7 +136,7 @@ result = DNCI_multigroup(comm, groups, Nperm, count)
 println(result)
 ```
 """
-function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) #for presence-absence data only
+function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) #for presence-absence data only
     group_combinations = collect(combinations(unique(sort(groups)),2))
 
     ddelta = DataFrame()
@@ -225,7 +181,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::B
 
        
 
-        DNCI_result = DNCI_ses(paired_x, group_pair, Nperm, count)
+        DNCI_result = Internal.DNCI_ses(paired_x, group_pair, Nperm; count)
 
         append!(ddelta, DNCI_result, promote=true)
     end

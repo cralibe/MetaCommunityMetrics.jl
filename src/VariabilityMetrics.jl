@@ -225,7 +225,7 @@ function CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::
         i = findfirst(species_ids .== row.Species)
         j = findfirst(times .== row.Time)
         k = findfirst(patches .== row.Patch)
-        abundance_matrices[i, j, k] = row.N
+        abundance_matrices[i, j, k] = row.Abundance
     end
 
     #total abundance of all species in the same time point

@@ -28,7 +28,17 @@ include("BetaDiversity.jl")
 include("DNCI.jl")
 include("NicheOverlapIndex.jl")
 include("OccupiedPatchesProportion.jl")
-include("functions.jl")
+include("VariabilityMetrics.jl")
 
-export greet_your_package_name, beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div, create_clusters, plot_clusters, DNCI_multigroup, niche_overlap, prop_patches
+export 
+    beta_diversity, 
+    mean_spatial_beta_div, 
+    mean_temporal_beta_div, 
+    create_clusters, 
+    plot_clusters, 
+    DNCI_multigroup, 
+    niche_overlap, 
+    prop_patches,
+    CV_meta,
+    CV_meta_simple
 end
