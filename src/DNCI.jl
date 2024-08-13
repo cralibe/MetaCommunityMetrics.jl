@@ -173,13 +173,11 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::B
         column_indices = findall(x -> x, non_zero_sum_columns[:]) 
     
         # Subset the matrix using these indices
-        paired_x = paired_x[:,column_indices]
+        paired_x = paired_x[:, column_indices]
 
         group_pair = vcat(
         fill(group_combinations[i][1], size(splitx[group_combinations[i][1]], 1)),
         fill(group_combinations[i][2], size(splitx[group_combinations[i][2]], 1)))
-
-       
 
         DNCI_result = Internal.DNCI_ses(paired_x, group_pair, Nperm; count)
 
@@ -187,4 +185,3 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::B
     end
     return ddelta
 end
-  

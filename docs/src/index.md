@@ -1,8 +1,7 @@
-
 # MetaCommunityMetrics.jl 
 *A collection of tools and utilities for analyzing meta-communities in Julia.*
 
-Welcome to the documentation for MetaCommunityMetrics. Here you can find guides and reference material on how to use the functions.
+Welcome to the documentation for `MetaCommunityMetrics`. Here you can find guides and reference material on how to use the functions.
 
 ## An Overview
 This package is a comprehensive toolkit designed to characterize the spatiotemporal structure and dynamics of a metacommunity—a network of communities linked by the dispersal of multiple, interacting species, each with unique niche breadths. It includes functions to calculate a range of specific metrics, which have been previously implemented in R and proven valuable for metacommunity analysis. 
@@ -10,11 +9,12 @@ This package is a comprehensive toolkit designed to characterize the spatiotempo
 However, they come with high computational costs, especially for large species community datasets. To address this issue, MetaCommunityMetrics.jl was developed in Julia, a programming language known for its efficiency in handling computationally intensive tasks. This implementation significantly improves the efficiency of calculating these metrics, making it a powerful tool for metacommunity analysis. 
 
 These metrics include:
-- beta diversity and its components: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data. 
-- niche overlap indices to determine the extent of niche sharing among species within the metacommunity
-- the proportion of habitat patches occupied by each species
-- the variability of community composition across different spatial and temporal scales
-- Dispersal-niche continuum index to evaluate the degree to which communities are influenced by dispersal processes and niche breadth.
+- Beta diversity and its components: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data
+- Dispersal-niche continuum index to evaluate the degree to which communities are influenced by dispersal processes and niche breadth
+- Niche overlap indices to determine the extent of niche sharing among species within the metacommunity
+- The proportion of habitat patches occupied by each species
+- The variability of community composition across different spatial and temporal scales
+
 
 ## Getting Started
 
@@ -30,35 +30,10 @@ Pkg.add("MetaCommunityMetrics")
 using MetaCommunityMetrics
 ```
 
-```@meta
-CurrentModule = MetaCommunityMetrics
-```
-## Functions
-### Beta Diveristy
-```@docs
-beta_diversity(mat::Matrix; quant::Bool)
-mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool)
-mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool)
-```
-### Dispersal-niche continuum index
-```@docs
-create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int})
-plot_clusters(grouped_data::DataFrame)
-DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true)
-```
-### Niche Overlap Index
-```@docs
-niche_overlap(abundance::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String}, time::AbstractVector)
-```
-### Occupied Patches Proportion
-```@docs
-prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})
-```
+## Function Documentation
 
-### Community Dynamics metrics
-```@docs
-CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
-CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
-```
-
-
+- [Beta Diversity Functions](@ref BetaDiveristy)
+- [Dispersal-Niche Continuum Index (DNCI) Functions](@ref DNCI)
+- [Niche Overlap Index Function](@ref NicheOverlapIndex)
+- [Occupied Patches Proportion Function](@ref OccupiedPatchesProportion)
+- [Variability Metrics Functions](@ref VariabilityMetrics)
