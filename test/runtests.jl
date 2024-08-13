@@ -12,7 +12,7 @@ using .MetaCommunityMetrics.Internal
 
     #Example Data
     #Load sample data included in the package
-    sample_df = CSV.read("/Users/jennycheung/.julia/dev/MetaCommunityMetrics/data/rodent_abundance_data.csv", DataFrame, skipto=2)#read in the sample data
+    sample_df = CSV.read(joinpath(@__DIR__, "..", "data", "rodent_abundance_data.csv"), DataFrame, skipto=2)#read in the sample data
     sample_df = stack(sample_df, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :Species, value_name = :Abundance) #stack the dataframe
 
     #A dataframe that idetifies the persisting species (The species that existed at least once in all time steps)
