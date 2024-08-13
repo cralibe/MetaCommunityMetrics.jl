@@ -32,8 +32,4 @@ using MetaCommunityMetrics
 
 ## Function Documentation
 
-- [Beta Diversity Functions](@ref BetaDiveristy)
-- [Dispersal-Niche Continuum Index (DNCI) Functions](@ref DNCI)
-- [Niche Overlap Index Function](@ref NicheOverlapIndex)
-- [Occupied Patches Proportion Function](@ref OccupiedPatchesProportion)
-- [Variability Metrics Functions](@ref VariabilityMetrics)
+- [`BetaDiversity`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/src/BetaDiversity.jl)

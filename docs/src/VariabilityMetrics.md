@@ -1,4 +1,7 @@
 # Variability Metrics Functions
+```@meta
+CurrentModule = MetaCommunityMetrics
+```
 
 The variability metrics functions in `MetaCommunityMetrics` are designed to capture changes in dispersal and density-dependent biotic interactions by investigating temporal variability and synchrony across spatial scales and organizational levels within a metacommunity. These functions are based on the work of Wang et al. (2019), which provides a framework for quantifying variability at different scales and contexts within a community.
 
@@ -21,10 +24,7 @@ The variability metrics `CV_{S,L}`, `CV_{S,R}`, `CV_{C,L}`, and `CV_{C,R}` are s
 - Wang, S., et al. 2019. Stability and synchrony across ecological hierarchies in heterogeneous metacommunities: linking theory to data. Ecography, 42(6): 1200-1211. doi: 10.1111/ecog.04290.
 
 ## The Function
-```@meta
-CurrentModule = MetaCommunityMetrics
-```
 ```@docs
-CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
-CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
+CV_meta
+CV_meta_simple
 ```

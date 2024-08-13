@@ -1,4 +1,7 @@
 # Occupied Patches Proportion Function
+```@meta
+CurrentModule = MetaCommunityMetrics
+```
 The Occupied Patches Proportion function in `MetaCommunityMetrics` provides a simple yet powerful metric for understanding the distribution and prevalence of species across different habitat patches within a metacommunity. By calculating the proportion of patches occupied by each species, this function helps ecologists assess the spatial extent of species distributions and identify potential patterns of rarity or commonness across the landscape.
 
 This function draws on the concepts discussed by Ehrlén & Eriksson (2000) in their study on dispersal limitation and patchy occupancy in forest herbs. According to their findings, low occupancy may indicate dispersal limitation or strong competition, while high occupancy could suggest mass effects due to high dispersal rates or the ability to thrive in various conditions.
@@ -15,9 +18,6 @@ After calculating the proportion of patches occupied for each species, the speci
 - High Occupancy: Could point to mass effects, where species are abundant in many patches, possibly due to high dispersal rates or the ability to thrive across a range of conditions.
 
 ## The Function
-```@meta
-CurrentModule = MetaCommunityMetrics
-```
 ```@docs
-prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})
+prop_patches
 ```

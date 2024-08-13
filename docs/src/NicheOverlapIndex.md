@@ -1,4 +1,7 @@
 # Niche Overlap Index Function
+```@meta
+CurrentModule = MetaCommunityMetrics
+```
 Niche overlap refers to the extent to which different species use the same resources or occupy similar ecological niches. High niche overlap might indicate intense competition, whereas low overlap suggests niche differentiation, allowing species to coexist by minimizing direct competition.
 
 To capture the changes in density-independent abiotic response, also known as niche breadth, this implementation uses Pianka's Niche Overlap Index, as suggested by Pianka (1973). The summary statistics of this index include the mean, maximum, and minimum values across all species pairs, providing a comprehensive understanding of niche sharing within the community.
@@ -17,10 +20,7 @@ The Niche Overlap Index functions in MetaCommunityMetrics provide a robust frame
 ## The Function
 - `niche_overlap`: This function calculates the Niche Overlap Index for a given set of species across different patches. It provides metrics for mean, minimum, and maximum niche overlap, allowing for a comprehensive assessment of niche sharing within the community.
 
-```@meta
-CurrentModule = MetaCommunityMetrics
-```
 ```@docs
-niche_overlap(abundance::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String}, time::AbstractVector)
+niche_overlap
 ```
 

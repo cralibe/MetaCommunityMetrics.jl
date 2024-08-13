@@ -1,4 +1,7 @@
 # Dispersal-Niche Continuum Index (DNCI) Functions
+```@meta
+CurrentModule = MetaCommunityMetrics
+```
 The Dispersal-Niche Continuum Index (DNCI) functions in MetaCommunityMetrics are adapted from the R package `DNCImper`: Assembly process identification based on SIMPER analysis. These methods, originally developed by Clarke in 1993 and later refined by Gibert & Escarguel in 2019 and Vilmi, Gibert et al. in 2021, offer powerful tools for identifying the processes underlying species assembly in metacommunities.
 
 ## Background
@@ -15,12 +18,9 @@ The DNCI functions in `MetaCommunityMetrics` allow you to analyze the processes 
 - plot_clusters: Visualizes the clusters created, allowing for an intuitive understanding of spatial groupings.
 - DNCI_multigroup: Computes the Dispersal-Niche Continuum Index (DNCI) across multiple groups, helping to quantify the relative influence of niche versus dispersal processes.
 
-```@meta
-CurrentModule = MetaCommunityMetrics
-```
 ```@docs
-create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude::Vector{Float64}, patch::Vector{Int})
-plot_clusters(grouped_data::DataFrame)
-DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true)
+create_clusters
+plot_clusters
+DNCI_multigroup
 ```
 
