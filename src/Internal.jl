@@ -241,7 +241,7 @@ function nullmodel_r0(comm::AbstractMatrix{Int}, times::Int; rng::AbstractRNG = 
     # Generate random binary matrix with preserved row sums
     nullmodel = zeros(Int, n, m)
         for i in 1:n
-            nullmodel[i, shuffle(1:m; rng)[1:row_sums[i]]] .= 1
+            nullmodel[i, shuffle(1:m)[1:row_sums[i]]] .= 1
         end
             nullmodels[t] = nullmodel
         end
