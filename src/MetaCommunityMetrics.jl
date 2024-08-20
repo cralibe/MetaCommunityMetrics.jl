@@ -16,6 +16,7 @@ using DataStructures
 using ProgressMeter
 using Combinatorics
 using Plots
+using Random
 
 
 # Include the internal utilities
