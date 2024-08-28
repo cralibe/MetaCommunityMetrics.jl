@@ -9,7 +9,6 @@ using LinearAlgebra
 using Combinatorics
 using Statistics
 using StatsBase
-using Random
 
 ### Internal function
 ## These functions is for internal use and supports the public functions.
@@ -182,8 +181,8 @@ function check_condition_and_fix(grouped_df)
 end
 
 # A function to generate random binary matrices acoording to the assigned algorithm
-function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for present/absence data
-    
+function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int; rng::AbstractRNG = MersenneTwister()) #only for present/absence data
+
     #Assign for different permutation algorithms
     ALGO = ""
     if fixedmar == "rows"
@@ -201,7 +200,7 @@ function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for p
         throw(ArgumentError("Invalid fixedmar value, can only be `rows`, `columns` or `both`"))
     end
     
-    permat=nullmodel(data, ALGO, Nperm)
+    permat=nullmodel(data, ALGO, Nperm; rng)
     
     if !check_sums(data,permat, ALGO)
         if ALGO == "r0"
@@ -218,20 +217,21 @@ function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for p
 end
     
 # A function to generate null models acoording to the assigned algorithm
-function nullmodel(m::AbstractMatrix{Int}, ALGO::AbstractString, times::Int)
+function nullmodel(m::AbstractMatrix{Int}, ALGO::AbstractString, times::Int; rng::AbstractRNG = MersenneTwister())
     if ALGO == "r0"
-        return nullmodel_r0(m, times)
+        return nullmodel_r0(m, times; rng)
     elseif ALGO == "c0"
-        return nullmodel_c0(m, times)
+        return nullmodel_c0(m, times; rng)
     elseif ALGO == "quasiswap"
-        return nullmodel_quasiswap(m, times)
+        return nullmodel_quasiswap(m, times; rng)
     else
         throw(ArgumentError("Invalid ALGO value"))
     end
 end
 
 # A function to generate random binary matrices with preserved row sums
-function nullmodel_r0(comm::AbstractMatrix{Int}, times::Int)
+function nullmodel_r0(comm::AbstractMatrix{Int}, times::Int; rng::AbstractRNG = MersenneTwister())
+    
     n, m = size(comm)
     nullmodels = Vector{Matrix{Int}}(undef, times)
 
@@ -249,7 +249,10 @@ function nullmodel_r0(comm::AbstractMatrix{Int}, times::Int)
     return nullmodels
 end
 # A function to generate random binary matrices with preserved column sums
-function nullmodel_c0(comm::AbstractMatrix{Int}, times::Int)
+function nullmodel_c0(comm::AbstractMatrix{Int}, times::Int; rng::AbstractRNG = MersenneTwister())
+
+    Random.seed!(rng)
+
     n, m = size(comm)
     nullmodels = Vector{Matrix{Int}}(undef, times)
     
@@ -267,7 +270,10 @@ function nullmodel_c0(comm::AbstractMatrix{Int}, times::Int)
     return nullmodels
 end
 # A function to generate random binary matrices with preserved row and column sums using the Quasiswap algorithm
-function nullmodel_quasiswap(comm::AbstractMatrix{Int}, times::Int)
+function nullmodel_quasiswap(comm::AbstractMatrix{Int}, times::Int; rng::AbstractRNG = MersenneTwister())
+
+    Random.seed!(rng)
+
     n, m = size(comm)
     nullmodels = Vector{Matrix{Int}}(undef, times)
 
@@ -423,7 +429,7 @@ function simper(comm::Matrix, groups::Vector)
 end
 
 # A function to correct dp4 matrix in the PerSIMPER function
-function correct_permutation(comm::Matrix)
+function correct_permutation(comm::Matrix; rng::AbstractRNG = MersenneTwister())
     SWAPcount = 1
     v = true
     dp4 = permatfull(comm, "columns",1) 
@@ -431,7 +437,7 @@ function correct_permutation(comm::Matrix)
     while any(sum(dp4[1], dims=2) .== 0)#if any row sum = 0
         SWAPcount += 1
         v = false
-        dp4 = permatfull(comm, "columns",1)
+        dp4 = permatfull(comm, "columns",1; rng)
 
         if v == false && SWAPcount > 200
             while true
@@ -475,7 +481,7 @@ function correct_permutation(comm::Matrix)
 end
 
 #PerSIMPER function : identification of the main assembly process; adpated from Corentin Gibert
-function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false) #only for present/absence data
+function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false, rng::AbstractRNG = MersenneTwister()) #only for present/absence data
 
     AnaSimp = simper(comm, groups)#Species contribution to average between-group dissimilarity on the compared groups
 
@@ -485,8 +491,8 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
     Pourcent_Contribution = ((Contribution)/sum(Contribution))*100 #Conversion as a percentage of each species' contribution to the OAD
 
     #Randomization of the original community matrix 
-    dp2 = permatfull(comm, "both", Nperm)
-    dp3 = permatfull(comm, "rows", Nperm)
+    dp2 = permatfull(comm, "both", Nperm; rng)
+    dp3 = permatfull(comm, "rows", Nperm; rng)
     
     #Generating matrices that will store the results (the ranked contribution of species to the OAD)
     #of the 1000 permutations of the original community matrix
@@ -499,7 +505,7 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
             println(i)
         end
         
-        dp4 = correct_permutation(comm)
+        dp4 = correct_permutation(comm; rng)
         
         #Identify rows with zero sum
         zero_sum_rows = vec(sum(dp4[1], dims=2) .== 0)
@@ -604,7 +610,7 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
 end
 
 #A function to calculate DNCI for only two groups
-function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) #for presence-absence data only
+function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false, rng::AbstractRNG = MersenneTwister()) #for presence-absence data only
     group=sort(unique(groups))
     if  all(comm .== comm[1]) #check to see if every element in the matrix is the same
         metric = DataFrames.DataFrame(time = current_time,
@@ -619,7 +625,7 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=tru
         if length(group) != 2
             error("length(groups) must be 2")
         end
-        results = PerSIMPER(comm, groups, Nperm; count)
+        results = PerSIMPER(comm, groups, Nperm; count, rng)
         E = results["EcartCarreLog"]
 
         if mean(E.Blue) == -20.0 && std(E.Blue, corrected=true) == 0 #For the special case when permuations from the dispersal and niche model are very similar.

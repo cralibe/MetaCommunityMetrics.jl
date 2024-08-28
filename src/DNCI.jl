@@ -136,7 +136,8 @@ result = DNCI_multigroup(comm, groups, Nperm, count)
 println(result)
 ```
 """
-function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) #for presence-absence data only
+function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true, rng::AbstractRNG = MersenneTwister()) #for presence-absence data only
+    
     group_combinations = collect(combinations(unique(sort(groups)),2))
 
     ddelta = DataFrame()
@@ -179,7 +180,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::B
         fill(group_combinations[i][1], size(splitx[group_combinations[i][1]], 1)),
         fill(group_combinations[i][2], size(splitx[group_combinations[i][2]], 1)))
 
-        DNCI_result = Internal.DNCI_ses(paired_x, group_pair, Nperm; count)
+        DNCI_result = Internal.DNCI_ses(paired_x, group_pair, Nperm; count, rng)
 
         append!(ddelta, DNCI_result, promote=true)
     end
