@@ -41,6 +41,8 @@ jobs:
       - uses: julia-actions/julia-runtest@v1
         with:
           coverage: true  # Enable coverage
+      - name: Install dependencies
+        run: julia -e 'import Pkg; Pkg.instantiate(); Pkg.add("Coverage")'
       - name: Generate LCOV Report
         run: julia -e 'using Coverage; cov = process_folder("test"); LCOV.writefile("lcov.info", cov)'
       - name: Upload Coverage to Codecov
