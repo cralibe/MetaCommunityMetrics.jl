@@ -39,16 +39,15 @@ jobs:
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
-   
-       # Step to generate lcov.info
-      - name: Generate lcov.info from .cov file
-        run: |
-          julia -e 'using Coverage; cov = process_folder("test"); LCOV.writefile("lcov.info", cov)'
-
-      # Upload coverage to Codecov
-      - name: Upload coverage to Codecov
+        with:
+          coverage: true  # Enable coverage
+      - name: Generate LCOV Report
+        run: julia -e 'using Coverage; cov = process_folder("test"); LCOV.writefile("lcov.info", cov)'
+      - name: Upload Coverage to Codecov
         uses: codecov/codecov-action@v3
         with:
           file: lcov.info
           fail_ci_if_error: true
+   
+
 
