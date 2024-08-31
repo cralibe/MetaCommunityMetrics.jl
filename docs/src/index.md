@@ -32,8 +32,8 @@ using MetaCommunityMetrics
 
 ## Function Documentation
 
-- [`BetaDiversity`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/src/BetaDiversity.jl)
-- [`DNCI`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/src/DNCI.jl)
-- [`NicheOverlapIndex`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/src/NicheOverlapIndex.jl)
-- [`OccupiedPatchesProportion`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/src/OccupiedPatchesProportion.jl)
-- [`VariabilityMetrics`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/src/VariabilityMetrics.jl)
+- [`BetaDiversity`](https://cralibe.github.io/MetaCommunityMetrics.jl/BetaDiversity/)
+- [`DNCI`](https://cralibe.github.io/MetaCommunityMetrics.jl/DNCI/)
+- [`NicheOverlapIndex`](https://cralibe.github.io/MetaCommunityMetrics.jl/NicheOverlapIndex/)
+- [`OccupiedPatchesProportion`](https://cralibe.github.io/MetaCommunityMetrics.jl/OccupiedPatchesProportion/)
+- [`VariabilityMetrics`](https://cralibe.github.io/MetaCommunityMetrics.jl/VariabilityMetrics/)
