@@ -1,0 +1,659 @@
+        - # src/Internal.jl
+        - 
+        - module Internal
+        - 
+        - using DataFrames
+        - using Random
+        - using Distances
+        - using LinearAlgebra
+        - using Combinatorics
+        - using Statistics
+        - using StatsBase
+        - 
+        - ### Internal function
+        - ## These functions is for internal use and supports the public functions.
+        - 
+        - ## Internal fuctions for DNCI.jl
+        - # A function assign single site to the nearest group
+        - function assign_single_site_to_nearest_group(grouped_df, single_site, min_group)
+        -     # Extract latitude and longitude of the single site
+        -     single_lat = single_site.Latitude[1]
+        -     single_lon = single_site.Longitude[1]
+        -     
+        -     min_distance = Inf
+        -     nearest_group_id = nothing
+        - 
+        -     # Iterate over other groups
+        -     for row in eachrow(grouped_df[grouped_df.Group .!= min_group, :])
+        -         dist = sqrt((single_lat - row.Latitude)^2 + (single_lon - row.Longitude)^2)
+        -         if dist < min_distance
+        -             min_distance = dist
+        -             nearest_group_id = row.Group
+        -         end
+        -     end
+        - 
+        -     if isnothing(nearest_group_id)
+        -         error("No valid nearest group found for the single site.")
+        -     end
+        - 
+        -     # Assign the single site to the nearest group
+        -     #single_site.Group[1] = nearest_group_id
+        - 
+        -     return nearest_group_id
+        - end
+        - 
+        - # A function that find the nearest site to the group with the fewest sites
+    58143 function find_nearest_site(grouped_df, min_group)
+        -     # Extract coordinates of sites in the group with the fewest species
+    58143     sites_in_min_group = grouped_df[grouped_df.Group .== min_group, :]
+        -     
+        -     # Check if there are any sites in the minimum group
+    58143     if isempty(sites_in_min_group)
+        0         error("No sites found in the minimum group.")
+        -     end
+        - 
+        -     # Calculate centroid of the cluster
+    58143     centroid_latitude = mean(sites_in_min_group.Latitude)
+    58143     centroid_longitude = mean(sites_in_min_group.Longitude)
+        -     
+        -     # Initialize variables to keep track of the nearest site and distance
+    58143     min_distance = Inf
+    58143     site_with_minimum_distance = nothing  # Initialize with nothing to handle cases where no site is found
+        - 
+        -     # Filter for other groups
+    58143     other_group = grouped_df[grouped_df.Group .!= min_group, :]
+        - 
+        -     # Check if there are other groups available
+    58143     if isempty(other_group)
+        0         error("No other groups found to compare.")
+        -     end
+        - 
+        -     # Iterate over each site in other_group
+    58143     for row in eachrow(other_group)
+        -         # Calculate the Euclidean distance between the centroid and the current site
+   962588         dist = sqrt((centroid_latitude - row.Latitude)^2 + (centroid_longitude - row.Longitude)^2)
+        -      
+        -         # Update the nearest site if this site is closer
+   962588         if dist < min_distance
+   201587             min_distance = dist
+   201587             site_with_minimum_distance = row
+        -         end
+   962588     end
+        - 
+        -     # Check if a nearest site was found
+    58143     if isnothing(site_with_minimum_distance)
+        0         error("No nearest site could be determined.")
+        -     end
+        -         
+    58143     return site_with_minimum_distance
+        - end
+        - # A function that checks the condition for the groupings only
+      175 function check_conditions(subset_df::DataFrame)
+      175     unique_groups = unique(subset_df.Group)
+      175     sites_per_group = Dict(g => sum(subset_df.Group .== g) for g in unique_groups)
+      175     richness_per_group = Dict(g => sum(subset_df.Total_Richness[subset_df.Group .== g]) for g in unique_groups)
+      175     for i in unique_groups
+      452         for j in unique_groups
+     1551             if i != j
+     1099                 site_diff_ratio = abs(sites_per_group[i] - sites_per_group[j]) / max(sites_per_group[i], sites_per_group[j])
+     1099                 species_diff_ratio = abs(richness_per_group[i] - richness_per_group[j]) / max(richness_per_group[i], richness_per_group[j])
+     2153                 if site_diff_ratio > 0.3 || species_diff_ratio > 0.4
+       58                     return false
+        -                 end
+        -             end
+     1493         end
+      394     end
+        - 
+      234     if any(value < 5 for value in values(sites_per_group)) || length(unique_groups) <= 1
+        0         return false
+        -     end
+        - 
+      117     return true
+        - end
+        - 
+        - # A function that checks the condition for the groupings and fix the groupings
+      175 function check_condition_and_fix(grouped_df)
+      175     max_iterations = 1000  # Define a maximum number of iterations to prevent infinite loops
+      175     iteration = 0
+        - 
+    58318     while iteration < max_iterations
+    58260         unique_groups = unique(grouped_df.Group)
+    58260         sites_per_group = Dict(g => sum(grouped_df.Group .== g) for g in unique_groups)
+    58260         richness_per_group = Dict(g => sum(grouped_df.Total_Richness[grouped_df.Group .== g]) for g in unique_groups)
+        - 
+    58260         condition_met = true
+        - 
+        -         # Checking conditions including group size constraints within main condition checks
+    58260         for i in unique_groups
+    73056             for j in unique_groups
+   216817                 if i != j
+   143761                     site_diff_ratio = abs(sites_per_group[i] - sites_per_group[j]) / max(sites_per_group[i], sites_per_group[j])
+   143761                     species_diff_ratio = abs(richness_per_group[i] - richness_per_group[j]) / max(richness_per_group[i], richness_per_group[j])                
+        -                 
+   244911                     if site_diff_ratio > 0.3 || species_diff_ratio > 0.4 
+    58143                         condition_met = false
+    58143                         break
+        -                     end
+        -                 end
+        -                 
+   158674                 if !condition_met
+        0                     break
+        -                 end
+   158674             end
+        -             
+    73056             if !condition_met
+    58143                 break
+        -             end
+    14913         end
+        - 
+    87944         if any(value < 5 for value in values(sites_per_group)) || length(unique_groups) <= 1
+    28576             condition_met = false
+        -         end
+        -         
+    58260         if condition_met
+        -             #println("Condition met, stopping iteration.")
+      117             break
+        -         else
+        -              
+        -             #println("Condition not met, adjusting data...") 
+        - 
+    58143             min_group = first(argmin(sites_per_group))
+        - 
+        -             # Check if there is only one site in the minimum group
+    58143             sites_in_min_group = grouped_df[grouped_df.Group .== min_group, :]
+    58143             if nrow(sites_in_min_group) == 1
+        -             # Find the nearest group to this single site
+        0             grouped_df.Group[grouped_df.Group .== min_group, :] .= assign_single_site_to_nearest_group(grouped_df, sites_in_min_group, min_group)
+        -             else
+    58143             site_with_minimum_distance = find_nearest_site(grouped_df, min_group) #Find the nearest site to the group with the fewest sites
+    58143             grouped_df.Group[grouped_df.Patch .== site_with_minimum_distance.Patch] .= min_group #assign the nearest site to the group with the fewest sites
+        -             end
+        -         end
+        - 
+    58143         iteration += 1
+    58143     end
+        - 
+        -     #=if iteration == max_iterations
+        -         println("Reached maximum iterations without meeting condition.")
+        -     end=#
+        - 
+      175     return grouped_df
+        - end
+        - 
+        - # A function to generate random binary matrices acoording to the assigned algorithm
+     6788 function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int; rng::AbstractRNG = MersenneTwister()) #only for present/absence data
+        - 
+        -     #Assign for different permutation algorithms
+     3394     ALGO = ""
+     3394     if fixedmar == "rows"
+        3         ALGO = "r0" #non-sequential algorithm for binary matrices 
+        -         #that preserves the site (row) frequencies.
+     3391     elseif fixedmar == "columns"
+     3388         ALGO= "c0" #non-sequential algorithm for binary matrices 
+        -         #that preserves species frequencies (Jonsson 2001).
+        3     elseif fixedmar == "both"
+        3         ALGO = "quasiswap"#non-sequential algorithm for binary matrices 
+        -         #that implements a method where matrix is first filled honouring 
+        -         #row and column totals, but with integers that may be larger than one. 
+        -         #Then the method inspects random 2*2 matrices and performs a quasiswap on them.
+        -     else
+        0         throw(ArgumentError("Invalid fixedmar value, can only be `rows`, `columns` or `both`"))
+        -     end
+        -     
+     3394     permat=nullmodel(data, ALGO, Nperm; rng)
+        -     
+     3394     if !check_sums(data,permat, ALGO)
+        0         if ALGO == "r0"
+        0             throw(ArgumentError("The row sums do not match with the original matrix."))
+        0         elseif ALGO == "c0"
+        0             throw(ArgumentError("The column sums do not match with the original matrix."))
+        0         elseif ALGO == "both"
+        0             throw(ArgumentError("The row and column sums do not match with the original matrix."))
+        -         end
+        -     end
+        -     
+     3394     return permat
+        -     
+        - end
+        -     
+        - # A function to generate null models acoording to the assigned algorithm
+     6788 function nullmodel(m::AbstractMatrix{Int}, ALGO::AbstractString, times::Int; rng::AbstractRNG = MersenneTwister())
+     3394     if ALGO == "r0"
+        3         return nullmodel_r0(m, times; rng)
+     3391     elseif ALGO == "c0"
+     3388         return nullmodel_c0(m, times; rng)
+        3     elseif ALGO == "quasiswap"
+        3         return nullmodel_quasiswap(m, times; rng)
+        -     else
+        0         throw(ArgumentError("Invalid ALGO value"))
+        -     end
+        - end
+        - 
+        - # A function to generate random binary matrices with preserved row sums
+        6 function nullmodel_r0(comm::AbstractMatrix{Int}, times::Int; rng::AbstractRNG = MersenneTwister())
+        -     
+        3     n, m = size(comm)
+        3     nullmodels = Vector{Matrix{Int}}(undef, times)
+        - 
+        6     for t in 1:times
+        -     # Calculate row sums
+     3000     row_sums = sum(comm, dims=2)
+        -     # Generate random binary matrix with preserved row sums
+   522000     nullmodel = zeros(Int, n, m)
+     6000         for i in 1:n
+   170000             nullmodel[i, shuffle(1:m)[1:row_sums[i]]] .= 1
+    89000         end
+     3000             nullmodels[t] = nullmodel
+     5997         end
+        -     
+        3     return nullmodels
+        - end
+        - # A function to generate random binary matrices with preserved column sums
+     6776 function nullmodel_c0(comm::AbstractMatrix{Int}, times::Int; rng::AbstractRNG = MersenneTwister())
+        - 
+     3388     Random.seed!(rng)
+        - 
+     3388     n, m = size(comm)
+     3388     nullmodels = Vector{Matrix{Int}}(undef, times)
+        -     
+     6776     for t in 1:times
+        -         # Calculate column sums
+     3388         col_sums = sum(comm, dims=1)
+        -         # Generate random binary matrix with preserved column sums
+   591188         nullmodel = zeros(Int, n, m)
+     6776         for j in 1:m
+   191992             nullmodel[shuffle(1:n)[1:col_sums[j]], j] .= 1
+    73508         end
+     3388         nullmodels[t] = nullmodel
+     3388     end
+        -     
+     3388     return nullmodels
+        - end
+        - # A function to generate random binary matrices with preserved row and column sums using the Quasiswap algorithm
+        6 function nullmodel_quasiswap(comm::AbstractMatrix{Int}, times::Int; rng::AbstractRNG = MersenneTwister())
+        - 
+        3     Random.seed!(rng)
+        - 
+        3     n, m = size(comm)
+        3     nullmodels = Vector{Matrix{Int}}(undef, times)
+        - 
+        6     for t in 1:times
+        -         # Initialize nullmodel with the original matrix to preserve sums.
+     3000         nullmodel = copy(comm)
+        -         
+        -         # Randomly select pairs for potential swaps multiple times.
+     6000         for _ in 1:(10 * n * m) # Increase iterations for more thorough randomization.
+        -             # Select two distinct rows and columns at random.
+  5220000             rows = randperm(n)[1:2]
+  5220000             cols = randperm(m)[1:2]
+        -             
+        -             # Extract the 2x2 submatrix.
+  5220000             submatrix = nullmodel[rows, cols]
+        -             
+        -             # Determine if a quasiswap is possible while maintaining row/col sums.
+  6485277             if sum(submatrix) == 2 && (submatrix[1, 1] + submatrix[2, 2] == 2 || submatrix[1, 2] + submatrix[2, 1] == 2)
+        -                 # Perform quasiswap if it leads to a valid configuration.
+   940870                 nullmodel[rows, cols] .= 1 .- submatrix
+        -             end
+ 10437000         end
+        - 
+     3000         nullmodels[t] = nullmodel
+     5997     end
+        -     
+        3     return nullmodels
+        - end
+        - 
+        - # A function to compare the original matrix with the null models in terms of row and column sums
+     3394 function check_sums(original::AbstractMatrix{Int}, nullmodels::Vector{Matrix{Int}}, ALGO::AbstractString)
+     3394     original_row_sums = sum(original, dims=2)
+     3394     original_col_sums = sum(original, dims=1)
+        - 
+     3394     for nullmodel in nullmodels
+     9388         if ALGO == "r0"
+     3000             nullmodel_row_sums = sum(nullmodel, dims=2)
+     6000             if !all(nullmodel_row_sums .== original_row_sums)
+        0                 return false
+        -             end
+     6388         elseif ALGO == "c0"
+     3388             nullmodel_col_sums = sum(nullmodel, dims=1)
+     6776             if !all(nullmodel_col_sums .== original_col_sums)
+        0                 return false
+        -             end
+     3000         elseif ALGO == "quasiswap"
+     3000             nullmodel_row_sums = sum(nullmodel, dims=2)
+     3000             nullmodel_col_sums = sum(nullmodel, dims=1)
+     9000             if !all(nullmodel_row_sums .== original_row_sums) || !all(nullmodel_col_sums .== original_col_sums)
+     3000                 return false
+        -             end
+        -         else
+        0             throw(ArgumentError("Invalid ALGO value: $ALGO"))
+        -         end
+    12782     end
+        - 
+     3394     return true
+        - end
+        - 
+        - # A function to calculate Species contribution to average between-group dissimilarity (adpated from simper() in vegan.R)
+     9003 function simper(comm::Matrix, groups::Vector)
+        -     # Set EPS to square root of machine epsilon
+     9003     EPS = sqrt(eps(Float64))
+        -     # Create a lower triangular matrix indicating whether each element (i, j) satisfies i > j
+     9003     tri = [i > j for i in 1:size(comm, 1), j in 1:size(comm, 1)]
+        -     
+        -     ## Species contributions of differences needed for every species,
+        -     ## but denominator is constant. Bray-Curtis is actually
+        -     ## manhattan/(mean(rowsums)) and this is the way we collect data
+        -     # Calculate row sums to obtain the total abundance of each species across samples
+     9003     rs = sum(comm, dims=2)
+        -     # Calculate pairwise sums and extract lower triangular part
+    18006     pairwise_sums = rs .+ transpose(rs)
+     9003     result = pairwise_sums[tri]
+        - 
+        -     # Initialize an empty array to store species contributions
+     9003     spcontr = Matrix{Float64}(undef, 0, 0)
+        -     
+        -     # Iterate over each pair of sites in the community matrix
+    18006     for col_index in 1:size(comm, 2)
+        -         # Extract the ith column of the community matrix
+   102034         column_i = comm[:, col_index:col_index]
+   102034         ZAP = 1e-15 #a threshold for setting small distances to zero in the distance matrix
+   102034         n_rows = size(column_i, 1)
+ 24119775         d = zeros(n_rows, n_rows)  # Initialize distance matrix
+        -          # Calculate pairwise distances only for the lower triangular part
+   204068         for i in 2:n_rows
+  2927634             for j in 1:i-1
+        -                 # Compute Manhattan distance between rows i and j
+ 11276962                 distance = sum(abs.(column_i[i] .- column_i[j]))
+ 11276962                 d[i, j] = distance < ZAP ? 0 : distance
+ 21090107             end
+  2825600         end
+        -         # Extract the lower triangle of the distance matrix and store it as a vector
+   102034         lower_triangle = d[tril(trues(size(d)), -1)]
+   102034         lower_triangle = reshape(lower_triangle, length(lower_triangle), 1)
+        -         # Concatenate the lower triangle vector to spcontr
+   102034         if isempty(spcontr)
+     9003             spcontr = lower_triangle
+        -         else
+    93031             spcontr = hcat(spcontr, lower_triangle)
+        -         end
+   195065     end
+        -     # Divide every value in each column of spcontr by the corresponding element in result
+    18006     spcontr ./= result
+        - 
+        -     #Get all combinations of 2 elements from unique_group
+     9003     comp = collect(combinations(unique(groups), 2))
+        - 
+     9003     outlist = Dict{String, Any}() # Initialize an empty dictionary to store the output
+        - 
+        - 
+        -     # function to match constrasts
+  2131961     function contrmatch(X, Y, patt)
+        -                 
+  2122958         return (X != Y) && any(in(X, p) for p in patt) && any(in(Y, p) for p in patt)
+        - 
+        -     end
+        -    
+        -     # Initialize an empty vector to store averages
+     9003     average_values = Matrix{Float64}[]
+        -     # Iterate over patterns
+    18006     for k in 1:size(comp, 1)
+        -         # Extract the current pattern
+    18006         patt = comp[k, :]
+        -         # Initialize tmat as an array of booleans
+     9003         tmat = falses(length(groups), length(groups))
+        -         # Compute tmat for the current pattern
+    18006         for i in 1:length(groups)
+   275976             for j in 1:length(groups)
+  2122958                 tmat[i, j] = contrmatch(groups[i], groups[j], patt)
+  4107928             end
+   266973         end
+     9003         take = tmat[tril(trues(size(tmat)), -1)]
+        -         # Initialize an array to store the selected rows for each column
+     9003         selected_rows = Vector[]
+        - 
+        -         # Iterate over each column of spcontr
+    18006         for col in eachcol(spcontr)
+        -             # Extract the selected rows based on the true values in take
+   102034             selected = col[take]
+   102034             push!(selected_rows, selected)
+   195065         end
+     9003         selected_matrix = hcat(selected_rows...)
+        -         
+        -         #Species contribution to average between-group dissimilarity
+     9003         average=mean(selected_matrix, dims=1)
+        - 
+        -         # Store the average for the current k
+     9003         push!(average_values, average)
+     9003     end
+     9003     return average_values
+        - end
+        - 
+        - # A function to correct dp4 matrix in the PerSIMPER function
+     6000 function correct_permutation(comm::Matrix; rng::AbstractRNG = MersenneTwister())
+     3000     SWAPcount = 1
+     3000     v = true
+     3000     dp4 = permatfull(comm, "columns",1) 
+        - 
+     6000     while any(sum(dp4[1], dims=2) .== 0)#if any row sum = 0
+      388         SWAPcount += 1
+      388         v = false
+      388         dp4 = permatfull(comm, "columns",1; rng)
+        - 
+      388         if v == false && SWAPcount > 200
+        0             while true
+        0                 for j in 1:size(dp4[1], 1)
+        0                     if sum(dp4[1][j, :]) == 0 #if any row sum= 0
+        0                         v = false
+        -                         # Find species with the largest dispersal capacity (last quartile)
+        0                         colSums = sum(dp4[1], dims=1)
+        0                         highDispersalCols = findall(vec(colSums) .>= quantile(vec(colSums), 0.75)) #this indicates the position of the species with the largest dispersal capacity
+        0                         tempHighCol = sample(highDispersalCols, 1, replace=false)[1] #a single random element from the array highDispersalCols without the possibility of choosing the same element again
+        -                         # Find rich localities where the species with the largest dispersal capacity is present
+        0                         presentCells = findall(dp4[1][:, tempHighCol] .> 0) #this indicates the position of the sites where the species with the largest dispersal capacity is present
+        0                         richLocalities = 
+        -                         presentCells[findall(sum(dp4[1][presentCells, :], dims=2) .>= 
+        -                         quantile(vec(sum(dp4[1][presentCells, :], dims=2)), 0.75))]
+        - 
+        0                         selectedCell = sample(richLocalities, 1, replace=false)[1]
+        - 
+        -                         # Perform the swap
+        0                         dp4[1][selectedCell, tempHighCol] = 0
+        0                         dp4[1][j, tempHighCol] = 1
+        - 
+        0                         if all(sum(dp4[1], dims=1) .!= 0)
+        0                             v = true
+        0                             break
+        -                         end
+        -                     end
+        0                 end
+        0                 if v
+        0                     break
+        -                 end
+        0             end
+        -         end
+        -         
+      776         if all(sum(dp4[1], dims=1) .!= 0)
+      388             break
+        -         end
+        0     end
+        - 
+     3000     return dp4
+        - end
+        - 
+        - #PerSIMPER function : identification of the main assembly process; adpated from Corentin Gibert
+        6 function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false, rng::AbstractRNG = MersenneTwister()) #only for present/absence data
+        - 
+        3     AnaSimp = simper(comm, groups)#Species contribution to average between-group dissimilarity on the compared groups
+        - 
+        3     Contribution = sort(vec(AnaSimp[1]), rev=true)#Replication in a vector (named 'Contribution') of the sorting 
+        -     #of species by their contribution to overall dissimilarity (OAD)
+        - 
+        6     Pourcent_Contribution = ((Contribution)/sum(Contribution))*100 #Conversion as a percentage of each species' contribution to the OAD
+        - 
+        -     #Randomization of the original community matrix 
+        3     dp2 = permatfull(comm, "both", Nperm; rng)
+        3     dp3 = permatfull(comm, "rows", Nperm; rng)
+        -     
+        -     #Generating matrices that will store the results (the ranked contribution of species to the OAD)
+        -     #of the 1000 permutations of the original community matrix
+    34000     df2 = zeros(Nperm, size(comm, 2))
+    34000     df3 = zeros(Nperm, size(comm, 2))
+    34000     df4 = zeros(Nperm, size(comm, 2))
+        - 
+        6     for i in 1:Nperm
+     3000         if count == true && (i < 100 || i > round(Int, Nperm * 0.9))
+        0             println(i)
+        -         end
+        -         
+     3000         dp4 = correct_permutation(comm; rng)
+        -         
+        -         #Identify rows with zero sum
+     3000         zero_sum_rows = vec(sum(dp4[1], dims=2) .== 0)
+        -         #filter out rows with zero sum
+     3000         dp4_filtered = dp4[1][.!zero_sum_rows, :]
+     3000         dp4_groups=vec(groups[.!zero_sum_rows,:])
+        - 
+        -         #SIMPER analysis performed on each permutated matrix
+     3000         simp2 = simper(dp2[i], groups)
+     3000         simp3 = simper(dp3[i], groups)
+     3000         simp4 = simper(dp4_filtered, dp4_groups)
+        -         #Storage of SIMPER results (ranked contribution to OAD)
+     3000         df2[i,:] = sort(vec(simp2[1]), rev=true)
+     3000         df3[i,:] = sort(vec(simp3[1]), rev=true)
+     3000         df4[i,:] = sort(vec(simp4[1]), rev=true)
+        -         
+     6000         if isnan(sum(df4[i,:]))
+        0         println("There are NaNs in the SIMPER results of the permuted matrix when the column sum is maintained, $i")
+        -         end
+        - 
+        -         #Conversion to percentage of SIMPER results
+     3000         df2[i,:] = (df2[i,:]/sum(df2[i,:])) * 100
+     3000         df3[i,:] = (df3[i,:]/sum(df3[i,:])) * 100
+     3000         df4[i,:] = (df4[i,:]/sum(df4[i,:])) * 100
+     5997     end
+        3     dn2=hcat([sort(df2[:, j]) for j in 1:size(df2, 2)]...)
+        3     dn3=hcat([sort(df3[:, j]) for j in 1:size(df3, 2)]...)
+        3     dn4=hcat([sort(df4[:, j]) for j in 1:size(df4, 2)]...)
+        - 
+        3     up = floor(Int,0.975*Nperm) # ex for 100 permutations it will used 97
+        3     lo = floor(Int,0.025*Nperm) # ex for 100 permutations it will used 2
+        3     med = floor(Int,0.5*Nperm)
+        - 
+        -     ###The following is the calculation of E index
+        - 
+        -     # Ranked % of contribution to OAD of empirical and simulated profiles
+        3     obs = Pourcent_Contribution
+        3     Orange = dn4
+        3     Blue = dn2
+        3     Green = dn3
+        - 
+     3000     VectorEcartCarreOrangeLog = zeros(Nperm)
+     3000     VectorEcartCarreGreenLog = zeros(Nperm)
+     3000     VectorEcartCarreBlueLog = zeros(Nperm)
+        - 
+        6     for i in 1:Nperm
+    34000         SommeEcartCarreOrange = zeros(size(Orange,2))
+    34000         SommeEcartCarreGreen = zeros(size(Green,2))
+    34000         SommeEcartCarreBlue = zeros(size(Blue,2))
+        -         # Computation of square deviations with empirical profile (obs)
+     6000         for j in 1:size(obs,1)
+    68000             SommeEcartCarreOrange[j] = (Orange[i,j] - obs[j])^2
+    68000             SommeEcartCarreGreen[j] = (Green[i,j] - obs[j])^2
+    68000             SommeEcartCarreBlue[j] = (Blue[i,j] - obs[j])^2
+    65000         end
+        -         # Log conversion of the sum of square deviations
+     6000         if sum(SommeEcartCarreOrange)==0
+        0             VectorEcartCarreOrangeLog[i] = log10(sum(SommeEcartCarreOrange)+1.0e-20)
+        -         else
+     3000             VectorEcartCarreOrangeLog[i] = log10(sum(SommeEcartCarreOrange))
+        -         end
+     6000         if sum(SommeEcartCarreGreen)==0
+        0             VectorEcartCarreGreenLog[i] = log10(sum(SommeEcartCarreGreen)+1.0e-20)
+        -         else
+     3000             VectorEcartCarreGreenLog[i] = log10(sum(SommeEcartCarreGreen))
+        -         end
+     6000         if sum(SommeEcartCarreBlue)==0
+        0             VectorEcartCarreBlueLog[i] = log10(sum(SommeEcartCarreBlue)+1.0e-20)
+        -         else
+     3000             VectorEcartCarreBlueLog[i] = log10(sum(SommeEcartCarreBlue))
+        -         end
+     3000         if VectorEcartCarreOrangeLog[i]==-Inf
+        0             println("-Inf in Orange, $i")
+        -         end
+     5997     end
+        - 
+        3     meanCarreOrangeLog = mean(VectorEcartCarreOrangeLog)
+        3     meanCarreGreenLog = mean(VectorEcartCarreGreenLog)
+        3     meanCarreBlueLog = mean(VectorEcartCarreBlueLog)
+        - 
+        3     DataMeanCarreLog = DataFrames.DataFrame(
+        -                         Orange = VectorEcartCarreOrangeLog,
+        -                         Blue = VectorEcartCarreBlueLog,
+        -                         Green = VectorEcartCarreGreenLog)
+        -   
+        6     final_result = Dict("EcartCarreLog" => DataMeanCarreLog,
+        -                         "mat" => comm, 
+        -                         "ContriPercentage" => Pourcent_Contribution,
+        -                         "UpOrange" => dn4[up,:], 
+        -                         "DownOrange" => dn4[lo,:], 
+        -                         "MedOrange" => dn4[med,:],
+        -                         "UpBlue" => dn2[up,:], 
+        -                         "DownBlue" => dn2[lo,:], 
+        -                         "MedBlue" => dn2[med,:],
+        -                         "UpGreen" => dn3[lo,:], 
+        -                         "DownGreen" => dn3[up,:], 
+        -                         "MedGreen" => dn3[med,:],
+        -                         "dnOrange" => dn4, 
+        -                         "dnBlue" => dn2, 
+        -                         "dnGreen" => dn3)
+        3     return final_result
+        - end
+        - 
+        - #A function to calculate DNCI for only two groups
+        6 function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false, rng::AbstractRNG = MersenneTwister()) #for presence-absence data only
+        3     group=sort(unique(groups))
+        6     if  all(comm .== comm[1]) #check to see if every element in the matrix is the same
+        0         metric = DataFrames.DataFrame(time = current_time,
+        -         group1= group[1], 
+        -         group2 = group[2], 
+        -         DNCI = 0, 
+        -         CI_DNCI = 0, 
+        -         S_DNCI = 0)
+        -     else 
+        -     
+        -         # Check if the number of groups is equal to 2
+        3         if length(group) != 2
+        0             error("length(groups) must be 2")
+        -         end
+        3         results = PerSIMPER(comm, groups, Nperm; count, rng)
+        3         E = results["EcartCarreLog"]
+        - 
+        3         if mean(E.Blue) == -20.0 && std(E.Blue, corrected=true) == 0 #For the special case when permuations from the dispersal and niche model are very similar.
+        -             #Calculate SES.d and SES.n based on E values from PERSIMPER function
+        0             SES_d = zeros(size(E.Orange,1))
+        0             SES_n = zeros(size(E.Green,1))
+        -         else
+        -             #Calculate SES.d and SES.n based on E values from PERSIMPER function
+        3             SES_d = zeros(size(E.Orange,1))
+        3             SES_n = zeros(size(E.Green,1))
+        -             #Calculate SES.d and SES.n based on E values from PERSIMPER function
+        3             SES_d = (E.Orange .- mean(E.Blue))/std(E.Blue, corrected=true) #scaled for n-1
+        3             SES_n = (E.Green .- mean(E.Blue))/std(E.Blue, corrected=true)  # greater value of E.Green indicates greater dissimilarity with the niche null model, and dispersal matters more.
+        -         end
+        -         #Calculate DNCI
+        3         DNCI = mean(SES_d)-mean(SES_n)
+        -         #sd related to DNCI
+        3         S_DNCI = sqrt(std(SES_d, corrected=true)^2+std(SES_n, corrected=true)^2)
+        -         #the confidence interval based on S.DNCI
+        3         CI_DNCI = 2*S_DNCI
+        -         #Final results
+        3         metric = DataFrames.DataFrame(group1= group[1], 
+        -                                     group2 = group[2], 
+        -                                     DNCI = DNCI, 
+        -                                     CI_DNCI = CI_DNCI, 
+        -                                     S_DNCI = S_DNCI)
+        -     end                               
+        3     return metric
+        - end
+        - 
+        - end

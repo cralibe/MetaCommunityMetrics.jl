@@ -171,9 +171,8 @@ using .MetaCommunityMetrics.Internal
     unstack(_, :Species, :Presence, fill=0) |>
     leftjoin(_, cluster_result[50], on = [:plot => :Patch], makeunique = true) 
     
-    rng = MersenneTwister(1234)
     DNCI_result = DNCI_multigroup(comm, 
-    presence_df.Group; count = false, rng = rng) 
+    presence_df.Group; count = false) 
     
     #=@test isapprox(DNCI_result, DataFrame(
         group1 = [1, 1, 2],

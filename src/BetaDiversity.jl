@@ -6,7 +6,7 @@
 Calculate beta diversity for a given biodiversity data. This function supports both binary (presence/absence) and quantitative data.
 For binary data, the function calculates Podani family, Jaccard-based indices. For quantitative data, the function calculates Podani family, Ruzicka-based indices.
 The function returns a DataFrame containing the calculated beta diversity indices. 
-Empty patches have to be removed before calculation. Please refer to Example.jl for more details.
+Empty patches have to be removed before calculation.
 
 # Arguments
 - `mat::Matrix`: A matrix where each row represents a sample and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.

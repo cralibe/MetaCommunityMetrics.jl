@@ -1,0 +1,289 @@
+        - # src/VariabilityMetrics.jl 
+        - ###Community Dynamics metrics
+        - 
+        - using DataFrames, Pipe
+        - 
+        - """
+        -     CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}) -> DataFrame
+        - 
+        - Calculates various coefficients of variation (CV) for species and community biomass at both local and regional scales within a metacommunity.
+        - 
+        - # Arguments
+        - - `abundance::AbstractVector`: A vector representing the abundance of species.
+        - - `time::AbstractVector`: A vector representing the time points at which the abundance measurements were taken.
+        - - `patch::Union{AbstractVector, String}`: A vector or single value representing the patch or plot identifier.
+        - - `species::Union{AbstractVector, String}`: A vector or single value representing the species identifier.
+        - 
+        - # Returns
+        - - `CV_summary_df::DataFrame`: A DataFrame containing the following columns:
+        -     - `CV_s_l`: Local-scale average species variability.
+        -     - `CV_s_r`: Regional-scale average species variability.
+        -     - `CV_c_l`: Local-scale average community variability.
+        -     - `CV_c_r`: Regional-scale community variability.
+        - 
+        - # Details
+        - This function calculates the coefficients of variation (CV) for species and community biomass at both local and regional scales. The calculation involves several steps:
+        - 1. **Reorganization of Data:** The input data is organized into a DataFrame with columns for abundance, time, plot, and species.
+        - 2. **Mean Calculations:** Temporal mean species abundance is calculated for each species in each patch, as well as the overall temporal mean biomass.
+        - 3. **Temporal Variance Calculations:** Temporal variance is calculated for each species within patches, for species across patches, for the community biomass within patches, and for the overall metacommunity biomass.
+        - 4. **CV Calculations:** The coefficients of variation are calculated for species and community biomass at both local and regional scales.
+        - 5. **Output:** The results are returned in a DataFrame summarizing the CVs for local and regional scales.
+        - 
+        - # Example
+        - ```julia
+        - abundance = [10, 20, 15, 30, 25]
+        - time = [1, 1, 2, 2, 3]
+        - patch = ["A", "A", "A", "B", "B"]
+        - species = ["Sp1", "Sp2", "Sp1", "Sp2", "Sp1"]
+        - 
+        - CV_summary_df = CV_meta(abundance, time, patch, species)#This will return a DataFrame containing the calculated CV values for the input data.
+        - 
+        - ```
+        - """
+        1 function CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
+        -     ### Reorganize the data to only include the necessary columns
+        1     df = DataFrame(
+        -         Abundance = abundance,
+        -         Time = time,
+        -         plot = patch,
+        -         Species = species
+        -     )
+        - 
+        -     ### Mean calculations
+        -     ## Temporal mean species abundance and number of unique time steps for each species in each patch
+        2     temporal_mean_i_k_abundance = @pipe df |>
+        -         groupby(_, [:Species, :plot]) |>
+        -         combine(_, :Abundance => mean => :mean_abundance)
+        - 
+        -     ## Temporal mean biomass of the whole
+        1     temporal_mean_meta_meta_abundance = sum(temporal_mean_i_k_abundance.mean_abundance)
+        - 
+        -     ### Temporal variance calculations
+        -     # A master dataframe to store the substraction results between the abundance and the mean abundance
+        2     ab_minus_mean_ab_df = @pipe df |>
+        -     leftjoin(_, temporal_mean_i_k_abundance, on = [:Species, :plot]) |>
+        1     transform(_, [:Abundance, :mean_abundance] => ((abundance, mean_abundance) -> (abundance .- mean_abundance)) => :ab_minus_mean_ab)
+        - 
+        -     # A master mutiplication dataframe
+        1     master_multiplication_df = DataFrame(Time = Any[], Species_1 = Any[], Species_2 = Any[], plot_1 = Any[], plot_2 = Any[], multiplication = Float64[])
+        - 
+        1     for time in unique(ab_minus_mean_ab_df.Time)
+       57         new_df = @pipe ab_minus_mean_ab_df |>
+   128516             filter(row -> row[:Time] == time, _) |>
+        -             select(_, Not([:Time, :Abundance, :mean_abundance])) |>
+        -             unstack(_, :Species, :ab_minus_mean_ab)
+        - 
+        -         # Get species columns (excluding the first column which is the plot identifier)
+       19         sp_columns = names(new_df)[2:end]
+        - 
+        -         # Create combinations of species columns
+       19         sp_combinations = [(sp1, sp2) for sp1 in sp_columns for sp2 in sp_columns]
+        - 
+        -         # Loop through each combination of species
+       19         for (sp1, sp2) in sp_combinations
+     6859             sp1_rows = new_df[:, sp1]
+     6859             sp2_rows = new_df[:, sp2]
+        - 
+        -             # Generate all possible pairs of values from sp1_rows and sp2_rows and multiply them
+     6859             for i in 1:length(sp1_rows)
+   128516                 for j in 1:length(sp2_rows)
+  2478626                     plot_1 = new_df.plot[i]
+  2478626                     plot_2 = new_df.plot[j]
+        - 
+  2478626                     plot1_value = sp1_rows[i]
+  2478626                     plot2_value = sp2_rows[j]
+        - 
+        -                     # Calculate v_meta_meta for the current combination
+  2478626                     multiplication = plot1_value * plot2_value
+        - 
+        -                     # Create a row for the current combination
+  2478626                     row = DataFrame(Time = [time], Species_1 = [sp1], Species_2 = [sp2], plot_1 = [plot_1], plot_2 = [plot_2], multiplication = [multiplication])
+        - 
+        -                     # Append the row to the final DataFrame
+  2478626                     append!(master_multiplication_df, row, promote = true)
+  2478626                 end
+   128516             end
+     6859         end
+       19     end
+        - 
+        -     ## Temporal variance of species i in patch k
+        1     v_ii_kk_df = @pipe master_multiplication_df |>
+  2478626         filter(row -> row.Species_1 == row.Species_2, _)|>
+   130454         filter(row -> row.plot_1 == row.plot_2, _)|>
+        -         groupby(_, [:Species_1, :Species_2, :plot_1, :plot_2]) |>
+      456         combine(_, [:multiplication, :Time] => ((multiplication, Time) -> sum(multiplication) / (length(unique(Time)) - 1)) => :v_ii_kk) |>
+      912         transform(_, :v_ii_kk => (ByRow(x -> isnan(x) ? missing : x)) => :v_ii_kk) |> #NaN appers when there is only one time step
+        -         dropmissing(_) #And NaN is removed
+        - 
+        -     ## Temporal variance of metapopulation biomass (all plots) for species i
+        1     v_ii_meta_df = @pipe master_multiplication_df |>
+  2478626         filter(row -> row.Species_1 == row.Species_2, _) |>
+        -         groupby(_, [:Species_1, :Species_2, :plot_1, :plot_2]) |>
+    10944         combine(_, [:multiplication, :Time] => ((multiplication, Time) -> sum(multiplication) / (length(unique(Time)) - 1)) => :v_ii_kl) |>
+        -         groupby(_, [:Species_1, :Species_2]) |>
+        -         combine(_, [:v_ii_kl] => sum => :v_ii_meta) |>
+       38         transform(_, :v_ii_meta => (ByRow(x -> isnan(x) ? missing : x)) => :v_ii_meta) |>
+        -         dropmissing(_)
+        -  
+        - 
+        -     ## Temporal variance of total community biomass of patches k 
+        1     v_meta_kk_df = @pipe master_multiplication_df |>
+  2478626         filter(row -> row.plot_1 == row.plot_2, _)|>
+        -         groupby(_, [:Species_1, :Species_2, :plot_1, :plot_2]) |>
+     8664         combine(_, [:multiplication, :Time] => ((multiplication, Time) -> sum(multiplication) / (length(unique(Time)) - 1)) => :v_ij_kk) |>
+        -         groupby(_, [:plot_1]) |>
+        -         combine(_, [:v_ij_kk] => sum => :v_meta_kk) |>
+       48         transform(_, :v_meta_kk => (ByRow(x -> isnan(x) ? missing : x)) => :v_meta_kk) |>
+        -         dropmissing(_)
+        - 
+        -     ## Temporal variance of the whole metacommunity
+        1     v_meta_meta_df = @pipe master_multiplication_df |>
+        -     groupby(_, [:Species_1, :Species_2, :plot_1, :plot_2]) |>
+   207936     combine(_, [:multiplication, :Time] => ((multiplication, Time) -> sum(multiplication) / (length(unique(Time)) - 1)) => :v_ij_kl) |>
+   415872     transform(_, :v_ij_kl => (ByRow(x -> isnan(x) ? missing : x)) => :v_ij_kl) |>
+        -     dropmissing(_) |>
+        -     combine(_, [:v_ij_kl] => sum => :v_meta_meta)
+        - 
+        -     ### Local-scale average species variability
+        1     CV_s_l = sum(sqrt.(v_ii_kk_df.v_ii_kk)) / temporal_mean_meta_meta_abundance
+        -     ### Regional-scale average species variability
+        1     CV_s_r = sum(sqrt.(v_ii_meta_df.v_ii_meta)) / temporal_mean_meta_meta_abundance
+        -     ### Local-scale average community variability
+        1     CV_c_l = sum(sqrt.(v_meta_kk_df.v_meta_kk)) / temporal_mean_meta_meta_abundance
+        -     ### Regional-scale community variability
+        1     CV_c_r = sqrt(sum(v_meta_meta_df.v_meta_meta)) / temporal_mean_meta_meta_abundance
+        - 
+        1     CV_summary_df = DataFrame(
+        -         CV_s_l = CV_s_l,
+        -         CV_s_r = CV_s_r,
+        -         CV_c_l = CV_c_l,
+        -         CV_c_r = CV_c_r
+        -     )
+        1     return CV_summary_df
+        - end
+        - 
+        - """
+        -     CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}) -> DataFrame
+        - 
+        - Calculates coefficients of variation (CV) for species and community biomass at both local and regional scales within a metacommunity, using a simpler approach optimized for handling larger datasets.
+        - 
+        - # Arguments
+        - - `abundance::AbstractVector`: A vector representing the abundance of species.
+        - - `time::AbstractVector`: A vector representing the time points at which the abundance measurements were taken.
+        - - `patch::Union{AbstractVector, String}`: A vector or single value representing the patch or plot identifier.
+        - - `species::Union{AbstractVector, String}`: A vector or single value representing the species identifier.
+        - 
+        - # Returns
+        - - `CV_summary_df::DataFrame`: A DataFrame containing the following columns:
+        -     - `CV_s_l`: Local-scale average species variability.
+        -     - `CV_s_r`: Regional-scale average species variability.
+        -     - `CV_c_l`: Local-scale average community variability.
+        -     - `CV_c_r`: Regional-scale community variability.
+        - 
+        - # Details
+        - This function is a simplified version of the `CV_meta` function, designed to efficiently handle larger datasets by avoiding complex covariance calculations. The steps include:
+        - 
+        - 1. **Reorganization of Data:** The input data is organized into a DataFrame with columns for abundance, time, plot, and species, and then transformed into a 3D abundance matrix.
+        - 2. **Total Abundance Calculations:** The function calculates total abundances for species across time, within each patch, and for the entire metacommunity.
+        - 3. **Standard Deviation (SD) Calculations:** Temporal standard deviations of abundance are computed for the entire metacommunity, each patch, and each species.
+        - 4. **CV Calculations:** The coefficients of variation are calculated for species and community biomass at both local and regional scales.
+        - 5. **Output:** The results are returned in a DataFrame summarizing the CVs for local and regional scales.
+        - 
+        - # Example
+        - ```julia
+        - abundance = [10, 20, 15, 30, 25]
+        - time = [1, 1, 2, 2, 3]
+        - patch = ["A", "A", "A", "B", "B"]
+        - species = ["Sp1", "Sp2", "Sp1", "Sp2", "Sp1"]
+        - 
+        - CV_summary_df = CV_meta_simple(abundance, time, patch, species) #This will return a DataFrame containing the calculated CV values for the input data.
+        - ```
+        - 
+        - """
+        1 function CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
+        - 
+        -     ###Reorganize the data to only include the necessary columns
+        1     metacomm_df = DataFrames.DataFrame(
+        -         Abundance=abundance,
+        -         Time=time,
+        -         Patch=patch,
+        -         Species=species)
+        -     
+        -     # Get unique values for each column
+        1     species_ids = unique(metacomm_df.Species)
+        1     patches = unique(metacomm_df.Patch)
+        1     times = unique(metacomm_df.Time)
+        -     #Initialize matrices
+        1     num_species = length(unique(metacomm_df.Species))
+        1     num_patches = length(unique(metacomm_df.Patch))
+        1     num_times = length(unique(metacomm_df.Time))
+        - 
+        1     abundance_matrices = zeros(Float64, num_species,num_times, num_patches)
+        - 
+        -     # Fill the abundance matrices
+        2     for (idx, row) in enumerate(eachrow(metacomm_df))
+     6764         i = findfirst(species_ids .== row.Species)
+     6764         j = findfirst(times .== row.Time)
+     6764         k = findfirst(patches .== row.Patch)
+     6764         abundance_matrices[i, j, k] = row.Abundance
+    13527     end
+        - 
+        -     #total abundance of all species in the same time point
+        -         # Initialize a vector to store total abundance of all species in the same time point
+        1         ts_metacom = zeros(num_times)
+        -         # Calculate the total abundance
+        1         for t in 1:num_times
+       19             ts_metacom[t] = sum(abundance_matrices[:, t, :])
+       19         end
+        - 
+        -     # total abundance of all species in the same patch at the same time point
+        -         # Initialize a vector to store the total abundance of all species in the same patch at the same time point
+        1         ts_patch = zeros(Float64,num_times,num_patches)
+        -         # Calculate the total abundance
+        1         for t in 1:num_times
+       19             for k in 1:num_patches
+      456                 ts_patch[t,k] = sum(abundance_matrices[:, t, k])
+      456             end
+       19         end
+        -         
+        -     # total abundance of species i at the same time point 
+        -         # Initialize a vector to store the total abundance of total abundance of species i at the same time point 
+        1         ts_species = zeros(Float64,num_species,num_times)
+        -         # Calculate the total abundance
+        1         for i in 1:num_species
+       19             for t in 1:num_times
+      361                 ts_species[i,t] = sum(abundance_matrices[i, t, :])
+      361             end
+       19         end
+        -     
+        1     sd_metacom = std(ts_metacom, corrected=true)#sd of metacommunity across time
+        1     sd_patch_k = [std(ts_patch[:, k], corrected=true) for k in 1:num_patches]#sd of total abundance across time for every patch
+        1     sd_species_i = [std(ts_species[i, :], corrected=true) for i in 1:num_species]#sd of total number of species i across time
+        -     
+        -     # sd of species i across time for every patch
+        -         #Initialize a vector to store the sd of total abundance of species i at the same time point  
+        1         sd_species_patch_ik = zeros(Float64,num_species,num_patches)
+        -         #Calculate the sd
+        1         for i in 1:num_species
+       19             for k in 1:num_patches
+      456                 sd_species_patch_ik[i,k] = std(abundance_matrices[i,:,k])
+      456             end
+       19         end 
+        -       
+        -     #metacommunity abundance averaged across time
+        1     mean_metacom = mean(ts_metacom)
+        -     
+        1     CV_s_l = sum(sd_species_patch_ik)/mean_metacom
+        1     CV_c_l = sum(sd_patch_k)/mean_metacom
+        1     CV_s_r = sum(sd_species_i)/mean_metacom
+        1     CV_c_r = sd_metacom/mean_metacom
+        -   
+        - 
+        1     CV_summary_df=DataFrames.DataFrame(
+        -         CV_s_l=CV_s_l,
+        -         CV_s_r=CV_s_r,
+        -         CV_c_l=CV_c_l,
+        -         CV_c_r=CV_c_r
+        -     )
+        1     return CV_summary_df
+        - end
