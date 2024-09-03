@@ -46,7 +46,7 @@ jobs:
       - name: Generate LCOV Report
         run: julia -e 'using Coverage; cov = process_folder("test"); LCOV.writefile("lcov.info", cov)'
       - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
+        uses: codecov/codecov-action@v4
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: lcov.info
