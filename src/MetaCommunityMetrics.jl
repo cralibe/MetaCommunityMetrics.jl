@@ -33,8 +33,11 @@ include("VariabilityMetrics.jl")
 
 # Function to load sample data
 function load_sample_data()
-    data_path = CSV.read(joinpath(@__DIR__, "..", "data", "rodent_abundance_data.csv"), DataFrame, skipto=2)#read in the sample data
-    return CSV.read(data_path, DataFrame)
+    file_path = joinpath(dirname(pathof(MetaCommunityMetrics)), "..", "data", "rodent_abundance_data.csv")
+    # Read the CSV file into a DataFrame
+    sample_df = CSV.read(file_path, DataFrame)
+    
+    return sample_df
 end
 
 export 
