@@ -2,7 +2,7 @@
 ```@meta
 CurrentModule = MetaCommunityMetrics
 ```
-The Dispersal-Niche Continuum Index (DNCI) functions in MetaCommunityMetrics are adapted from the R package `DNCImper`: Assembly process identification based on SIMPER analysis. These methods, originally developed by Clarke in 1993 and later refined by Gibert & Escarguel in 2019 and Vilmi, Gibert et al. in 2021, offer powerful tools for identifying the processes underlying species assembly in metacommunities.
+The Dispersal-Niche Continuum Index (DNCI) functions in MetaCommunityMetrics are adapted from the R package `DNCImper`: Assembly process identification based on SIMPER analysis. These methods, originally developed by Clarke(1993) and later refined by Gibert & Escarguel(2019) and Vilmi et al.(2021), offer powerful tools for identifying the processes underlying species assembly in metacommunities.
 
 ## Background
 The DNCI functions is built around the Per-SIMPER and DNCI analyses. PerSIMPER, based on the Similarity Percentage (SIMPER) analysis developed by Clarke (1993), assesses the contribution of individual taxa to overall dissimilarity (OAD) between groups of assemblages. PerSIMPER enhances this by comparing empirical SIMPER plots with randomized plots generated through matrix permutation, which helps identify whether niche, dispersal, or both processes are driving community assembly.

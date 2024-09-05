@@ -20,9 +20,6 @@ The variability metrics are calculated as follows:
 
 The variability metrics `CV_s_l`, `CV_s_r`, `CV_c_l`, and `CV_c_r` are set to zero whenever the mean abundance equals zero at any combination of spatial scales (a patch/all patches) and species number (a species/the whole community). This approach allows us to assess the impact of spatial scale on variability and to understand how different factors influence community dynamics across scales.
 
-### Reference
-- Wang, S., et al. 2019. Stability and synchrony across ecological hierarchies in heterogeneous metacommunities: linking theory to data. Ecography, 42(6): 1200-1211. doi: 10.1111/ecog.04290.
-
 ## The Function
 ```@docs
 CV_meta

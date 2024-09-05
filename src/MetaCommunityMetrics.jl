@@ -31,8 +31,16 @@ include("NicheOverlapIndex.jl")
 include("OccupiedPatchesProportion.jl")
 include("VariabilityMetrics.jl")
 
+# Function to load sample data
+function load_sample_data()
+    data_path = CSV.read(joinpath(@__DIR__, "..", "data", "rodent_abundance_data.csv"), DataFrame, skipto=2)#read in the sample data
+    return CSV.read(data_path, DataFrame)
+end
+
 export 
     beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div, 
     create_clusters, plot_clusters, DNCI_multigroup, 
-    niche_overlap, prop_patches, CV_meta, CV_meta_simple
+    niche_overlap, prop_patches, CV_meta, CV_meta_simple,
+    load_sample_data
+
 end
