@@ -52,7 +52,6 @@ jobs:
           file: lcov.info
           fail_ci_if_error: true
       - name: Check sample data
-        run: julia --project=. -e 'using MetaCommunityMetrics; load_sample_data()'
-    
-
-
+        run: |
+          julia -e 'using Pkg; Pkg.instantiate()'  # This installs artifacts
+          julia --project=. -e 'using MetaCommunityMetrics; artifact_path = artifact"rodent_abundance_data"; println("Artifact path:", artifact_path)'

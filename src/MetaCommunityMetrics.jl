@@ -17,6 +17,7 @@ using ProgressMeter
 using Combinatorics
 using Plots
 using Random
+using Pkg.Artifacts
 
 
 # Include the internal utilities
@@ -33,12 +34,8 @@ include("VariabilityMetrics.jl")
 
 # Function to load sample data
 function load_sample_data()
-    # Determine the absolute path to the data file
-    file_path = joinpath(@__DIR__, "..", "data", "rodent_abundance_data.csv")
-    
-    # Read the CSV file into a DataFrame
-    sample_df = CSV.read(file_path, DataFrame)
-    
+    artifact_path = artifact"rodent_abundance_data"
+    sample_df = CSV.read(joinpath(artifact_path, "rodent_abundance_data.csv"), DataFrame)
     return sample_df
 end
 
