@@ -51,5 +51,8 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: lcov.info
           fail_ci_if_error: true
+      - name: Check sample data
+        run: julia --project=. -e 'using MetaCommunityMetrics; load_sample_data()'
+    
 
 
