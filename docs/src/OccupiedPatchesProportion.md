@@ -18,3 +18,6 @@ After calculating the proportion of patches occupied for each species, the speci
 ```@docs
 prop_patches
 ```
+## References
+- Ehrlén, J., & Eriksson, O. (2000). Dispersal Limitation and Patchy Occupancy in Forest Herbs. Ecology, 81(6), 1667-1674. https://doi.org:https://doi.org/10.1890/0012-9658(2000)081[1667:DLAPOI]2.0.CO;2
+

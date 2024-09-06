@@ -28,6 +28,7 @@ df = DataFrames.DataFrame(
 
 result = niche_overlap(df.N, df.Species, df.Patch, df.Time)
 println(result)
+```
 """
 function niche_overlap(abundance::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String}, time::AbstractVector)
     

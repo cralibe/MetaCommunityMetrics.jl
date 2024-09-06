@@ -38,14 +38,3 @@ using MetaCommunityMetrics
 - [`Occupied Patches Proportion`](https://cralibe.github.io/MetaCommunityMetrics.jl/OccupiedPatchesProportion/)
 - [`Variability Metrics`](https://cralibe.github.io/MetaCommunityMetrics.jl/VariabilityMetrics/)
 
-## References
-1. Legendre, P. Interpreting the replacement and richness difference components of beta diversity. Global Ecology and Biogeography 23, 1324-1334 (2014). https://doi.org:https://doi.org/10.1111/geb.12207
-2. Clarke, K. R. Non-parametric multivariate analyses of changes in community structure. Australian Journal of Ecology 18, 117-143 (1993). https://doi.org:https://doi.org/10.1111/j.1442-9993.1993.tb00438.x
-3. Gibert, C. & Escarguel, G. PER-SIMPER—A new tool for inferring community assembly processes from taxon occurrences. Global Ecology and Biogeography 28, 374-385 (2019). https://doi.org:https://doi.org/10.1111/geb.12859
-4. Vilmi, A. et al. Dispersal–niche continuum index: a new quantitative metric for assessing the relative importance of dispersal versus niche processes in community assembly. Ecography 44, 370-379 (2021). https://doi.org:https://doi.org/10.1111/ecog.05356
-5. MacArthur, R. & Levins, R. The limiting similarity, convergence, and divergence of coexisting species. The American Naturalist 101, 377-385 (1967). 
-6. Pianka, E. R. (1974). "Niche overlap and diffuse competition." Proceedings of the National Academy of Sciences, 71(5), 2141-2145.
-7. Pianka, E. R. (1973). "The Structure of Lizard Communities." Annual Review of Ecology and Systematics, 4(1), 53-74.
-8. Ehrlén, J., & Eriksson, O. (2000). Dispersal Limitation and Patchy Occupancy in Forest Herbs. Ecology, 81(6), 1667-1674. https://doi.org:https://doi.org/10.1890/0012-9658(2000)081[1667:DLAPOI]2.0.CO;2
-9. Wang, S., Lamy, T., Hallett, L. M. & Loreau, M. Stability and synchrony across ecological hierarchies in heterogeneous metacommunities: linking theory to data. Ecography 42, 1200-1211 (2019). https://doi.org:https://doi.org/10.1111/ecog.04290
-

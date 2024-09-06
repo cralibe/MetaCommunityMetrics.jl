@@ -25,3 +25,7 @@ The variability metrics `CV_s_l`, `CV_s_r`, `CV_c_l`, and `CV_c_r` are set to ze
 CV_meta
 CV_meta_simple
 ```
+
+## References
+- Wang, S., Lamy, T., Hallett, L. M. & Loreau, M. Stability and synchrony across ecological hierarchies in heterogeneous metacommunities: linking theory to data. Ecography 42, 1200-1211 (2019). https://doi.org:https://doi.org/10.1111/ecog.04290
+

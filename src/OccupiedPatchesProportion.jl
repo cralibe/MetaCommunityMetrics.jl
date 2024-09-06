@@ -17,16 +17,12 @@ Returns:
                occupied across all species.
 
 Example:
-    ```julia
+```@repl
     presence = [1, 0, 1, 0, 1]
     species = ["A", "A", "B", "B", "C"]
     patch = [1, 2, 1, 2, 1]
     prop_patches(presence, species, patch) 
-    ```
-    1×3 DataFrame
-     Row │ mean_prop_patches  min_prop_patches  max_prop_patches 
-    ─────┼──────────────────────────────────────────────────────
-       1 │              0.666667             0.5                1.0
+````
 """
 function prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})
 

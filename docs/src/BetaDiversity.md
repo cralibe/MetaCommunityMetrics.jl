@@ -18,3 +18,5 @@ beta_diversity
 mean_spatial_beta_div
 mean_temporal_beta_div
 ```
+## References
+- Legendre, P. Interpreting the replacement and richness difference components of beta diversity. Global Ecology and Biogeography 23, 1324-1334 (2014). https://doi.org:https://doi.org/10.1111/geb.12207
