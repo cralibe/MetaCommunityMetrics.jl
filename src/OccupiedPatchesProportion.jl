@@ -22,7 +22,7 @@ Example:
     species = ["A", "A", "B", "B", "C"]
     patch = [1, 2, 1, 2, 1]
     prop_patches(presence, species, patch) 
-````
+```
 """
 function prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})
 
