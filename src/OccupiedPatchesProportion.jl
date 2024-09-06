@@ -17,7 +17,7 @@ Returns:
                occupied across all species.
 
 Example:
-```@repl
+```@example
     presence = [1, 0, 1, 0, 1]
     species = ["A", "A", "B", "B", "C"]
     patch = [1, 2, 1, 2, 1]
