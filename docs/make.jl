@@ -6,6 +6,8 @@ using MetaCommunityMetrics
 makedocs(
     sitename = "MetaCommunityMetrics Documentation",
     modules = [MetaCommunityMetrics],
+    clean = true,
+    doctest = true,  
     format = Documenter.HTML(),
     pages = ["Home" => "index.md",
                 "Beta Diverisity Functions" => "BetaDiversity.md",
