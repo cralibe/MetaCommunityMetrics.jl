@@ -106,7 +106,7 @@ end
 """
     DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000, count::Bool=true) -> DataFrame
 
-Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a metric proposed by Vilmi(2021) (doi: 10.1111/ecog.05356).
+Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a metric proposed by Vilmi(2021) (doi: 10.1111/ecog.05356). When the DNCI value is significantly below zero, dispersal processes are likely the dominant drivers of community composition. In contrast, a DNCI value significantly above zero suggests that niche processes play a primary role in shaping community composition. If the DNCI value is not significantly different from zero, it indicates that dispersal and niche processes contribute equally to variations in community composition.
 
 # Arguments
 - `comm::Matrix`: A presence-absence data matrix where rows represent observations (e.g., sites or samples) and columns represent species.

@@ -17,11 +17,36 @@ Returns:
                occupied across all species.
 
 Example:
-```@example
-    presence = [1, 0, 1, 0, 1]
-    species = ["A", "A", "B", "B", "C"]
-    patch = [1, 2, 1, 2, 1]
-    prop_patches(presence, species, patch) 
+```@jildoctest
+julia> presence = [1, 0, 1, 0, 1]
+5-element Vector{Int64}:
+ 1
+ 0
+ 1
+ 0
+ 1
+julia> species = ["A", "A", "B", "B", "C"]
+5-element Vector{String}:
+ "A"
+ "A"
+ "B"
+ "B"
+ "C"
+
+julia> patch = [1, 2, 1, 2, 1]
+5-element Vector{Int64}:
+ 1
+ 2
+ 1
+ 2
+ 1
+
+julia> prop_patches(presence, species, patch)
+1×3 DataFrame
+ Row │ mean_prop_patches  min_prop_patches  max_prop_patches 
+     │ Float64            Float64           Float64          
+─────┼───────────────────────────────────────────────────────
+   1 │          0.666667               0.5               1.0
 ```
 """
 function prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})
