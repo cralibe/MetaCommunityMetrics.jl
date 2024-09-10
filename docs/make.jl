@@ -5,6 +5,7 @@ using MetaCommunityMetrics
 
 makedocs(
     sitename = "MetaCommunityMetrics Documentation",
+    repo = "https://github.com/cralibe/MetaCommunityMetrics.jl", 
     modules = [MetaCommunityMetrics],
     clean = true,
     doctest = true,  

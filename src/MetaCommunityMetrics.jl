@@ -44,5 +44,4 @@ export
     create_clusters, plot_clusters, DNCI_multigroup, 
     niche_overlap, prop_patches, CV_meta, CV_meta_simple,
     load_sample_data
-
 end
