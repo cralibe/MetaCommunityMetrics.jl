@@ -33,7 +33,7 @@ include("VariabilityMetrics.jl")
 
 # Function to load sample data
 function load_sample_data()
-    path = joinpath(pkgdir(MetaCommunityMetrics), "data", "rodent_abundance_data.csv")
+    path = joinpath(pkgdir(MetaCommunityMetrics), "data", "metacomm_rodent_df.csv")
     sample_df = CSV.read(path, DataFrame)
     return sample_df
 end

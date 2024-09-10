@@ -31,44 +31,54 @@ This function calculates the coefficients of variation (CV) for species and comm
 
 Example
 ```@jildoctest
-julia> abundance = [10, 20, 15, 30, 25]
-5-element Vector{Int64}:
- 10
- 20
- 15
- 30
- 25
+julia> using MetaCommunityMetrics, Pipe
 
-julia> time = [1, 1, 2, 2, 3]
-5-element Vector{Int64}:
- 1
- 1
- 2
- 2
- 3
+julia> df = @pipe load_sample_data() |>
+            stack(_, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :Species, value_name = :Abundance) |>
+            filter(row -> row[:Sampling_date_order] > 107, _)
+5040×7 DataFrame
+  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance 
+      │ Int64  Int64  Int64  Int64                Int64  String   Int64     
+──────┼─────────────────────────────────────────────────────────────────────
+    1 │  2010      1     16                    1      1  BA               0
+    2 │  2010      1     16                    1      2  BA               0
+    3 │  2010      1     16                    1      4  BA               0
+    4 │  2010      1     16                    1      8  BA               0
+    5 │  2010      1     16                    1      9  BA               0
+    6 │  2010      1     16                    1     11  BA               0
+    7 │  2010      1     16                    1     12  BA               0
+    8 │  2010      1     16                    1     14  BA               0
+    9 │  2010      1     16                    1     17  BA               0
+   10 │  2010      1     16                    1     22  BA               0
+   11 │  2010      1     16                    1      3  BA               0
+  ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮
+ 5030 │  2011      2      5                   10     15  SO               0
+ 5031 │  2011      2      5                   10     18  SO               0
+ 5032 │  2011      2      5                   10     19  SO               0
+ 5033 │  2011      2      5                   10     20  SO               0
+ 5034 │  2011      2      5                   10     21  SO               0
+ 5035 │  2011      2      5                   10      5  SO               0
+ 5036 │  2011      2      5                   10      7  SO               0
+ 5037 │  2011      2      5                   10     10  SO               0
+ 5038 │  2011      2      5                   10     16  SO               0
+ 5039 │  2011      2      5                   10     23  SO               0
+ 5040 │  2011      2      5                   10     24  SO               0
+                                                           5018 rows omitted
 
-julia> patch = ["A", "A", "A", "B", "B"]
-5-element Vector{String}:
- "A"
- "A"
- "A"
- "B"
- "B"
-
-julia> species = ["Sp1", "Sp2", "Sp1", "Sp2", "Sp1"]
-5-element Vector{String}:
- "Sp1"
- "Sp2"
- "Sp1"
- "Sp2"
- "Sp1"
-
-julia> CV_summary_df = CV_meta(abundance, time, patch, species)
+julia> CV_summary_df = CV_meta(df.Abundance, df.Sampling_date_order, df.plot, df.Species)
 1×4 DataFrame
  Row │ CV_s_l   CV_s_r    CV_c_l    CV_c_r   
      │ Float64  Float64   Float64   Float64  
 ─────┼───────────────────────────────────────
-   1 │ 1.13137  0.870457  0.282843  0.223607
+   1 │ 1.31254  0.895042  0.842339  0.625182
+
+
+    df = DataFrame(
+        Abundance = df.Abundance,
+        Time = df.Sampling_date_order,
+        plot = df.plot,
+        Species = df.Species
+    )
 
 ```
 """
@@ -229,39 +239,41 @@ This function is a simplified version of the `CV_meta` function, designed to eff
 
 Example
 ```@jildoctest
-julia> abundance = [10, 20, 15, 30, 25]
-5-element Vector{Int64}:
- 10
- 20
- 15
- 30
- 25
+julia> using MetaCommunityMetrics, Pipe
 
-julia> time = [1, 1, 2, 2, 3]
-5-element Vector{Int64}:
- 1
- 1
- 2
- 2
- 3
+julia> df = @pipe load_sample_data() |>
+            stack(_, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :Species, value_name = :Abundance) |>
+            filter(row -> row[:Sampling_date_order] <= 15, _)
+5040×7 DataFrame
+  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance 
+      │ Int64  Int64  Int64  Int64                Int64  String   Int64     
+──────┼─────────────────────────────────────────────────────────────────────
+    1 │  2010      1     16                    1      1  BA               0
+    2 │  2010      1     16                    1      2  BA               0
+    3 │  2010      1     16                    1      4  BA               0
+    4 │  2010      1     16                    1      8  BA               0
+    5 │  2010      1     16                    1      9  BA               0
+    6 │  2010      1     16                    1     11  BA               0
+    7 │  2010      1     16                    1     12  BA               0
+    8 │  2010      1     16                    1     14  BA               0
+    9 │  2010      1     16                    1     17  BA               0
+   10 │  2010      1     16                    1     22  BA               0
+   11 │  2010      1     16                    1      3  BA               0
+  ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮
+ 5030 │  2011      2      5                   10     15  SO               0
+ 5031 │  2011      2      5                   10     18  SO               0
+ 5032 │  2011      2      5                   10     19  SO               0
+ 5033 │  2011      2      5                   10     20  SO               0
+ 5034 │  2011      2      5                   10     21  SO               0
+ 5035 │  2011      2      5                   10      5  SO               0
+ 5036 │  2011      2      5                   10      7  SO               0
+ 5037 │  2011      2      5                   10     10  SO               0
+ 5038 │  2011      2      5                   10     16  SO               0
+ 5039 │  2011      2      5                   10     23  SO               0
+ 5040 │  2011      2      5                   10     24  SO               0
+                                                           5018 rows omitted
 
-julia> patch = ["A", "A", "A", "B", "B"]
-5-element Vector{String}:
- "A"
- "A"
- "A"
- "B"
- "B"
-
-julia> species = ["Sp1", "Sp2", "Sp1", "Sp2", "Sp1"]
-5-element Vector{String}:
- "Sp1"
- "Sp2"
- "Sp1"
- "Sp2"
- "Sp1"
-
-julia> CV_summary_df = CV_meta_simple(abundance, time, patch, species)
+julia> CV_summary_df = CV_meta_simple(df.Abundance, df.Sampling_date_order, df.plot, df.Species)
 1×4 DataFrame
  Row │ CV_s_l   CV_s_r    CV_c_l    CV_c_r  
      │ Float64  Float64   Float64   Float64 
