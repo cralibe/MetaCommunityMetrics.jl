@@ -36,13 +36,17 @@ jobs:
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+      - name: Install dependencies
+        run: julia -e 'import Pkg; Pkg.instantiate(); Pkg.add("Coverage")'
+      - name: Debug Pkg status
+        run: julia -e 'import Pkg; Pkg.status()'
       - uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
+      - name: Debug build
+        run: julia -e 'import Pkg; Pkg.build()'
       - uses: julia-actions/julia-runtest@v1
         with:
           coverage: true  # Enable coverage
-      - name: Install dependencies
-        run: julia -e 'import Pkg; Pkg.instantiate(); Pkg.add("Coverage")'
       - name: Test loading sample data
         run: julia --project=. -e 'using MetaCommunityMetrics; df = load_sample_data(); println(df)'
       - name: Generate LCOV Report
