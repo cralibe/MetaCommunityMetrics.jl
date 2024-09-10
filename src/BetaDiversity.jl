@@ -8,11 +8,11 @@ For binary data, the function calculates Podani family, Jaccard-based indices. F
 The function returns a DataFrame containing the calculated beta diversity indices. 
 Empty patches have to be removed before calculation.
 
-# Arguments
+Arguments
 - `mat::Matrix`: A matrix where each row represents a sample and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.
 - `quant::Bool`: A boolean flag that indicates whether the data is quantitative. Default is `false`, which means the data is treated as binary.
 
-# Returns
+Returns
 - `DataFrame`: A DataFrame with the following columns:
 - `BDtotal`: Total beta diversity, which captures the overall dissimilarity between local communities.
 - `Repl`: Replacement component of diversity, which reflects how many species are different in one site compared to another, ignoring the species that are mere additions or subtractions.
@@ -114,14 +114,14 @@ end
 
 Calculate the mean spatial beta diversity components of a metacommunity over time based on species abundances or presence-absences.
 
-# Arguments
+Arguments
 - `abundance::Vector`: A vector containing abundance data for each species across different samples.
 - `time::Vector`: A vector indicating the time each sample was taken.
 - `patch::Vector`: A vector indicating the spatial location (patch) of each sample.
 - `species::Vector`: A vector indicating the species associated with each abundance entry.
 - `quant::Bool`: Optional boolean flag to indicate whether the data should be treated as quantitative (default is `false`, treating data as binary presence/absence).
     
-# Returns
+Returns
 - `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all time points. Columns are `mean_spatial_BDtotal`, `mean_spatial_Repl`, and `mean_spatial_RichDif`.
 """
 function mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool)
@@ -187,14 +187,14 @@ end
 
 Calculate the mean temporal beta diversity components acorss all patches based on species abundances or presence-absences.
 
-# Arguments
+Arguments
 - `abundance::Vector`: A vector containing abundance data for each species across different samples.
 - `time::Vector`: A vector indicating the time each sample was taken.
 - `patch::Vector`: A vector indicating the spatial location (patch) of each sample.
 - `species::Vector`: A vector indicating the species associated with each abundance entry.
 - `quant::Bool`: Optional boolean flag to indicate whether the data should be treated as quantitative (default is `false`, treating data as binary presence/absence).
     
-# Returns
+Returns
 - `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all pactches. Columns are `mean_temporal_BDtotal`, `mean_temporal_Repl`, and `mean_temporal_RichDif`.
 """
 function mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool)

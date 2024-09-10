@@ -65,7 +65,7 @@ function find_nearest_site(grouped_df, min_group)
 
     # Check if there are other groups available
     if isempty(other_group)
-        error("No other groups found to compare.")
+        error("No other groups are avaliable to compare.")
     end
 
     # Iterate over each site in other_group

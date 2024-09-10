@@ -1,6 +1,0 @@
-[rodent_abundance_data]
-git-tree-sha1 = "69950394018e6683cbd0a3ffce593151a4ecdbb4"
-[[rodent_abundance_data.download]]
-url = "https://github.com/cralibe/MetaCommunityMetrics.jl/raw/main/data/rodent_abundance_data.tar.gz"
-sha256 = "37ae7efa98a27bb3dd17a8a19bd435907d6dc887883bf800ef307520d1180f87"
-

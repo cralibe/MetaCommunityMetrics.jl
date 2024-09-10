@@ -17,7 +17,6 @@ using ProgressMeter
 using Combinatorics
 using Plots
 using Random
-using Pkg.Artifacts
 
 
 # Include the internal utilities
@@ -34,8 +33,8 @@ include("VariabilityMetrics.jl")
 
 # Function to load sample data
 function load_sample_data()
-    artifact_path = artifact"rodent_abundance_data"
-    sample_df = CSV.read(joinpath(artifact_path, "rodent_abundance_data.csv"), DataFrame)
+    path = joinpath(pkgdir(MetaCommunityMetrics), "data", "rodent_abundance_data.csv")
+    sample_df = CSV.read(path, DataFrame)
     return sample_df
 end
 

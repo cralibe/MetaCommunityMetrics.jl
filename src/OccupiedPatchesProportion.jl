@@ -7,16 +7,16 @@ Calculate the proportion of patches occupied by each species and summarize the r
 
 This function takes three vectors: `presence`, `species`, and `patch`, and performs the following steps:
 
-Arguments:
-    presence::AbstractVector: A vector indicating the presence (1) or absence (0) of a species in a patch.
-    species::Union{AbstractVector, String}: A vector of species names.
-    patch::Union{AbstractVector, String}: A vector of patch identifiers.
+Arguments
+- `presence::AbstractVector`: A vector indicating the presence (1) or absence (0) of a species in a patch.
+- `species::Union{AbstractVector, String}`: A vector of species names.
+- `patch::Union{AbstractVector, String}`: A vector of patch identifiers.
 
-Returns:
-    DataFrame: A DataFrame containing the mean, minimum, and maximum proportion of patches 
+Returns
+- `DataFrame`: A DataFrame containing the mean, minimum, and maximum proportion of patches 
                occupied across all species.
 
-Example:
+Example
 ```@jildoctest
 julia> presence = [1, 0, 1, 0, 1]
 5-element Vector{Int64}:
@@ -25,6 +25,7 @@ julia> presence = [1, 0, 1, 0, 1]
  1
  0
  1
+
 julia> species = ["A", "A", "B", "B", "C"]
 5-element Vector{String}:
  "A"
