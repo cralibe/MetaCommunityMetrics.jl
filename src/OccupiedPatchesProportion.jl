@@ -18,36 +18,32 @@ Returns
 
 Example
 ```@jildoctest
-julia> presence = [1, 0, 1, 0, 1]
-5-element Vector{Int64}:
- 1
- 0
- 1
- 0
- 1
+julia> using MetaCommunityMetrics
 
-julia> species = ["A", "A", "B", "B", "C"]
-5-element Vector{String}:
- "A"
- "A"
- "B"
- "B"
- "C"
-
-julia> patch = [1, 2, 1, 2, 1]
-5-element Vector{Int64}:
- 1
- 2
- 1
- 2
- 1
-
-julia> prop_patches(presence, species, patch)
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+                                                                                          
+julia> prop_patches(df.Presence, df.Species, df.plot)
 1×3 DataFrame
  Row │ mean_prop_patches  min_prop_patches  max_prop_patches 
      │ Float64            Float64           Float64          
 ─────┼───────────────────────────────────────────────────────
-   1 │          0.666667               0.5               1.0
+   1 │          0.734649         0.0833333               1.0
 ```
 """
 function prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})

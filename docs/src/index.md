@@ -41,7 +41,7 @@ using MetaCommunityMetrics
 ## Accessing the Sample Data for exploring the functions
 This package utilizes rodent data from the Portal Project, a long-term study of a Chihuahuan desert ecosystem (available at https://github.com/weecology/portalr), as sample data for testing and benchmarking functions between Julia and R. The original rodent abundance data were collected monthly across 24 plots, recording a total of 24 species. For the purposes of this package, the data are filtered for the period from 2010 to 2023, transformed into long format, and species that were not recorded during this period are removed. Additionally, plots with no observations at a given time step are excluded. A new column, `Sampling_date_order`, was created to sequentially number the sampling dates, starting at 1 and continuing through 117, to facilitate analysis. The locations of the plots (`Latitude` and `Longitude`) were simulated for testing the DNCI functions. The scripts to download and wrangle the data can be found here:
 - [Downloading the rodent data](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/data/01_Downloading_Data.R)
-- [Data Wrangling](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/data/02_Data_Wrangling.R)
+- [Data Wrangling](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/data/02_Data_Wrangling.jl)
 
 To assess the sample data, use the following command:
 ```julia
@@ -84,3 +84,4 @@ julia> load_sample_data()
  48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
  48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
                                                                                           48712 rows omitted
+```

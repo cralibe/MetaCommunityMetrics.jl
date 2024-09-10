@@ -18,16 +18,33 @@ The niche overlap index is calculated based on the method suggested by Pianka (1
 - `DataFrame`: A DataFrame containing the overall mean, maximum, and minimum values of the niche overlap index from all species pairs.
 
 # Example
-```julia
-df = DataFrames.DataFrame(
-    N = [10, 20, 5, 15, 10, 30],
-    Species = ["A", "A", "B", "B", "C", "C"],
-    Time = [1, 2, 1, 2, 1, 2],
-    Patch = ["X", "Y", "X", "Y", "X", "Y"]
-)
+```@jildoctest
+julia> using MetaCommunityMetrics
 
-result = niche_overlap(df.N, df.Species, df.Patch, df.Time)
-println(result)
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+                                                                                          
+julia> result = niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order)
+1×3 DataFrame
+ Row │ mean_niche_overlap_index  min_niche_overlap_index  max_niche_overlap_index 
+     │ Float64                   Float64                  Float64                 
+─────┼────────────────────────────────────────────────────────────────────────────
+   1 │                 0.827739                 0.591836                      1.0
 ```
 """
 function niche_overlap(abundance::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String}, time::AbstractVector)

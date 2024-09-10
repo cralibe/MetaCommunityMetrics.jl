@@ -4,19 +4,118 @@
     beta_diversity(mat::Matrix; quant::Bool) -> DataFrame
 
 Calculate beta diversity for a given biodiversity data. This function supports both binary (presence/absence) and quantitative data.
-For binary data, the function calculates Podani family, Jaccard-based indices. For quantitative data, the function calculates Podani family, Ruzicka-based indices.
-The function returns a DataFrame containing the calculated beta diversity indices. 
-Empty patches have to be removed before calculation.
 
 Arguments
 - `mat::Matrix`: A matrix where each row represents a sample and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.
-- `quant::Bool`: A boolean flag that indicates whether the data is quantitative. Default is `false`, which means the data is treated as binary.
+- `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
 
 Returns
 - `DataFrame`: A DataFrame with the following columns:
-- `BDtotal`: Total beta diversity, which captures the overall dissimilarity between local communities.
-- `Repl`: Replacement component of diversity, which reflects how many species are different in one site compared to another, ignoring the species that are mere additions or subtractions.
-- `RichDif`: Richness difference component of diversity, which captures the disparity in biodiversity in terms of the count of species present, without taking into account the specific identities or distributions of those species.
+    - `BDtotal`: Total beta diversity, which captures the overall dissimilarity between local communities.
+    - `Repl`: Replacement component of diversity, which reflects how many species are different in one site compared to another, ignoring the species that are mere additions or subtractions.
+    - `RichDif`: Richness difference component of diversity, which captures the disparity in biodiversity in terms of the count of species present, without taking into account the specific identities or distributions of those species.
+
+Details
+- Empty patches have to be removed before calculation.
+- Species that were not recorded at the given time step have to be removed before calculation.
+- For binary data, the function calculates Podani family, Jaccard-based indices. 
+- For quantitative data, the function calculates Podani family, Ruzicka-based indices.
+
+
+
+
+Example
+```jildoctest
+julia> using MetaCommunityMetrics, Pipe, DataFrames
+
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+
+julia> matrix_with_abundance =  @pipe df |>
+           filter(row -> row[:Sampling_date_order] == 1, _) |> 
+           select(_, Not(:Presence)) |>
+           unstack(_, :Species, :Abundance, fill=0) |>
+           select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> 
+           Matrix(_) |> 
+           x -> x[:, sum(x, dims=1)[1, :] .!= 0] |> 
+           x -> x[vec(sum(x, dims=2)) .!= 0, :]
+15×5 Matrix{Int64}:
+ 1  0  0  0  0
+ 1  0  0  0  0
+ 1  0  0  0  0
+ 2  0  0  0  0
+ 1  0  0  1  0
+ 4  0  0  1  0
+ 1  0  0  0  0
+ 0  1  0  0  1
+ 0  0  0  1  0
+ 0  0  0  2  0
+ 1  0  0  0  0
+ 0  0  0  1  0
+ 0  0  0  0  1
+ 0  0  1  0  0
+ 0  0  0  0  1
+
+julia> matrix_with_presence = @pipe df |> 
+           filter(row -> row[:Sampling_date_order] == 1, _) |> 
+           select(_, Not(:Abundance)) |>
+           unstack(_, :Species, :Presence, fill=0) |> #convert it back to the wide format 
+           select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> 
+           Matrix(_) |>     
+           x -> x[:, sum(x, dims=1)[1, :] .!= 0]
+15×5 Matrix{Int64}:
+ 1  0  0  0  0
+ 1  0  0  0  0
+ 1  0  0  0  0
+ 1  0  0  0  0
+ 1  0  0  1  0
+ 1  0  0  1  0
+ 1  0  0  0  0
+ 0  1  0  0  1
+ 0  0  0  1  0
+ 0  0  0  1  0
+ 1  0  0  0  0
+ 0  0  0  1  0
+ 0  0  0  0  1
+ 0  0  1  0  0
+ 0  0  0  0  1
+
+julia> result_using_abanduce_data_1 = beta_diversity(matrix_with_abundance; quant=true)
+1×3 DataFrame
+ Row │ BDtotal   Repl     RichDif  
+     │ Float64   Float64  Float64  
+─────┼─────────────────────────────
+   1 │ 0.390317   0.2678  0.122517
+
+julia> result_using_abanduce_data_2 = beta_diversity(matrix_with_abundance; quant=false)
+1×3 DataFrame
+ Row │ BDtotal   Repl      RichDif   
+     │ Float64   Float64   Float64   
+─────┼───────────────────────────────
+   1 │ 0.357143  0.284127  0.0730159
+
+julia> result_using_binary_data = beta_diversity(matrix_with_presence; quant=false)
+1×3 DataFrame
+ Row │ BDtotal   Repl      RichDif   
+     │ Float64   Float64   Float64   
+─────┼───────────────────────────────
+   1 │ 0.357143  0.284127  0.0730159
+```
 
 """
 function beta_diversity(mat::Matrix; quant::Bool)
@@ -112,19 +211,71 @@ end
 """
     mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool) -> DataFrame
 
-Calculate the mean spatial beta diversity components of a metacommunity over time based on species abundances or presence-absences.
+Calculate the mean spatial beta diversity components of a metacommunity over time based on species abundances or presence-absences using the function `beta_diversity`.
 
 Arguments
 - `abundance::Vector`: A vector containing abundance data for each species across different samples.
 - `time::Vector`: A vector indicating the time each sample was taken.
 - `patch::Vector`: A vector indicating the spatial location (patch) of each sample.
 - `species::Vector`: A vector indicating the species associated with each abundance entry.
-- `quant::Bool`: Optional boolean flag to indicate whether the data should be treated as quantitative (default is `false`, treating data as binary presence/absence).
-    
+- `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
+
 Returns
 - `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all time points. Columns are `mean_spatial_BDtotal`, `mean_spatial_Repl`, and `mean_spatial_RichDif`.
+
+Details
+- This function uses the `beta_diversity` function to calculate beta diversity components for each time step.
+- This function will remove the empty patches before calculating beta diversity.
+- This function will remove species that were not recorded at the given time step before calculating beta diversity.
+- For binary data, the function calculates Podani family, Jaccard-based indices. 
+- For quantitative data, the function calculates Podani family, Ruzicka-based indices.
+
+Example
+```jildoctest
+julia> using MetaCommunityMetrics, Pipe, DataFrames
+
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+
+julia> result_using_abanduce_data_1 = mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+1×3 DataFrame
+ Row │ mean_spatial_BDtotal  mean_spatial_Repl  mean_spatial_RichDif 
+     │ Float64               Float64            Float64              
+─────┼───────────────────────────────────────────────────────────────
+   1 │             0.353812           0.168584              0.185228
+        
+julia> result_using_abanduce_data_2 = mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+1×3 DataFrame
+ Row │ mean_spatial_BDtotal  mean_spatial_Repl  mean_spatial_RichDif 
+     │ Float64               Float64            Float64              
+─────┼───────────────────────────────────────────────────────────────
+   1 │             0.309073            0.16386              0.145214  
+
+julia> result_using_binary_data = mean_spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
+1×3 DataFrame
+ Row │ mean_spatial_BDtotal  mean_spatial_Repl  mean_spatial_RichDif 
+     │ Float64               Float64            Float64              
+─────┼───────────────────────────────────────────────────────────────
+   1 │             0.309073            0.16386              0.145214
+```
+
 """
-function mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool)
+function mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool)
     #Create the required data frame
     df = DataFrames.DataFrame(
         N=abundance,
@@ -185,17 +336,69 @@ end
 """
     mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool) -> DataFrame
 
-Calculate the mean temporal beta diversity components acorss all patches based on species abundances or presence-absences.
+Calculate the mean temporal beta diversity components acorss all patches based on species abundances or presence-absences using the function `beta_diversity`.
 
 Arguments
 - `abundance::Vector`: A vector containing abundance data for each species across different samples.
 - `time::Vector`: A vector indicating the time each sample was taken.
 - `patch::Vector`: A vector indicating the spatial location (patch) of each sample.
 - `species::Vector`: A vector indicating the species associated with each abundance entry.
-- `quant::Bool`: Optional boolean flag to indicate whether the data should be treated as quantitative (default is `false`, treating data as binary presence/absence).
-    
+- `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
+
 Returns
 - `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all pactches. Columns are `mean_temporal_BDtotal`, `mean_temporal_Repl`, and `mean_temporal_RichDif`.
+
+Details
+- This function uses the `beta_diversity` function to calculate beta diversity components for each patch.
+- This function will remove the empty patches before calculating beta diversity.
+- This function will remove species that were not recorded at the given time step before calculating beta diversity.
+- For binary data, the function calculates Podani family, Jaccard-based indices. 
+- For quantitative data, the function calculates Podani family, Ruzicka-based indices.
+
+Example
+```jildoctest
+julia> using MetaCommunityMetrics, Pipe, DataFrames
+
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+
+julia> result_using_abanduce_data_1 = mean_temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+1×3 DataFrame
+ Row │ mean_temporal_BDtotal  mean_temporal_Repl  mean_temporal_RichDif 
+     │ Float64                Float64             Float64               
+─────┼──────────────────────────────────────────────────────────────────
+   1 │               0.37186            0.152416               0.219444
+        
+julia> result_using_abanduce_data_2 = mean_temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+1×3 DataFrame
+ Row │ mean_temporal_BDtotal  mean_temporal_Repl  mean_temporal_RichDif 
+     │ Float64                Float64             Float64               
+─────┼──────────────────────────────────────────────────────────────────
+   1 │              0.313244            0.139936               0.173309
+
+julia> result_using_binary_data = mean_temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
+1×3 DataFrame
+ Row │ mean_temporal_BDtotal  mean_temporal_Repl  mean_temporal_RichDif 
+     │ Float64                Float64             Float64               
+─────┼──────────────────────────────────────────────────────────────────
+   1 │              0.313244            0.139936               0.173309
+```
+
 """
 function mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool)
     #Create the required data frame

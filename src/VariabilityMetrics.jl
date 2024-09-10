@@ -34,52 +34,30 @@ Example
 julia> using MetaCommunityMetrics, Pipe
 
 julia> df = @pipe load_sample_data() |>
-            stack(_, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :Species, value_name = :Abundance) |>
-            filter(row -> row[:Sampling_date_order] > 107, _)
-5040×7 DataFrame
-  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance 
-      │ Int64  Int64  Int64  Int64                Int64  String   Int64     
-──────┼─────────────────────────────────────────────────────────────────────
-    1 │  2010      1     16                    1      1  BA               0
-    2 │  2010      1     16                    1      2  BA               0
-    3 │  2010      1     16                    1      4  BA               0
-    4 │  2010      1     16                    1      8  BA               0
-    5 │  2010      1     16                    1      9  BA               0
-    6 │  2010      1     16                    1     11  BA               0
-    7 │  2010      1     16                    1     12  BA               0
-    8 │  2010      1     16                    1     14  BA               0
-    9 │  2010      1     16                    1     17  BA               0
-   10 │  2010      1     16                    1     22  BA               0
-   11 │  2010      1     16                    1      3  BA               0
-  ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮
- 5030 │  2011      2      5                   10     15  SO               0
- 5031 │  2011      2      5                   10     18  SO               0
- 5032 │  2011      2      5                   10     19  SO               0
- 5033 │  2011      2      5                   10     20  SO               0
- 5034 │  2011      2      5                   10     21  SO               0
- 5035 │  2011      2      5                   10      5  SO               0
- 5036 │  2011      2      5                   10      7  SO               0
- 5037 │  2011      2      5                   10     10  SO               0
- 5038 │  2011      2      5                   10     16  SO               0
- 5039 │  2011      2      5                   10     23  SO               0
- 5040 │  2011      2      5                   10     24  SO               0
-                                                           5018 rows omitted
-
+                          filter(row -> row[:Sampling_date_order] < 20, _)
+6764×10 DataFrame
+  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+      │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+──────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+    1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+    2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+    3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+    4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+    5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+  ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 6760 │  2012      1     21                   19     21  SH               0         0      36.5     -109.0
+ 6761 │  2012      1     21                   19      5  SH               0         0      35.0     -108.0
+ 6762 │  2012      1     21                   19      7  SH               0         0      35.5     -110.0
+ 6763 │  2012      1     21                   19     23  SH               0         0      36.5     -108.0
+ 6764 │  2012      1     21                   19     24  SH               0         0      36.5     -107.5
+                                                                                          6754 rows omitted
+                                                                                          
 julia> CV_summary_df = CV_meta(df.Abundance, df.Sampling_date_order, df.plot, df.Species)
 1×4 DataFrame
  Row │ CV_s_l   CV_s_r    CV_c_l    CV_c_r   
      │ Float64  Float64   Float64   Float64  
 ─────┼───────────────────────────────────────
-   1 │ 1.31254  0.895042  0.842339  0.625182
-
-
-    df = DataFrame(
-        Abundance = df.Abundance,
-        Time = df.Sampling_date_order,
-        plot = df.plot,
-        Species = df.Species
-    )
-
+   1 │ 1.05607  0.813324  0.656184  0.537299
 ```
 """
 function CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
@@ -242,44 +220,30 @@ Example
 julia> using MetaCommunityMetrics, Pipe
 
 julia> df = @pipe load_sample_data() |>
-            stack(_, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :Species, value_name = :Abundance) |>
-            filter(row -> row[:Sampling_date_order] <= 15, _)
-5040×7 DataFrame
-  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance 
-      │ Int64  Int64  Int64  Int64                Int64  String   Int64     
-──────┼─────────────────────────────────────────────────────────────────────
-    1 │  2010      1     16                    1      1  BA               0
-    2 │  2010      1     16                    1      2  BA               0
-    3 │  2010      1     16                    1      4  BA               0
-    4 │  2010      1     16                    1      8  BA               0
-    5 │  2010      1     16                    1      9  BA               0
-    6 │  2010      1     16                    1     11  BA               0
-    7 │  2010      1     16                    1     12  BA               0
-    8 │  2010      1     16                    1     14  BA               0
-    9 │  2010      1     16                    1     17  BA               0
-   10 │  2010      1     16                    1     22  BA               0
-   11 │  2010      1     16                    1      3  BA               0
-  ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮
- 5030 │  2011      2      5                   10     15  SO               0
- 5031 │  2011      2      5                   10     18  SO               0
- 5032 │  2011      2      5                   10     19  SO               0
- 5033 │  2011      2      5                   10     20  SO               0
- 5034 │  2011      2      5                   10     21  SO               0
- 5035 │  2011      2      5                   10      5  SO               0
- 5036 │  2011      2      5                   10      7  SO               0
- 5037 │  2011      2      5                   10     10  SO               0
- 5038 │  2011      2      5                   10     16  SO               0
- 5039 │  2011      2      5                   10     23  SO               0
- 5040 │  2011      2      5                   10     24  SO               0
-                                                           5018 rows omitted
+                          filter(row -> row[:Sampling_date_order] < 20, _)
+6764×10 DataFrame
+  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+      │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+──────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+    1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+    2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+    3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+    4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+    5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+  ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 6760 │  2012      1     21                   19     21  SH               0         0      36.5     -109.0
+ 6761 │  2012      1     21                   19      5  SH               0         0      35.0     -108.0
+ 6762 │  2012      1     21                   19      7  SH               0         0      35.5     -110.0
+ 6763 │  2012      1     21                   19     23  SH               0         0      36.5     -108.0
+ 6764 │  2012      1     21                   19     24  SH               0         0      36.5     -107.5
+                                                                                          6754 rows omitted
 
 julia> CV_summary_df = CV_meta_simple(df.Abundance, df.Sampling_date_order, df.plot, df.Species)
 1×4 DataFrame
- Row │ CV_s_l   CV_s_r    CV_c_l    CV_c_r  
-     │ Float64  Float64   Float64   Float64 
-─────┼──────────────────────────────────────
-   1 │ 1.52817  0.687386  0.932183  0.31225
-   
+ Row │ CV_s_l   CV_s_r    CV_c_l    CV_c_r   
+     │ Float64  Float64   Float64   Float64  
+─────┼───────────────────────────────────────
+   1 │ 1.20808  0.918862  0.801216  0.665082
 ```
 """
 function CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})

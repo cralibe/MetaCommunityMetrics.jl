@@ -23,86 +23,106 @@ This function performs hierarchical clustering on the geographical coordinates o
 
 Example
 ```jildoctest
-julia> using DataFrames, CSV, MetaCommunityMetrics, Random, Distributions
+julia> using MetaCommunityMetrics, Pipe, DataFrames
 
-julia> path = joinpath(pkgdir(MetaCommunityMetrics), "data
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+                                                                                          
+julia> total_presence_df=@pipe df|>
+                        groupby(_,[:Species,:Sampling_date_order])|>
+                        combine(_,:Presence=>sum=>:Total_Presence) |>
+                        filter(row -> row[:Total_Presence] > 1, _)
+791×3 DataFrame
+ Row │ Species  Sampling_date_order  Total_Presence 
+     │ String3  Int64                Int64          
+─────┼──────────────────────────────────────────────
+   1 │ BA                        41               2
+   2 │ BA                        50               2
+   3 │ BA                        51               8
+   4 │ BA                        52              19
+   5 │ BA                        53              18
+  ⋮  │    ⋮              ⋮                 ⋮
+ 787 │ SH                        56               3
+ 788 │ SH                        60               4
+ 789 │ SH                        70               3
+ 790 │ SH                        73               5
+ 791 │ SH                       117               4
+                                    781 rows omitted
 
-julia> time = vcat(fill(1, 20), fill(2, 20), fill(3, 20)) 
-60-element Vector{Int64}:
- 1
- 1
- 1
- ⋮
- 3
- 3
+julia> total_richness_df= @pipe df|>
+                  innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+                  groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
+                  combine(_,:Presence=>sum=>:Total_Richness)
+2565×5 DataFrame
+  Row │ plot   Sampling_date_order  Longitude  Latitude  Total_Richness 
+      │ Int64  Int64                Float64    Float64   Int64          
+──────┼─────────────────────────────────────────────────────────────────
+    1 │     1                   41     -110.0      35.0               5
+    2 │     2                   41     -109.5      35.0               4
+    3 │     4                   41     -108.5      35.0               2
+    4 │     8                   41     -109.5      35.5               2
+    5 │     9                   41     -109.0      35.5               3
+  ⋮   │   ⋮             ⋮               ⋮         ⋮            ⋮
+ 2561 │     9                  117     -109.0      35.5               5
+ 2562 │    10                  117     -108.5      35.5               3
+ 2563 │    12                  117     -107.5      35.5               6
+ 2564 │    16                  117     -108.5      36.0               4
+ 2565 │    23                  117     -108.0      36.5               5
+                                                       2555 rows omitted
 
-julia> latitude = rand(Uniform(34.0, 35.0), 60)
-60-element Vector{Float64}:
- 34.57986212013413
- 34.41129411794985
- 34.97213608245547
-  ⋮
- 34.57432348527832
- 34.67764990759958
-
-julia> longitude = rand(Uniform(-118.0, -117.0), 60)
-60-element Vector{Float64}:
- -117.91655991056788
- -117.47420433613088
- -117.15935908052177
-    ⋮
- -117.92682908601348
- -117.49824402144651
-
-julia> patch = rand(1:10, 60) 
-60-element Vector{Int64}:
- 10
-  2
-  4
-  ⋮
-  6
-  9
-
-julia> total_richness = rand(5:50, 60)
-60-element Vector{Int64}:
- 37
- 40
-  6
-  ⋮
- 48
- 28
-
-julia> result = create_clusters(time, latitude, longitude, patch, total_richness)
-Dict{Int64, DataFrame} with 3 entries:
-  2 => 20×6 DataFrame…
-  3 => 20×6 DataFrame…
-  1 => 20×6 DataFrame…
+julia> result = create_clusters(total_richness_df.Sampling_date_order, total_richness_df.Latitude, total_richness_df.Longitude, total_richness_df.plot, total_richness_df.Total_Richness)
+Dict{Int64, DataFrame} with 117 entries:
+  5   => 17×6 DataFrame…
+  56  => 23×6 DataFrame…
+  55  => 24×6 DataFrame…
+  35  => 23×6 DataFrame…
+  110 => 24×6 DataFrame…
+  114 => 22×6 DataFrame…
+  60  => 24×6 DataFrame…
+  30  => 20×6 DataFrame…
+  32  => 22×6 DataFrame…
+  6   => 19×6 DataFrame…
+  67  => 23×6 DataFrame…
+  45  => 23×6 DataFrame…
+  117 => 24×6 DataFrame…
+  73  => 23×6 DataFrame…
+  ⋮   => ⋮
 
 julia> println(result[1])
-20×6 DataFrame
+15×6 DataFrame
  Row │ Time   Latitude  Longitude  Patch  Total_Richness  Group 
      │ Int64  Float64   Float64    Int64  Int64           Int64 
 ─────┼──────────────────────────────────────────────────────────
-   1 │     1   34.5799   -117.917     10              37      1
-   2 │     1   34.4113   -117.474      2              40      2
-   3 │     1   34.9721   -117.159      4               6      2
-   4 │     1   34.0149   -117.476      9              45      1
-   5 │     1   34.5204   -117.987      7              29      1
-   6 │     1   34.6396   -117.594      5              18      2
-   7 │     1   34.8396   -117.876     10               7      1
-   8 │     1   34.9671   -117.351      1              34      2
-   9 │     1   34.7898   -117.085      4              23      2
-  10 │     1   34.696    -117.666      9              24      1
-  11 │     1   34.5667   -117.652      8              19      1
-  12 │     1   34.5364   -117.471     10              45      2
-  13 │     1   34.7114   -117.042      5              43      2
-  14 │     1   34.1039   -117.979      2              46      1
-  15 │     1   34.8067   -117.637     10               8      2
-  16 │     1   34.8705   -117.997      7              33      1
-  17 │     1   34.9627   -117.369      9              48      1
-  18 │     1   34.1512   -117.165      4              27      2
-  19 │     1   34.7154   -117.12       8              34      1
-  20 │     1   34.9395   -117.247      5              13      2
+   1 │     1      35.0     -110.0      1               1      1
+   2 │     1      35.0     -109.5      2               1      1
+   3 │     1      35.5     -109.5      8               1      1
+   4 │     1      35.5     -109.0      9               1      1
+   5 │     1      35.5     -108.0     11               2      2
+   6 │     1      36.0     -109.5     14               2      1
+   7 │     1      36.0     -108.0     17               1      2
+   8 │     1      36.5     -108.5     22               1      2
+   9 │     1      35.0     -107.5      6               1      2
+  10 │     1      36.0     -110.0     13               1      1
+  11 │     1      36.0     -109.0     15               1      1
+  12 │     1      36.5     -109.5     20               1      1
+  13 │     1      36.5     -109.0     21               1      2
+  14 │     1      35.0     -108.0      5               0      2
+  15 │     1      36.5     -108.0     23               1      2
 
 ```
 """
@@ -181,114 +201,106 @@ Details
 
 Example
 ```jildoctest
-julia> using MetaCommunityMetrics, Random, Distributions
+julia> using MetaCommunityMetrics, Pipe, DataFrames
 
-julia> Random.seed!(1234)
-TaskLocalRNG()
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+                                                                                          
+julia> total_presence_df=@pipe df|>
+                        groupby(_,[:Species,:Sampling_date_order])|>
+                        combine(_,:Presence=>sum=>:Total_Presence) |>
+                        filter(row -> row[:Total_Presence] > 1, _)
+791×3 DataFrame
+ Row │ Species  Sampling_date_order  Total_Presence 
+     │ String3  Int64                Int64          
+─────┼──────────────────────────────────────────────
+   1 │ BA                        41               2
+   2 │ BA                        50               2
+   3 │ BA                        51               8
+   4 │ BA                        52              19
+   5 │ BA                        53              18
+  ⋮  │    ⋮              ⋮                 ⋮
+ 787 │ SH                        56               3
+ 788 │ SH                        60               4
+ 789 │ SH                        70               3
+ 790 │ SH                        73               5
+ 791 │ SH                       117               4
+                                    781 rows omitted
 
-julia> time = vcat(fill(1, 20), fill(2, 20), fill(3, 20)) 
-60-element Vector{Int64}:
- 1
- 1
- 1
- ⋮
- 3
- 3
+julia> total_richness_df= @pipe df|>
+                  innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+                  groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
+                  combine(_,:Presence=>sum=>:Total_Richness)
+2565×5 DataFrame
+  Row │ plot   Sampling_date_order  Longitude  Latitude  Total_Richness 
+      │ Int64  Int64                Float64    Float64   Int64          
+──────┼─────────────────────────────────────────────────────────────────
+    1 │     1                   41     -110.0      35.0               5
+    2 │     2                   41     -109.5      35.0               4
+    3 │     4                   41     -108.5      35.0               2
+    4 │     8                   41     -109.5      35.5               2
+    5 │     9                   41     -109.0      35.5               3
+  ⋮   │   ⋮             ⋮               ⋮         ⋮            ⋮
+ 2561 │     9                  117     -109.0      35.5               5
+ 2562 │    10                  117     -108.5      35.5               3
+ 2563 │    12                  117     -107.5      35.5               6
+ 2564 │    16                  117     -108.5      36.0               4
+ 2565 │    23                  117     -108.0      36.5               5
+                                                       2555 rows omitted
 
-julia> latitude = rand(Uniform(34.0, 35.0), 60)
-60-element Vector{Float64}:
- 34.57986212013413
- 34.41129411794985
- 34.97213608245547
-  ⋮
- 34.57432348527832
- 34.67764990759958
-
-julia> longitude = rand(Uniform(-118.0, -117.0), 60)
-60-element Vector{Float64}:
- -117.91655991056788
- -117.47420433613088
- -117.15935908052177
-    ⋮
- -117.92682908601348
- -117.49824402144651
-
-julia> patch = rand(1:10, 60) 
-60-element Vector{Int64}:
- 10
-  2
-  4
-  ⋮
-  6
-  9
-
-julia> total_richness = rand(5:50, 60)
-60-element Vector{Int64}:
- 37
- 40
-  6
-  ⋮
- 48
- 28
-
-julia> result = create_clusters(time, latitude, longitude, patch, total_richness)
-Dict{Int64, DataFrame} with 3 entries:
-  2 => 20×6 DataFrame…
-  3 => 20×6 DataFrame…
-  1 => 20×6 DataFrame…
+julia> result = create_clusters(total_richness_df.Sampling_date_order, total_richness_df.Latitude, total_richness_df.Longitude, total_richness_df.plot, total_richness_df.Total_Richness)
+Dict{Int64, DataFrame} with 117 entries:
+  5   => 17×6 DataFrame…
+  56  => 23×6 DataFrame…
+  55  => 24×6 DataFrame…
+  35  => 23×6 DataFrame…
+  110 => 24×6 DataFrame…
+  114 => 22×6 DataFrame…
+  60  => 24×6 DataFrame…
+  30  => 20×6 DataFrame…
+  32  => 22×6 DataFrame…
+  6   => 19×6 DataFrame…
+  67  => 23×6 DataFrame…
+  45  => 23×6 DataFrame…
+  117 => 24×6 DataFrame…
+  73  => 23×6 DataFrame…
+  ⋮   => ⋮
 
 julia> println(result[1])
-20×6 DataFrame
+15×6 DataFrame
  Row │ Time   Latitude  Longitude  Patch  Total_Richness  Group 
      │ Int64  Float64   Float64    Int64  Int64           Int64 
 ─────┼──────────────────────────────────────────────────────────
-   1 │     1   34.5799   -117.917     10              37      1
-   2 │     1   34.4113   -117.474      2              40      2
-   3 │     1   34.9721   -117.159      4               6      2
-   4 │     1   34.0149   -117.476      9              45      1
-   5 │     1   34.5204   -117.987      7              29      1
-   6 │     1   34.6396   -117.594      5              18      2
-   7 │     1   34.8396   -117.876     10               7      1
-   8 │     1   34.9671   -117.351      1              34      2
-   9 │     1   34.7898   -117.085      4              23      2
-  10 │     1   34.696    -117.666      9              24      1
-  11 │     1   34.5667   -117.652      8              19      1
-  12 │     1   34.5364   -117.471     10              45      2
-  13 │     1   34.7114   -117.042      5              43      2
-  14 │     1   34.1039   -117.979      2              46      1
-  15 │     1   34.8067   -117.637     10               8      2
-  16 │     1   34.8705   -117.997      7              33      1
-  17 │     1   34.9627   -117.369      9              48      1
-  18 │     1   34.1512   -117.165      4              27      2
-  19 │     1   34.7154   -117.12       8              34      1
-  20 │     1   34.9395   -117.247      5              13      2
-
-julia> result[1].Latitude
-20-element Vector{Float64}:
- 34.57986212013413
- 34.41129411794985
- 34.97213608245547
-  ⋮
- 34.71535467133175
- 34.93954764192025
-
-julia> result[1].Longitude
-20-element Vector{Float64}:
- -117.91655991056788
- -117.47420433613088
- -117.15935908052177
-    ⋮
- -117.12032610104535
- -117.24728232430559
-
-julia> result[1].Group
-20-element Vector{Int64}:
- 1
- 2
- 2
- ⋮
- 1
- 2
+   1 │     1      35.0     -110.0      1               1      1
+   2 │     1      35.0     -109.5      2               1      1
+   3 │     1      35.5     -109.5      8               1      1
+   4 │     1      35.5     -109.0      9               1      1
+   5 │     1      35.5     -108.0     11               2      2
+   6 │     1      36.0     -109.5     14               2      1
+   7 │     1      36.0     -108.0     17               1      2
+   8 │     1      36.5     -108.5     22               1      2
+   9 │     1      35.0     -107.5      6               1      2
+  10 │     1      36.0     -110.0     13               1      1
+  11 │     1      36.0     -109.0     15               1      1
+  12 │     1      36.5     -109.5     20               1      1
+  13 │     1      36.5     -109.0     21               1      2
+  14 │     1      35.0     -108.0      5               0      2
+  15 │     1      36.5     -108.0     23               1      2
 
 julia> plot_clusters(result[1].Latitude, result[1].Longitude, result[1].Group)
 
@@ -316,11 +328,11 @@ end
 """
     DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) -> DataFrame
 
-Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a metric proposed by Vilmi(2021). The DNCI quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers.
+Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a metric proposed by Vilmi(2021). The DNCI quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. Please remove singletons (taxa/species that occuring at one patch/site within a time step) before using this function.
 
 Arguments
 - `comm::Matrix`: A presence-absence data matrix where rows represent observations (e.g., sites or samples) and columns represent species.
-- `groups::Vector`: A vector indicating the group membership for each row in the `comm` matrix. You can the `create_clusters` function to generate the group membership.
+- `groups::Vector`: A vector indicating the group membership for each row in the `comm` matrix. You can use the `create_clusters` function to generate the group membership.
 - `Nperm::Int=1000`: The number of permutations for significance testing. Default is 1000.
 - `count::Bool=true`: A flag indicating whether the numeber of permutations is printed. Default is `false`.
 
@@ -332,105 +344,141 @@ Details
 - When the DNCI value is significantly below zero, dispersal processes are likely the dominant drivers of community composition. 
 - In contrast, a DNCI value significantly above zero suggests that niche processes play a primary role in shaping community composition. 
 - If the DNCI value is not significantly different from zero, it indicates that dispersal and niche processes contribute equally to variations in community composition.
+- Please remove singletons (taxa/species that occuring at one patch/site within a time step) before using this function.
 
 Example
 ```jildoctest
-julia> using MetaCommunityMetrics, Random, Distributions
+julia> using MetaCommunityMetrics, Pipe, DataFrames
 
-julia> Random.seed!(1234)
-TaskLocalRNG()
+julia> df = load_sample_data()
+48735×10 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
+                                                                                          48725 rows omitted
+                                                                                          
+julia> total_presence_df=@pipe df|>
+                        groupby(_,[:Species,:Sampling_date_order])|>
+                        combine(_,:Presence=>sum=>:Total_Presence) |>
+                        filter(row -> row[:Total_Presence] > 1, _)
+791×3 DataFrame
+ Row │ Species  Sampling_date_order  Total_Presence 
+     │ String3  Int64                Int64          
+─────┼──────────────────────────────────────────────
+   1 │ BA                        41               2
+   2 │ BA                        50               2
+   3 │ BA                        51               8
+   4 │ BA                        52              19
+   5 │ BA                        53              18
+  ⋮  │    ⋮              ⋮                 ⋮
+ 787 │ SH                        56               3
+ 788 │ SH                        60               4
+ 789 │ SH                        70               3
+ 790 │ SH                        73               5
+ 791 │ SH                       117               4
+                                    781 rows omitted   
 
-julia> time = vcat(fill(1, 20), fill(2, 20), fill(3, 20)) 
-60-element Vector{Int64}:
- 1
- 1
- 1
- ⋮
- 3
- 3
+julia> total_richness_df= @pipe df|>
+                  innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+                  groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
+                  combine(_,:Presence=>sum=>:Total_Richness)
+2565×5 DataFrame
+  Row │ plot   Sampling_date_order  Longitude  Latitude  Total_Richness 
+      │ Int64  Int64                Float64    Float64   Int64          
+──────┼─────────────────────────────────────────────────────────────────
+    1 │     1                   41     -110.0      35.0               5
+    2 │     2                   41     -109.5      35.0               4
+    3 │     4                   41     -108.5      35.0               2
+    4 │     8                   41     -109.5      35.5               2
+    5 │     9                   41     -109.0      35.5               3
+  ⋮   │   ⋮             ⋮               ⋮         ⋮            ⋮
+ 2561 │     9                  117     -109.0      35.5               5
+ 2562 │    10                  117     -108.5      35.5               3
+ 2563 │    12                  117     -107.5      35.5               6
+ 2564 │    16                  117     -108.5      36.0               4
+ 2565 │    23                  117     -108.0      36.5               5
+                                                       2555 rows omitted
 
-julia> latitude = rand(Uniform(34.0, 35.0), 60)
-60-element Vector{Float64}:
- 34.57986212013413
- 34.41129411794985
- 34.97213608245547
-  ⋮
- 34.57432348527832
- 34.67764990759958
-
-julia> longitude = rand(Uniform(-118.0, -117.0), 60)
-60-element Vector{Float64}:
- -117.91655991056788
- -117.47420433613088
- -117.15935908052177
-    ⋮
- -117.92682908601348
- -117.49824402144651
-
-julia> patch = rand(1:10, 60) 
-60-element Vector{Int64}:
- 10
-  2
-  4
-  ⋮
-  6
-  9
-
-julia> total_richness = rand(5:50, 60)
-60-element Vector{Int64}:
- 37
- 40
-  6
-  ⋮
- 48
- 28
-
-julia> result = create_clusters(time, latitude, longitude, patch, total_richness)
-Dict{Int64, DataFrame} with 3 entries:
-  2 => 20×6 DataFrame…
-  3 => 20×6 DataFrame…
-  1 => 20×6 DataFrame…
+julia> clustering_result = create_clusters(total_richness_df.Sampling_date_order, total_richness_df.Latitude, total_richness_df.Longitude, total_richness_df.plot, total_richness_df.Total_Richness)
+Dict{Int64, DataFrame} with 117 entries:
+  5   => 17×6 DataFrame…
+  56  => 23×6 DataFrame…
+  55  => 24×6 DataFrame…
+  35  => 23×6 DataFrame…
+  110 => 24×6 DataFrame…
+  114 => 22×6 DataFrame…
+  60  => 24×6 DataFrame…
+  30  => 20×6 DataFrame…
+  32  => 22×6 DataFrame…
+  6   => 19×6 DataFrame…
+  67  => 23×6 DataFrame…
+  45  => 23×6 DataFrame…
+  117 => 24×6 DataFrame…
+  73  => 23×6 DataFrame…
+  ⋮   => ⋮
 
 julia> println(result[1])
-20×6 DataFrame
+15×6 DataFrame
  Row │ Time   Latitude  Longitude  Patch  Total_Richness  Group 
      │ Int64  Float64   Float64    Int64  Int64           Int64 
 ─────┼──────────────────────────────────────────────────────────
-   1 │     1   34.5799   -117.917     10              37      1
-   2 │     1   34.4113   -117.474      2              40      2
-   3 │     1   34.9721   -117.159      4               6      2
-   4 │     1   34.0149   -117.476      9              45      1
-   5 │     1   34.5204   -117.987      7              29      1
-   6 │     1   34.6396   -117.594      5              18      2
-   7 │     1   34.8396   -117.876     10               7      1
-   8 │     1   34.9671   -117.351      1              34      2
-   9 │     1   34.7898   -117.085      4              23      2
-  10 │     1   34.696    -117.666      9              24      1
-  11 │     1   34.5667   -117.652      8              19      1
-  12 │     1   34.5364   -117.471     10              45      2
-  13 │     1   34.7114   -117.042      5              43      2
-  14 │     1   34.1039   -117.979      2              46      1
-  15 │     1   34.8067   -117.637     10               8      2
-  16 │     1   34.8705   -117.997      7              33      1
-  17 │     1   34.9627   -117.369      9              48      1
-  18 │     1   34.1512   -117.165      4              27      2
-  19 │     1   34.7154   -117.12       8              34      1
-  20 │     1   34.9395   -117.247      5              13      2
+   1 │     1      35.0     -110.0      1               1      1
+   2 │     1      35.0     -109.5      2               1      1
+   3 │     1      35.5     -109.5      8               1      1
+   4 │     1      35.5     -109.0      9               1      1
+   5 │     1      35.5     -108.0     11               2      2
+   6 │     1      36.0     -109.5     14               2      1
+   7 │     1      36.0     -108.0     17               1      2
+   8 │     1      36.5     -108.5     22               1      2
+   9 │     1      35.0     -107.5      6               1      2
+  10 │     1      36.0     -110.0     13               1      1
+  11 │     1      36.0     -109.0     15               1      1
+  12 │     1      36.5     -109.5     20               1      1
+  13 │     1      36.5     -109.0     21               1      2
+  14 │     1      35.0     -108.0      5               0      2
+  15 │     1      36.5     -108.0     23               1      2
 
+julia> comm= @pipe df|>
+                  innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+                  filter(row -> row[:Sampling_date_order] == 1, _) |>
+                  select(_, [:plot, :Species, :Presence]) |>
+                  unstack(_, :Species, :Presence, fill=0) |>
+                  select(_, Not(:plot)) |>
+                  Matrix(_)
+15×3 Matrix{Int64}:
+ 1  0  0
+ 1  0  0
+ 1  0  0
+ 1  0  0
+ 1  1  0
+ 1  1  0
+ 1  0  0
+ 0  0  1
+ 0  1  0
+ 0  1  0
+ 1  0  0
+ 0  1  0
+ 0  0  1
+ 0  0  0
+ 0  0  1
 
-comm = [1 0 0 1 0;
-        1 1 0 0 0;
-        0 1 1 0 0;
-        0 0 1 1 1;
-        1 0 0 0 1;
-        0 1 1 0 1]
-
-groups = ["A", "A", "B", "B", "C", "C"]
-Nperm = 1000
-count = false
-
-result = DNCI_multigroup(comm, groups, Nperm; count)
-println(result)
+julia> result = DNCI_multigroup(comm, clustering_result[1].Group, 1000; count = false)
+1×5 DataFrame
+ Row │ group1  group2  DNCI       CI_DNCI  S_DNCI  
+     │ Int64   Int64   Float64    Float64  Float64 
+─────┼─────────────────────────────────────────────
+   1 │      1       2  -0.836142  5.02335  2.51167
 ```
 """
 function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) #for presence-absence data only
