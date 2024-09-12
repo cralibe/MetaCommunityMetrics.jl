@@ -24,7 +24,7 @@ jobs:
         os: [ubuntu-latest]  # OS (you can add others like windows-latest and macos-latest)
         arch: [x64]  # Architecture
         dataframes-version: ['1.0', '1.6']  # DataFrames version range ">= 1.0, < 2.0"
-        distributions-version: ['0.25', '0.34']  # Distributions version range ">= 0.25, < 1.0"
+        distributions-version: ['0.16', '0.25.111']  # Distributions version range ">= 0.25, < 1.0"
         statsbase-version: ['0.34', '0.34.3']  # StatsBase version range ">= 0.34, < 1.0"
     steps:
       - uses: actions/checkout@v4
