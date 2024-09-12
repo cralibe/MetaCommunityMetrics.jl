@@ -35,7 +35,7 @@ Below is a comparison of the benchmarking results between my Julia package and f
 | mean_temporal_beta_div_1 | 623.162              | 213.450              | 48735, 10              |
 | mean_temporal_beta_div_2 | 141.001              | 76.52                | 48735, 10              |
 | mean_temporal_beta_div_3 | 141.477              | 76.52                | 48735, 10              |
-| cluster_result           | 1.491                | 860.28               | 48735, 10              |
+| cluster_result           | 1.491                | 860.28               | 2565, 5                |
 
 
 

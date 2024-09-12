@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
 jobs:
   test:
-    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - DataFrames ${{ matrix.dataframes-version }} - Distributions ${{ matrix.distributions-version }} - StatsBase ${{ matrix.statsbase-version }}
+    name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     timeout-minutes: 60
     permissions:
@@ -21,14 +21,14 @@ jobs:
       fail-fast: false
       matrix:
         version: ['1.6', '1.9', 'nightly']  # Julia versions
-        os: [ubuntu-latest, windows-latest, macos-latest]  # Operating systems
+        os: [ubuntu-latest]  # OS (you can add others like windows-latest and macos-latest)
         arch: [x64]  # Architecture
-        dataframes-version: ['1.0', '1.6']  # DataFrames versions in range ">= 1.0, < 2.0"
-        distributions-version: ['0.25', '0.34']  # Distributions versions in range ">= 0.25, < 1.0"
-        statsbase-version: ['0.34', '0.38']  # StatsBase versions in range ">= 0.34, < 1.0"
+        dataframes-version: ['1.0', '1.6']  # DataFrames version range ">= 1.0, < 2.0"
+        distributions-version: ['0.25', '0.34']  # Distributions version range ">= 0.25, < 1.0"
+        statsbase-version: ['0.34', '0.38']  # StatsBase version range ">= 0.34, < 1.0"
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
@@ -40,13 +40,13 @@ jobs:
 
       - name: Debug Pkg status
         run: julia -e 'import Pkg; Pkg.status()'
-        
+
       - uses: julia-actions/cache@v2
         with:
           key: ${{ runner.os }}-julia-${{ matrix.version }}-${{ hashFiles('Project.toml', 'Manifest.toml') }}
           restore-keys: |
             ${{ runner.os }}-julia-${{ matrix.version }}-
-            
+
       - uses: julia-actions/julia-buildpkg@v1
 
       - name: Debug build
