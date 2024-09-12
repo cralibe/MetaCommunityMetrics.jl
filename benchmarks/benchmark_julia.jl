@@ -7,24 +7,40 @@ using MetaCommunityMetrics
 using DataFrames
 using Pipe
 
-
+#Read in the sample data
+df = load_sample_data()
     
-# Benchmarking Julia function
-# Test the beta_diversity function
-# For abundance data
-@benchmark beta_diversity(sample_matrix_abundance; quant=true)
+# Benchmarking Julia functions
 
-# For presence-absence data
-@benchmark beta_diversity(sample_matrix_abundance; quant=false)
-@benchmark beta_diversity(sample_matrix_presence; quant=false)
+## Benchmark the beta diversity functions
+### The abundance matrix
+matrix_with_abundance =  @pipe df |>
+           filter(row -> row[:Sampling_date_order] == 50, _) |> 
+           select(_, Not(:Presence)) |>
+           unstack(_, :Species, :Abundance, fill=0) |>
+           select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> 
+           Matrix(_) |> 
+           x -> x[:, sum(x, dims=1)[1, :] .!= 0] |> 
+           x -> x[vec(sum(x, dims=2)) .!= 0, :]
+### The binary matrix
+matrix_with_presence = @pipe df |> 
+filter(row -> row[:Sampling_date_order] == 50, _) |> 
+select(_, Not(:Abundance)) |>
+unstack(_, :Species, :Presence, fill=0) |> #convert it back to the wide format 
+select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> 
+Matrix(_) |>     
+x -> x[:, sum(x, dims=1)[1, :] .!= 0]
 
-# Test the mean_spatial_beta_div function
-@benchmark mean_spatial_beta_div(metacomm_df.Abundance, 
-        metacomm_df.Sampling_date_order, 
-        metacomm_df.plot, 
-        metacomm_df.Species; quant=true)
+#### Benchmark the `beta_diversity` function
+beta_diversity_1 = @benchmark beta_diversity(matrix_with_abundance; quant=true)
+beta_diversity_2 = @benchmark beta_diversity(matrix_with_abundance; quant=false)
+beta_diversity_3 = @benchmark beta_diversity(matrix_with_presence; quant=false)
 
-# Test the mean_temporal_beta_div function
+# Benchmark the mean_spatial_beta_div function
+mean_spatial_beta_div_1 = @benchmark mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+mean_spatial_beta_div_2 = @benchmark mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+mean_spatial_beta_div_3 = @benchmark mean_spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
+# Benchmark the mean_temporal_beta_div function
 @benchmark mean_temporal_beta_div(metacomm_df.Abundance, 
         metacomm_df.Sampling_date_order, 
         metacomm_df.plot, 
