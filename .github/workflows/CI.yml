@@ -37,7 +37,7 @@ jobs:
       - name: Install dependencies
         run: |
           julia -e 'import Pkg; Pkg.instantiate(); Pkg.add(Pkg.PackageSpec(name="DataFrames", version="${{ matrix.dataframes-version }}")); Pkg.add(Pkg.PackageSpec(name="Distributions", version="${{ matrix.distributions-version }}")); Pkg.add(Pkg.PackageSpec(name="StatsBase", version="${{ matrix.statsbase-version }}")); Pkg.add("Coverage")'
-        
+                
       - name: Debug Pkg status
         run: julia -e 'import Pkg; Pkg.status()'
 
