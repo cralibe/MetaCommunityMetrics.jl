@@ -26,8 +26,6 @@ jobs:
         dataframes-version: ['1.0', '1.6']  # DataFrames versions in range ">= 1.0, < 2.0"
         distributions-version: ['0.25', '0.34']  # Distributions versions in range ">= 0.25, < 1.0"
         statsbase-version: ['0.34', '0.38']  # StatsBase versions in range ">= 0.34, < 1.0"
-      allow_failures:
-        - version: 'nightly'  # Allow failures on nightly version
     steps:
       - uses: actions/checkout@v4
       
