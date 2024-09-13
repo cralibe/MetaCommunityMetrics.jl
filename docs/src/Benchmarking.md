@@ -34,11 +34,11 @@ Below is a comparison of the benchmarking results between my Julia package and f
 | mean_spatial_beta_div_2  | 625.321              | 213.450              | 48735, 10              |
 | mean_spatial_beta_div_3  | 623.162              | 213.450              | 48735, 10              |
 | mean_temporal_beta_div_1 | 623.162              | 213.450              | 48735, 10              |
-| mean_temporal_beta_div_2 | 141.001              | 76.52                | 48735, 10              |
-| mean_temporal_beta_div_3 | 141.477              | 76.52                | 48735, 10              |
-| cluster_result           | 1.491                | 860.28               | 2565, 5                |
-| plot_clusters_result     | 2.852                | 816.60               | 15, 3                  |
-| DNCI_multigroup_result   | 188.369              | 816.60               | 15, 4                  |
+| mean_temporal_beta_div_2 | 141.001              | 76.520               | 48735, 10              |
+| mean_temporal_beta_div_3 | 141.477              | 76.520               | 48735, 10              |
+| cluster_result           | 1.491                | 860.280              | 2565, 5                |
+| plot_clusters_result     | 2.852                | 816.600              | 15, 3                  |
+| niche_overlap_result     | 6823.000             | 118.280              | 48735, 4               |
 
 
 
