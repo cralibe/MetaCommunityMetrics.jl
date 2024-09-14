@@ -112,3 +112,14 @@ open("julia_benchmark_results.txt", "w") do f
     write(f, string(julia_results))
 end
 
+
+proportion_use_df=
+@pipe df[:,[:Abundance, :Species, :plot, :Sampling_date_order]] |>#select column N, Species, Patch, Time and env
+groupby(_, [:Species]) |>
+transform(_, :Abundance => (x -> x ./ sum(x)) => :relativ_N) |> #relative abundance (proportion use) of species i in patch k at time t across all sites and times
+groupby(_, [:Species]) |>
+transform(_, :Abundance => sum => :total_N)|> #total abundance of species i in all sites and times for cross checking
+select(_, [:Species,:relativ_N, :plot ,:Sampling_date_order]) |>#select columns Species, total_N, relativ_N, env
+unstack(_, :Species,:relativ_N) |> #pivot wider
+_[!, Not(:plot, :Sampling_date_order)] |> # only retain the Proportional use values for each species
+permutedims(_)
