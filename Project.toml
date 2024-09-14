@@ -26,8 +26,8 @@ StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 
 [compat]
 julia = "1"
-CSV = ">= 0.10, 1"
-Clustering = ">= 0.15, 1"
+CSV = "0.10, 1"
+Clustering = "0.15, 1"
 Combinatorics = "1"
 DataFrames = "1"
 DataStructures = "0.18"
