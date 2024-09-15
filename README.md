@@ -1,5 +1,5 @@
 <p align="center" style="display: flex; align-items: center; justify-content: center;">
-  <img src="docs/src/assets/MetaCommunityMetrics_logo.png" alt="Logo" width="200" height="200" style="margin-right: 20px;">
+  <img src="docs/src/assets/MetaCommunityMetrics_logo.png" alt="Logo" width="200" height="200" style="margin-right: 50px;">
   <span style="font-size: 2em; font-weight: bold;">MetaCommunityMetrics</span>
 </p>
 
