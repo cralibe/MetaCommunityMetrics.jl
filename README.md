@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/src/assets/MetaCommunityMetrics_logo.png" alt="Logo" width="1000" height="1000">
+  <img src="docs/src/assets/MetaCommunityMetrics_logo.png" alt="Logo" width="500" height="500">
   <h1>MetaCommunityMetrics</h1>
 </p>
 
