@@ -1,6 +1,6 @@
 <p align="center" style="display: flex; align-items: center; justify-content: center;">
-  <img src="docs/src/assets/MetaCommunityMetrics_logo.png" alt="Logo" width="200" height="200" style="margin-right: 50px;">
-  <span style="font-size: 2em; font-weight: bold;">MetaCommunityMetrics</span>
+  <img src="docs/src/assets/MetaCommunityMetrics_logo.png" alt="Logo" width="200" height="200" style="margin-right: 20px;">
+  <span style="font-size: 4em; font-weight: bold;">MetaCommunityMetrics</span>
 </p>
 
 `MetaCommunityMetrics` is a collection of tools and utilities for analyzing meta-communities in Julia. The current version is compatible with `julia` version 1.9.3.
