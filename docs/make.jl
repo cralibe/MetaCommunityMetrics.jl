@@ -10,7 +10,6 @@ makedocs(
     clean = true,
     doctest = true,  
     format = Documenter.HTML(),
-    logo = "assets/MetaCommunityMetrics_logo.png",  
     pages = ["Home" => "index.md",
                 "Beta Diverisity Functions" => "BetaDiversity.md",
                 "Dispersal-Niche Continuum Index (DNCI) Functions" => "DNCI.md",
