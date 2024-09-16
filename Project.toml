@@ -40,7 +40,7 @@ ProgressMeter = "1.10"
 SortingAlgorithms = "1.1"
 SpecialFunctions = "1.0, 2"
 Statistics = "1"
-julia = "1"
+julia = "1.6, 1.9"
 StatsBase = "0.24.0, 0.34.3"
 
 [extras]
