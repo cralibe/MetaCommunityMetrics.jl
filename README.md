@@ -1,7 +1,9 @@
-<p style="display: flex; align-items: center; justify-content: flex-start;">
-  <img src="docs/src/assets/MetaCommunityMetrics_logo.png" alt="Logo" width="100" height="100" style="margin-right: 20px;">
-  <h1 style="margin: 0;">MetaCommunityMetrics</h1>
-</p>
+<table>
+  <tr>
+    <td><img src="docs/src/assets/logo.png" alt="Logo" width="100" height="100"></td>
+    <td><h1>MetaCommunityMetrics</h1></td>
+  </tr>
+</table>
 
 
 

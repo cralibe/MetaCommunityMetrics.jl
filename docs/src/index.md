@@ -1,7 +1,5 @@
 # MetaCommunityMetrics.jl 
 
-![Logo](assets/MetaCommunityMetrics_logo.png)
-
 *A collection of tools and utilities for analyzing meta-communities in Julia.*
 
 Welcome to the documentation for `MetaCommunityMetrics`. Here you can find guides and reference material on how to use the functions.
