@@ -12,66 +12,11 @@ using .MetaCommunityMetrics.Internal
 
     #Example Data
     #Load sample data included in the package
-    sample_df = CSV.read(joinpath(@__DIR__, "..", "data", "rodent_abundance_data.csv"), DataFrame, skipto=2)#read in the sample data
-    sample_df = stack(sample_df, Not(:Sampling_date_order, :Year, :Month, :Day, :plot), variable_name = :Species, value_name = :Abundance) #stack the dataframe
-
-    #A dataframe that idetifies the persisting species (The species that existed at least once in all time steps)
-    persist_sp_df=
-    @pipe sample_df |> 
-    groupby(_, :Species) |> #group the dataframe by every species
-    combine(_, :Abundance => sum => :Total_Abundance) |> #calculate the total abundance of every spesice within the whole sampling period
-    filter(row -> row[:Total_Abundance] > 0, _) #select rows that has a total abundance >0.
-
-    #A dataframe that idetifies non empty patch at every time step
-    non_empty_site = 
-    @pipe sample_df[in(persist_sp_df.Species).(sample_df.Species), :] |>
-    groupby(_, [:Sampling_date_order, :plot]) |>
-    combine(_, :Abundance => sum => :Total_Abundance) |>
-    filter(row -> row[:Total_Abundance] > 0, _)
-
-    #The data that contains the abundace and presence-absence of persisting species and non empty site at every time step
-    metacomm_df=
-    @pipe sample_df|>
-    _[in(persist_sp_df.Species).(_.Species), :]|> #keeping species with a total abundance >0 across all patches all time steps. 
-    innerjoin(_, non_empty_site, on = [:Sampling_date_order, :plot]) |> #keeping non empty site at every time step. 
-    select(_, Not(:Total_Abundance)) |> #remove the Total_Abundance column to avoid confusion
-    transform(_, :Abundance => ByRow(x->ifelse.(x> 0, 1, 0)) => :Presence) #create a presence-absence column from the abundance column
-
-    #Simulating coordinates for the sample data. This step is not nessary if: (1) you have the coordinates data, (2) you don't need to caluculating DNCI, or (3) you are doing the groupings for the DNCI by yourself.
-    #   Set grid dimensions
-    num_rows = 4
-    num_columns = 6
-    num_plots = 24  # Total number of plots
-    # Define base coordinates (for example purposes, these are arbitrary)
-    base_latitude = 35.0
-    base_longitude = -110.0
-    # Define distance between plots in degrees (arbitrary small values for demonstration)
-    lat_spacing = 0.5
-    lon_spacing = 0.5
-    # Initialize DataFrame
-    patch_coord_df = DataFrame(plot = Int[], Latitude = Float64[], Longitude = Float64[])
-
-    # Generate grid coordinates
-    plot_count = 1
-    for i in 1:num_rows
-        for j in 1:num_columns
-            if plot_count > num_plots
-                break
-            end
-            lat = base_latitude + (i - 1) * lat_spacing
-            lon = base_longitude + (j - 1) * lon_spacing
-            push!(patch_coord_df, (plot_count, lat, lon))
-            plot_count += 1
-        end
-    end
-
-    #Adding the coordinates to the metacomm_df
-    metacomm_df = @pipe metacomm_df |>
-    innerjoin(_, patch_coord_df, on = :plot) #joining the metacomm_df with the patch_coord_df
+    df = load_sample_data()
 
     #Preparing the matric for calculating beta diveristy
     #matrix with the species abundance
-    sample_matrix_abundance = @pipe metacomm_df |> 
+    sample_matrix_abundance = @pipe df |> 
     select(_, Not(:Presence)) |>
     filter(row -> row[:Sampling_date_order] == 50, _) |> # filter rows where Sampling_date_order == 50
     unstack(_, :Species, :Abundance, fill=0) |> #convert it back to the wide format 
@@ -79,7 +24,7 @@ using .MetaCommunityMetrics.Internal
     Matrix(_) |> #convert the dataframe to a matrix
     _[:, sum(_, dims=1)[1, :] .!= 0] # Remove columns with sum of zero
     #matrix with the species presence-absence data
-    sample_matrix_presence = @pipe metacomm_df |> 
+    sample_matrix_presence = @pipe df |> 
     select(_, Not(:Abundance)) |>
     filter(row -> row[:Sampling_date_order] == 50, _) |># filter rows where Sampling_date_order == 50
     unstack(_, :Species, :Presence, fill=0) |> #convert it back to the wide format 
@@ -88,13 +33,13 @@ using .MetaCommunityMetrics.Internal
     _[:, sum(_, dims=1)[1, :] .!= 0] # Remove columns with sum of zero
 
     #Preparing the data for the DNCI analysis
-    total_presence_df=@pipe metacomm_df|>
+    total_presence_df=@pipe df|>
     groupby(_,[:Species,:Sampling_date_order])|>
     combine(_,:Presence=>sum=>:Total_Presence)
     #filter(row -> row[:Total_Presence] <= 1, _)|> 
 
     #Remove singletons 
-    total_richness_df= @pipe metacomm_df|>
+    total_richness_df= @pipe df|>
     leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
     filter(row -> row[:Total_Presence] > 1, _)|> 
     groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
@@ -118,21 +63,21 @@ using .MetaCommunityMetrics.Internal
                                                                             RichDif = 0.14687459005640824),
                                                                             atol = 1e-8)
     # Test the mean_spatial_beta_div function
-    @test isapprox(mean_spatial_beta_div(metacomm_df.Abundance, 
-        metacomm_df.Sampling_date_order, 
-        metacomm_df.plot, 
-        metacomm_df.Species; quant=true), DataFrame( mean_spatial_BDtotal = 0.3538123660657936, 
-                                                        mean_spatial_Repl = 0.1685842743545843, 
-                                                        mean_spatial_RichDif = 0.18522809171120944),
+    @test isapprox(spatial_beta_div(df.Abundance, 
+        df.Sampling_date_order, 
+        df.plot, 
+        df.Species; quant=true), DataFrame( spatial_BDtotal = 0.26482181105238306, 
+                                                        spatial_Repl = 0.12188231356454636, 
+                                                        spatial_RichDif = 0.14293949748783713),
                                                         atol = 1e-8)
 
     # Test the mean_temporal_beta_div function
-    @test isapprox(mean_temporal_beta_div(metacomm_df.Abundance, 
-        metacomm_df.Sampling_date_order, 
-        metacomm_df.plot, 
-        metacomm_df.Species; quant=true), DataFrame( mean_temporal_BDtotal = 0.3718602494286472, 
-                                                        mean_temporal_Repl = 0.15241610198410346, 
-                                                        mean_temporal_RichDif = 0.21944414744454374),
+    @test isapprox(temporal_beta_div(df.Abundance, 
+        df.Sampling_date_order, 
+        df.plot, 
+        df.Species; quant=true), DataFrame( temporal_BDtotal = 0.31122221160244523, 
+                                                        temporal_Repl =  0.09954831011523949, 
+                                                        temporal_RichDif = 0.21167390148720572),
                                                         atol = 1e-8)
     
     # Test the create_clusters function
@@ -154,7 +99,7 @@ using .MetaCommunityMetrics.Internal
     @test p isa Plots.Plot
 
     # Test the DNCI_multigroup function
-    comm= @pipe metacomm_df|>
+    comm= @pipe df|>
     leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
     filter(row -> row[:Total_Presence] > 1, _) |>
     filter(row -> row[:Sampling_date_order] == 50, _) |>
@@ -163,7 +108,7 @@ using .MetaCommunityMetrics.Internal
     select(_, Not(:plot)) |>
     Matrix(_)
     
-    presence_df = @pipe metacomm_df|>
+    presence_df = @pipe df|>
     leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
     filter(row -> row[:Total_Presence] > 1, _) |>
     filter(row -> row[:Sampling_date_order] == 50, _) |>
@@ -183,23 +128,23 @@ using .MetaCommunityMetrics.Internal
     atol = 1e-8)=#
 
     # Test the niche_overlap function
-    @test isapprox(niche_overlap(metacomm_df.Abundance, 
-                        metacomm_df.Species, 
-                        metacomm_df.plot, 
-                        metacomm_df.Sampling_date_order), DataFrame(mean_niche_overlap_index = 0.8277387279283689,
+    @test isapprox(niche_overlap(df.Abundance, 
+                        df.Species, 
+                        df.plot, 
+                        df.Sampling_date_order), DataFrame(mean_niche_overlap_index = 0.8277387279283689,
                                                                         min_niche_overlap_index = 0.5918363543,
                                                                         max_niche_overlap_index = 1.0),
                                                                         atol = 1e-8)      
                                                                         
     # Test the prop_patches function
-    @test isapprox(prop_patches(metacomm_df.Presence, metacomm_df.Species, metacomm_df.plot), DataFrame(mean_prop_patches = 0.7346491228070174,
+    @test isapprox(prop_patches(df.Presence, df.Species, df.plot), DataFrame(mean_prop_patches = 0.7346491228070174,
                                                                                                     min_prop_patches = 0.08333333333333333,
                                                                                                     max_prop_patches = 1.0),
                                                                                                     atol = 1e-8)      
 
 
     # Test the CV_meta function
-    CV_test_df = @pipe metacomm_df |>
+    CV_test_df = @pipe df |>
     filter(row -> row[:Sampling_date_order] < 20, _)
 
     @test isapprox(CV_meta(CV_test_df.Abundance, 

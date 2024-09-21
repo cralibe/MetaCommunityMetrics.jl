@@ -40,7 +40,7 @@ end
 
 
 export 
-    beta_diversity, mean_spatial_beta_div, mean_temporal_beta_div, 
+    beta_diversity, spatial_beta_div, temporal_beta_div, 
     create_clusters, plot_clusters, DNCI_multigroup, 
     niche_overlap, prop_patches, CV_meta, CV_meta_simple,
     load_sample_data
