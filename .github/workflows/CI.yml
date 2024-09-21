@@ -26,14 +26,25 @@ jobs:
         dataframes-version: ['1.0', '1.6']  # DataFrames version range ">= 1.0, < 2.0"
         distributions-version: ['0.25', '0.25.111']  # Distributions version range ">= 0.20, < 1.0"
         statsbase-version: ['0.33', '0.34.3']  # StatsBase version range ">= 0.24, < 1.0"
+
     steps:
       - uses: actions/checkout@v4
 
-      - uses: julia-actions/setup-julia@v2
-        if: matrix.version != 'nightly' 
+      # Setup Julia for non-nightly and handle 1.6 only on x64
+      - name: Set up Julia (non-nightly)
+        if: matrix.version != 'nightly' && (matrix.version != '1.6' || matrix.arch == 'x64')
+        uses: julia-actions/setup-julia@v2
         with:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
+
+      # Handle Julia 1.6 on x64 only
+      - name: Set up Julia 1.6 (x64 only)
+        if: matrix.version == '1.6' && matrix.arch == 'x64'
+        uses: julia-actions/setup-julia@v2
+        with:
+          version: ${{ matrix.version }}
+          arch: 'x64'
 
       - name: Install dependencies
         run: |

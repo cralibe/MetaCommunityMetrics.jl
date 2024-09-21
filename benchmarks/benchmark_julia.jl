@@ -46,7 +46,7 @@ mean_temporal_beta_div_1 = @benchmark mean_temporal_beta_div(df.Abundance, df.Sa
 mean_temporal_beta_div_2 = @benchmark mean_temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
 mean_temporal_beta_div_3 = @benchmark mean_temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
 
-# Preparing the data to benchmark the DNCI functions
+## Preparing the data to benchmark the DNCI functions
 total_presence_df=@pipe df|>
                         groupby(_,[:Species,:Sampling_date_order])|>
                         combine(_,:Presence=>sum=>:Total_Presence) |>
@@ -59,12 +59,12 @@ combine(_,:Presence=>sum=>:Total_Richness)
 
 
 comm= @pipe df|>
-                  innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-                  filter(row -> row[:Sampling_date_order] == 1, _) |>
-                  select(_, [:plot, :Species, :Presence]) |>
-                  unstack(_, :Species, :Presence, fill=0) |>
-                  select(_, Not(:plot)) |>
-                  Matrix(_)
+            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+            filter(row -> row[:Sampling_date_order] == 1, _) |>
+            select(_, [:plot, :Species, :Presence]) |>
+            unstack(_, :Species, :Presence, fill=0) |>
+            select(_, Not(:plot)) |>
+            Matrix(_)
 
 # Benchmark  the create_clusters function
 cluster_result = @benchmark create_clusters(total_richness_df.Sampling_date_order, 
@@ -82,44 +82,36 @@ cluster_list = create_clusters(total_richness_df.Sampling_date_order,
 
 plot_clusters_result = @benchmark plot_clusters(cluster_list[1].Latitude, cluster_list[1].Longitude, cluster_list[1].Group)
 
+# Save the wrangled data to CSV files for the R benchmarks
+comm_for_R= @pipe df|>
+            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+            filter(row -> row[:Sampling_date_order] == 1, _) |>
+            select(_, [:plot, :Species, :Presence]) |>
+            unstack(_, :Species, :Presence, fill=0) |>
+            select(_, Not(:plot)) 
+CSV.write("benchmark_r/data/DNCI_comm.csv", comm_for_R)
+CSV.write("benchmark_r/data/cluster_list_t1.csv", cluster_list[1])
 # Benchmark the DNCI_multigroup function
 DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[1].Group; count = false) 
 
-# Benchmark the niche_overlap function
+## Benchmark the niche_overlap function
 niche_overlap_result = @benchmark niche_overlap(df.Abundance, 
                                 df.Species, 
                                 df.plot, 
                                 df.Sampling_date_order)
                                                                         
-# Benchmark the prop_patches function
-prop_patches_result = @benchmark prop_patches(metacomm_df.Presence, metacomm_df.Species, metacomm_df.plot)
+## Benchmark the prop_patches function
+prop_patches_result = @benchmark prop_patches(df.Presence, df.Species, df.plot)
 
+## Benchmark the variability metrics function
 # Benchmark the CV_meta function
-@benchmark CV_meta(CV_test_df.Abundance, 
-                    CV_test_df.Sampling_date_order,
-                    CV_test_df.plot, 
-                    CV_test_df.Species)
+CV_meta_result = @benchmark CV_meta(df.Abundance, 
+                    df.Sampling_date_order,
+                    df.plot, 
+                    df.Species)
 
-# Test the CV_meta_simple function
-@benchmark CV_meta_simple(CV_test_df.Abundance, 
-                            CV_test_df.Sampling_date_order,
-                            CV_test_df.plot, 
-                            CV_test_df.Species)    
-
-
-# Save results to a file
-open("julia_benchmark_results.txt", "w") do f
-    write(f, string(julia_results))
-end
-
-
-proportion_use_df=
-@pipe df[:,[:Abundance, :Species, :plot, :Sampling_date_order]] |>#select column N, Species, Patch, Time and env
-groupby(_, [:Species]) |>
-transform(_, :Abundance => (x -> x ./ sum(x)) => :relativ_N) |> #relative abundance (proportion use) of species i in patch k at time t across all sites and times
-groupby(_, [:Species]) |>
-transform(_, :Abundance => sum => :total_N)|> #total abundance of species i in all sites and times for cross checking
-select(_, [:Species,:relativ_N, :plot ,:Sampling_date_order]) |>#select columns Species, total_N, relativ_N, env
-unstack(_, :Species,:relativ_N) |> #pivot wider
-_[!, Not(:plot, :Sampling_date_order)] |> # only retain the Proportional use values for each species
-permutedims(_)
+# Benchmark the CV_meta_simple function
+CV_meta_simple_result = @benchmark CV_meta_simple(df.Abundance, 
+                            df.Sampling_date_order,
+                            df.plot, 
+                            df.Species)    

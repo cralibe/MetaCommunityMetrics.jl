@@ -21,9 +21,13 @@ Below is a comparison of the benchmarking results between my Julia package and f
 | beta_diversity_1       | 0.118                | 2.248             | 19x               | 0.132                | 0.057            |
 | beta_diversity_2       | 0.039                | 0.270             | 7x                | 0.133                | 0.125            |
 | beta_diversity_3       | 0.038                | 0.280             | 7x                | 0.133                | 0.125            |
-| DNCI_multigroup_result | 188.369              |                   |                   | 816.60        
+| DNCI_multigroup_result | 188.369              |                   |                   | 816.60               |                  |
+| prop_patches_result    | 1.287                |                   |                   | 2.320                |                  |
+| CV_meta_simple_result  | 117.277              |                   |                   | 35.41                |                  |
 
-*Note: All times are in millisecond, and memory is in mebibytes (MiB). Speedup is calculated as the ratio of R execution time to Julia execution time and rounded to the nearest integer. The test case names are assigned according to the object names used for the benchmarking results. The same object name is used for the same test case between Julia and R for consistency. The same data input are used for each test case.*
+
+
+*Note: All times are in millisecond, and memory is in mebibytes (MiB). Only mean execution times are presented here. Speedup is calculated as the ratio of R execution time to Julia execution time and rounded to the nearest integer. The test case names are assigned according to the object names used for the benchmarking results. The same object name is used for the same test case between Julia and R for consistency. The same data input are used for each test case.*
 
 ## Self-Benchmarking (For Julia-Only Functions)
 *These functions are unique to the Julia package and do not have equivalents in R. We provide benchmarks in terms of execution time and memory usage as a point of comparison for future work or potential replication in other languages.*
@@ -39,13 +43,10 @@ Below is a comparison of the benchmarking results between my Julia package and f
 | cluster_result           | 1.491                | 860.280              | 2565, 5                |
 | plot_clusters_result     | 2.852                | 816.600              | 15, 3                  |
 | niche_overlap_result     | 6823.000             | 118.280              | 48735, 4               |
-
-
-
-
-
-
+| CV_meta_result           | 161600.000           | 96317.44             | 48735, 4               |
 
 *Note: All times are in millisecond, and memory is in mebibytes (MiB).*
 
+## Remarks
+For `CV_meta_simple_result` and `CV_meta_result`, they are both benchmarked using the same dataset (48735, 4).
 

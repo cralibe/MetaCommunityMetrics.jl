@@ -1,15 +1,27 @@
 # benchmarks/benchmark_r.R
 
 # Load necessary libraries
-library(microbenchmark)
-library(adespatial)  # Assuming this is the package with beta.div.comp
-library(data.table)  # For reading CSV files
+library(data.table)  
 library(tidyverse)
 library(bench)
+## R packages that provide equivalent functions of my package  
+library(adespatial) 
+library(DNCImper)
+
 #Read in the sample data
 df <- read.csv("~/.julia/dev/MetaCommunityMetrics/data/metacomm_rodent_df.csv")
+comm_df_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/DNCI_comm.csv")
+grouping_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/cluster_list_t1.csv")
 
-# Benchmarking R functions
+#Data Wrangling
+community_matrix<-df %>%
+  select(-Presence) %>%
+  pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude)) %>% 
+  select(which(colSums(.) !=0)) %>%
+  filter(rowSums(.) != 0)
+
+## The abundance matrix
 matrix_with_abundance <- df %>%
   filter(Sampling_date_order == 50) %>% 
   select(-Presence) %>%
@@ -66,3 +78,28 @@ memory_usage_kib <- as.numeric(beta_diversity_3$mem_alloc) / 1024
 # Print the results
 cat("Execution Time (Microseconds):", execution_time_microseconds, "\n")
 cat("Memory Usage (KiB):", memory_usage_kib, "\n")
+
+#### Benchmark the DNCI function
+result <- DNCImper:::DNCI_multigroup(
+  as.matrix(comm_df_for_DNCI),
+  grouping_for_DNCI$Group,
+  Nperm = 1000,
+  count = FALSE,
+  symmetrize = FALSE,
+  plotSIMPER = FALSE
+)
+
+
+prop_patches <- Model.output %>% 
+  group_by(species, patch) %>%
+  dplyr::summarise(mean_abundance = mean(abundance)) %>% 
+  filter(mean_abundance  > 0) %>% 
+  dplyr::summarise(n_patches = n()) %>% 
+  mutate(prop_patches = n_patches/max(Model.output$patch)) %>% 
+  summarise(mean_prop_patches = mean(prop_patches), min_prop_patches = min(prop_patches), max_prop_patches = max(prop_patches))
+
+
+
+
+
+

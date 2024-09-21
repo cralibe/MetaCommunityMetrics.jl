@@ -209,9 +209,9 @@ function beta_diversity(mat::Matrix; quant::Bool)
 end
 
 """
-    mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool) -> DataFrame
+    spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool) -> DataFrame
 
-Calculate the mean spatial beta diversity components of a metacommunity over time based on species abundances or presence-absences using the function `beta_diversity`.
+Calculate the beta diversity decompositions of a metacommunity in space based on species abundances or presence-absences using the function `beta_diversity`.
 
 Arguments
 - `abundance::Vector`: A vector containing abundance data for each species across different samples.
@@ -221,10 +221,10 @@ Arguments
 - `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
 
 Returns
-- `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all time points. Columns are `mean_spatial_BDtotal`, `mean_spatial_Repl`, and `mean_spatial_RichDif`.
+- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in space. Columns are `spatial_BDtotal`, `spatial_Repl`, and `spatial_RichDif`.
 
 Details
-- This function uses the `beta_diversity` function to calculate beta diversity components for each time step.
+- This function uses the `beta_diversity` function to calculate beta diversity components after aggregating .
 - This function will remove the empty patches before calculating beta diversity.
 - This function will remove species that were not recorded at the given time step before calculating beta diversity.
 - For binary data, the function calculates Podani family, Jaccard-based indices. 
@@ -252,91 +252,59 @@ julia> df = load_sample_data()
  48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
                                                                                           48725 rows omitted
 
-julia> result_using_abanduce_data_1 = mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+julia> result_using_abanduce_data_1 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
- Row │ mean_spatial_BDtotal  mean_spatial_Repl  mean_spatial_RichDif 
-     │ Float64               Float64            Float64              
-─────┼───────────────────────────────────────────────────────────────
-   1 │             0.353812           0.168584              0.185228
+ Row │ spatial_BDtotal  spatial_Repl  spatial_RichDif 
+     │ Float64          Float64       Float64         
+─────┼────────────────────────────────────────────────
+   1 │        0.264822      0.121882         0.142939
         
-julia> result_using_abanduce_data_2 = mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+julia> result_using_abanduce_data_2 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
 1×3 DataFrame
- Row │ mean_spatial_BDtotal  mean_spatial_Repl  mean_spatial_RichDif 
-     │ Float64               Float64            Float64              
-─────┼───────────────────────────────────────────────────────────────
-   1 │             0.309073            0.16386              0.145214  
+ Row │ spatial_BDtotal  spatial_Repl  spatial_RichDif 
+     │ Float64          Float64       Float64         
+─────┼────────────────────────────────────────────────
+   1 │        0.133035       0.05976        0.0732746
 
-julia> result_using_binary_data = mean_spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
+julia> result_using_binary_data = spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
 1×3 DataFrame
- Row │ mean_spatial_BDtotal  mean_spatial_Repl  mean_spatial_RichDif 
-     │ Float64               Float64            Float64              
-─────┼───────────────────────────────────────────────────────────────
-   1 │             0.309073            0.16386              0.145214
+ Row │ spatial_BDtotal  spatial_Repl  spatial_RichDif 
+     │ Float64          Float64       Float64         
+─────┼────────────────────────────────────────────────
+   1 │        0.133035       0.05976        0.0732746
 ```
 
 """
-function mean_spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool)
+function spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}; quant::Bool)
     #Create the required data frame
-    df = DataFrames.DataFrame(
+    df = @pipe DataFrames.DataFrame(
         N=abundance,
         Time=time,
         Patch=patch,
         Species=species)
+
+    df_matrix = @pipe df |>
+        groupby(_, [:Patch, :Species]) |>
+        combine(_, :N => sum => :total_N) |>
+        unstack(_, :Species, :total_N, fill=0) |>
+        select(_, Not(:Patch, )) |>
+        Matrix(_) 
     
-    persist_sp_df=#idetify species with a total N >0 across all patches all time steps. 
-    @pipe df |> #read in the model outputs from every landscape
-    groupby(_, :Species) |> #group the dataframe by every species
-    combine(_, :N => sum => :Total_N) |> #calculate the total abundance of every spesice within the whole sampling period
-    filter(row -> row[:Total_N] > 0, _) #select rows that has a N>0.
+    #Calculate beta diversity components
+    components = beta_diversity(df_matrix; quant=quant)
 
-    #Identify sites that are not empty at a time step
-    non_empty_site = @pipe df |>
-    groupby(_, [:Time, :Patch]) |>  # Group by time and patch
-    combine(_, :N => sum => :Total_N) |>  # Sum N values within each time and patch combination
-    filter(row -> row.Total_N > 0, _) 
+    spatial_beta_div_summary = DataFrames.DataFrame(
+        spatial_BDtotal =  components.BDtotal,
+        spatial_Repl =  components.Repl,
+        spatial_RichDif =  components.RichDif)
 
-    #Prepare a presence-absence matrix for beta diversity calculation
-    dynamic_df = @pipe df |>
-    innerjoin(persist_sp_df, _, on=:Species) |>  # Join with the original data to filter species
-    select(_, Not(:Total_N)) |>  # Remove the total N column
-    innerjoin(_, non_empty_site, on=[:Time, :Patch])|>  # Remove empty sites at one time step
-    select(_, Not(:Total_N)) 
-
-
-    spatial_beta_div_df = DataFrames.DataFrame()  #a data frame to store beta diversity components from evey time point
-    for t in unique(df.Time)
-        #println("Time$t")
-        subset_df=filter(row -> row[:Time]==t, df)
-        df_wide =@pipe unstack(subset_df, :Patch, :Species, :N) |> #pivot wider
-        _[:,2:end] #Remove the patch column
-
-         # Replace missing values with zeros before summing
-         df_wide .= coalesce.(df_wide, 0)
- 
-         # Removing columns where the sum is zero
-        non_zero_columns = names(df_wide)[.!iszero.(sum.(eachcol(df_wide)))]
-        df_wide = select(df_wide, non_zero_columns)
-
-         # Convert to matrix after filtering
-        df_matrix = Matrix(df_wide)
-
-        #Calculate beta diversity components
-        components = beta_diversity(df_matrix; quant=quant)
-        spatial_beta_div_df= [spatial_beta_div_df; components]
-    end
-
-    mean_spatial_beta_div_summary = DataFrames.DataFrame(
-        mean_spatial_BDtotal = mean(spatial_beta_div_df.BDtotal),
-        mean_spatial_Repl = mean(spatial_beta_div_df.Repl),
-        mean_spatial_RichDif = mean(spatial_beta_div_df.RichDif))
-
-    return mean_spatial_beta_div_summary
+    return spatial_beta_div_summary
 end
 
 """
-    mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool) -> DataFrame
+    temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool) -> DataFrame
 
-Calculate the mean temporal beta diversity components acorss all patches based on species abundances or presence-absences using the function `beta_diversity`.
+Calculate the beta diversity decompositions of a metacommunity in time based on species abundances or presence-absences using the function `beta_diversity`.
 
 Arguments
 - `abundance::Vector`: A vector containing abundance data for each species across different samples.
@@ -346,7 +314,7 @@ Arguments
 - `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
 
 Returns
-- `DataFrame`: A DataFrame containing the mean values of total beta diversity, replacement, and richness difference components across all pactches. Columns are `mean_temporal_BDtotal`, `mean_temporal_Repl`, and `mean_temporal_RichDif`.
+- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in time. Columns are `temporal_BDtotal`, `temporal_Repl`, and `temporal_RichDif`.
 
 Details
 - This function uses the `beta_diversity` function to calculate beta diversity components for each patch.
@@ -377,64 +345,52 @@ julia> df = load_sample_data()
  48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
                                                                                           48725 rows omitted
 
-julia> result_using_abanduce_data_1 = mean_temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+julia> result_using_abanduce_data_1 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
- Row │ mean_temporal_BDtotal  mean_temporal_Repl  mean_temporal_RichDif 
-     │ Float64                Float64             Float64               
-─────┼──────────────────────────────────────────────────────────────────
-   1 │               0.37186            0.152416               0.219444
+ Row │ temporal_BDtotal  temporal_Repl  temporal_RichDif 
+     │ Float64           Float64        Float64          
+─────┼───────────────────────────────────────────────────
+   1 │         0.311222      0.0995483          0.211674
         
-julia> result_using_abanduce_data_2 = mean_temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+julia> result_using_abanduce_data_2 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
 1×3 DataFrame
- Row │ mean_temporal_BDtotal  mean_temporal_Repl  mean_temporal_RichDif 
-     │ Float64                Float64             Float64               
-─────┼──────────────────────────────────────────────────────────────────
-   1 │              0.313244            0.139936               0.173309
+ Row │ temporal_BDtotal  temporal_Repl  temporal_RichDif 
+     │ Float64           Float64        Float64          
+─────┼───────────────────────────────────────────────────
+   1 │         0.206262      0.0693664          0.136895
 
-julia> result_using_binary_data = mean_temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
+julia> result_using_binary_data = temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
 1×3 DataFrame
- Row │ mean_temporal_BDtotal  mean_temporal_Repl  mean_temporal_RichDif 
-     │ Float64                Float64             Float64               
-─────┼──────────────────────────────────────────────────────────────────
-   1 │              0.313244            0.139936               0.173309
+ Row │ temporal_BDtotal  temporal_Repl  temporal_RichDif 
+     │ Float64           Float64        Float64          
+─────┼───────────────────────────────────────────────────
+   1 │         0.206262      0.0693664          0.136895
 ```
 
 """
-function mean_temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool)
+function temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String};quant::Bool)
     #Create the required data frame
-    df = DataFrames.DataFrame(
+    df = @pipe DataFrames.DataFrame(
         N=abundance,
         Time=time,
         Patch=patch,
         Species=species)
 
-    temporal_beta_div_df = DataFrames.DataFrame()  #a data frame to store beta diversity components at all patches
-
-    for p in unique(df.Patch)
-        subset_df = filter(row -> row[:Patch]==p, df)
-        df_wide = @pipe unstack(subset_df, :Time, :Species, :N) |> #pivot wider
-        _[:,2:end]  #Remove the patch column
-
-         # Replace missing values with zeros before summing
-        df_wide .= coalesce.(df_wide, 0)
- 
-         # Removing columns where the sum is zero
-        non_zero_columns = names(df_wide)[.!iszero.(sum.(eachcol(df_wide)))]
-        df_wide = select(df_wide, non_zero_columns)
-
-         # Convert to matrix after filtering
-        df_matrix = Matrix(df_wide)
-
-         #Calculate beta diversity components
-        components = beta_diversity(df_matrix, quant=quant)
-        temporal_beta_div_df= [temporal_beta_div_df; components]
-    end
-
-    mean_temporal_beta_div_summary = DataFrames.DataFrame(
-        mean_temporal_BDtotal = mean(temporal_beta_div_df.BDtotal),
-        mean_temporal_Repl = mean(temporal_beta_div_df.Repl),
-        mean_temporal_RichDif = mean(temporal_beta_div_df.RichDif))
+    df_matrix = @pipe df |>
+        groupby(_, [:Time, :Species]) |>
+        combine(_, :N => sum => :total_N) |>
+        unstack(_, :Species, :total_N, fill=0) |>
+        select(_, Not(:Time)) |>
+        Matrix(_) 
     
-    return mean_temporal_beta_div_summary
+    #Calculate beta diversity components
+    components = beta_diversity(df_matrix; quant=quant)
+
+    temporal_beta_div_summary = DataFrames.DataFrame(
+        temporal_BDtotal =  components.BDtotal,
+        temporal_Repl =  components.Repl,
+        temporal_RichDif =  components.RichDif)
+
+        return temporal_beta_div_summary
 end
 
