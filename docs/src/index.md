@@ -10,7 +10,7 @@ This package is a comprehensive toolkit designed to characterize the spatiotempo
 However, they come with high computational costs, especially for large species community datasets. To address this issue, MetaCommunityMetrics.jl was developed in Julia, a programming language known for its efficiency in handling computationally intensive tasks. This implementation significantly improves the efficiency of calculating these metrics, making it a powerful tool for metacommunity analysis. 
 
 These metrics include:
-- Beta diversity decomposition in space/time: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data
+- Beta diversity decompositions in space/time: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data
 - Dispersal-niche continuum index to evaluate the degree to which communities are influenced by dispersal processes and niche breadth
 - Niche overlap indices to determine the extent of niche sharing among species within the metacommunity
 - The proportion of habitat patches occupied by each species
