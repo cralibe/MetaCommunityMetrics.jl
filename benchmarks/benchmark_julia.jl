@@ -37,14 +37,14 @@ beta_diversity_2 = @benchmark beta_diversity(matrix_with_abundance; quant=false)
 beta_diversity_3 = @benchmark beta_diversity(matrix_with_presence; quant=false)
 
 # Benchmark the mean_spatial_beta_div function
-mean_spatial_beta_div_1 = @benchmark mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
-mean_spatial_beta_div_2 = @benchmark mean_spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
-mean_spatial_beta_div_3 = @benchmark mean_spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
+spatial_beta_div_1 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+spatial_beta_div_2 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+spatial_beta_div_3 = @benchmark spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
 
 # Benchmark the mean_temporal_beta_div function
-mean_temporal_beta_div_1 = @benchmark mean_temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
-mean_temporal_beta_div_2 = @benchmark mean_temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
-mean_temporal_beta_div_3 = @benchmark mean_temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
+temporal_beta_div_1 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false)
 
 ## Preparing the data to benchmark the DNCI functions
 total_presence_df=@pipe df|>
@@ -55,11 +55,13 @@ total_presence_df=@pipe df|>
 total_richness_df= @pipe df|>
 innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
 groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-combine(_,:Presence=>sum=>:Total_Richness)
+combine(_,:Presence=>sum=>:Total_Richness)|>
+filter(row -> row[:Total_Richness] > 0, _) 
 
 
 comm= @pipe df|>
             innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
             filter(row -> row[:Sampling_date_order] == 1, _) |>
             select(_, [:plot, :Species, :Presence]) |>
             unstack(_, :Species, :Presence, fill=0) |>
@@ -85,14 +87,16 @@ plot_clusters_result = @benchmark plot_clusters(cluster_list[1].Latitude, cluste
 # Save the wrangled data to CSV files for the R benchmarks
 comm_for_R= @pipe df|>
             innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
             filter(row -> row[:Sampling_date_order] == 1, _) |>
             select(_, [:plot, :Species, :Presence]) |>
             unstack(_, :Species, :Presence, fill=0) |>
             select(_, Not(:plot)) 
-CSV.write("benchmark_r/data/DNCI_comm.csv", comm_for_R)
-CSV.write("benchmark_r/data/cluster_list_t1.csv", cluster_list[1])
+#CSV.write("benchmarks/benchmark_r/data/DNCI_comm.csv", comm_for_R)
+#CSV.write("benchmarks/benchmark_r/data/cluster_list_t1.csv", cluster_list[1])
+
 # Benchmark the DNCI_multigroup function
-DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[1].Group; count = false) 
+DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[1].Group, 100; count = false) 
 
 ## Benchmark the niche_overlap function
 niche_overlap_result = @benchmark niche_overlap(df.Abundance, 
@@ -105,6 +109,9 @@ prop_patches_result = @benchmark prop_patches(df.Presence, df.Species, df.plot)
 
 ## Benchmark the variability metrics function
 # Benchmark the CV_meta function
+CV_test_df = @pipe df |>
+filter(row -> row[:Sampling_date_order] < 20, _)
+
 CV_meta_result = @benchmark CV_meta(df.Abundance, 
                     df.Sampling_date_order,
                     df.plot, 
@@ -115,3 +122,11 @@ CV_meta_simple_result = @benchmark CV_meta_simple(df.Abundance,
                             df.Sampling_date_order,
                             df.plot, 
                             df.Species)    
+
+
+
+                            df = DataFrames.DataFrame(
+        Abundance=df.abundance,
+        Time=time,
+        Patch=patch,
+        Species=species)

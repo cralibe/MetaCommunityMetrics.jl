@@ -16,14 +16,20 @@ Below is a comparison of the benchmarking results between my Julia package and f
 
 ## Direct Comparison (When an equivalent fuction in R is avaliable)
 
-| Test Case              | Julia Execution Time | R Execution Time  | Speedup (Julia/R) | Memory Usage (Julia) | Memory Usage (R) |
-|------------------------|----------------------|-------------------|-------------------|----------------------|------------------|
-| beta_diversity_1       | 0.118                | 2.248             | 19x               | 0.132                | 0.057            |
-| beta_diversity_2       | 0.039                | 0.270             | 7x                | 0.133                | 0.125            |
-| beta_diversity_3       | 0.038                | 0.280             | 7x                | 0.133                | 0.125            |
-| DNCI_multigroup_result | 188.369              |                   |                   | 816.60               |                  |
-| prop_patches_result    | 1.287                |                   |                   | 2.320                |                  |
-| CV_meta_simple_result  | 117.277              |                   |                   | 35.41                |                  |
+| Test Case               | Julia Execution Time | R Execution Time  | Speedup (Julia/R) | Memory Usage (Julia) | Memory Usage (R) |
+|-------------------------|----------------------|-------------------|-------------------|----------------------|------------------|
+| beta_diversity_1        | 0.118                | 2.248             | 19x               | 0.132                | 0.057            |
+| beta_diversity_2        | 0.039                | 0.270             | 7x                | 0.133                | 0.125            |
+| beta_diversity_3        | 0.038                | 0.280             | 7x                | 0.133                | 0.125            |
+| spatial_beta_div_1      | 0.954                | 19.530            | 20x               | 2.300                | 3.451            |
+| spatial_beta_div_2      | 0.631                | 17.106            | 27x               | 1.900                | 3.009            |
+| spatial_beta_div_3      | 0.586                | 16.742            | 29x               | 1.900                | 3.009            |
+| temporal_beta_div_1     | 9.012                | 86.396            | 10x               | 14.760               | 17.342           |
+| temporal_beta_div_2     | 1.439                | 20.516            | 14x               | 3.540                | 5.630            |
+| temporal_beta_div_3     | 1.438                | 21.006            | 15x               | 3.540                | 5.630            |
+| DNCI_multigroup_result  | 177.651              |                   |                   | 272.83               |                  |
+| prop_patches_result     | 1.491                | 18.726            | 13x               | 2.320                | 2.412            |
+| CV_meta_simple_result   | 117.277              |                   |                   | 35.41                |                  |
 
 
 
@@ -34,13 +40,7 @@ Below is a comparison of the benchmarking results between my Julia package and f
 
 | Test Case                | Julia Execution Time | Memory Usage (Julia) | Data Size (row, column)|
 |--------------------------|----------------------|----------------------|------------------------|
-| mean_spatial_beta_div_1  | 632.693              | 239.660              | 48735, 10              |
-| mean_spatial_beta_div_2  | 625.321              | 213.450              | 48735, 10              |
-| mean_spatial_beta_div_3  | 623.162              | 213.450              | 48735, 10              |
-| mean_temporal_beta_div_1 | 623.162              | 213.450              | 48735, 10              |
-| mean_temporal_beta_div_2 | 141.001              | 76.520               | 48735, 10              |
-| mean_temporal_beta_div_3 | 141.477              | 76.520               | 48735, 10              |
-| cluster_result           | 1.491                | 860.280              | 2565, 5                |
+| cluster_result           | 1.665                | 916.88               | 2565, 5                |
 | plot_clusters_result     | 2.852                | 816.600              | 15, 3                  |
 | niche_overlap_result     | 6823.000             | 118.280              | 48735, 4               |
 | CV_meta_result           | 161600.000           | 96317.44             | 48735, 4               |

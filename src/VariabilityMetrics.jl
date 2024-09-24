@@ -249,25 +249,25 @@ julia> CV_summary_df = CV_meta_simple(df.Abundance, df.Sampling_date_order, df.p
 function CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
 
     ###Reorganize the data to only include the necessary columns
-    metacomm_df = DataFrames.DataFrame(
+    df = DataFrames.DataFrame(
         Abundance=abundance,
         Time=time,
         Patch=patch,
         Species=species)
     
     # Get unique values for each column
-    species_ids = unique(metacomm_df.Species)
-    patches = unique(metacomm_df.Patch)
-    times = unique(metacomm_df.Time)
+    species_ids = unique(df.Species)
+    patches = unique(df.Patch)
+    times = unique(df.Time)
     #Initialize matrices
-    num_species = length(unique(metacomm_df.Species))
-    num_patches = length(unique(metacomm_df.Patch))
-    num_times = length(unique(metacomm_df.Time))
+    num_species = length(unique(df.Species))
+    num_patches = length(unique(df.Patch))
+    num_times = length(unique(df.Time))
 
-    abundance_matrices = zeros(Float64, num_species,num_times, num_patches)
+    abundance_matrices = zeros(Float64, num_species, num_times, num_patches)
 
     # Fill the abundance matrices
-    for (idx, row) in enumerate(eachrow(metacomm_df))
+    for (idx, row) in enumerate(eachrow(mdf))
         i = findfirst(species_ids .== row.Species)
         j = findfirst(times .== row.Time)
         k = findfirst(patches .== row.Patch)

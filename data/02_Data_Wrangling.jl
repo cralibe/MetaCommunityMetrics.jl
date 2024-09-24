@@ -67,3 +67,5 @@ innerjoin(_, patch_coord_df, on = :plot) #joining the metacomm_df with the patch
 
 #Save the metacomm_df to a csv file
 CSV.write(joinpath(pkgdir(MetaCommunityMetrics), "data", "metacomm_rodent_df.csv"), metacomm_df)
+
+

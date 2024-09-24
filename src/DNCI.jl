@@ -67,7 +67,9 @@ julia> total_presence_df=@pipe df|>
 julia> total_richness_df= @pipe df|>
                   innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
                   groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-                  combine(_,:Presence=>sum=>:Total_Richness)
+                  combine(_,:Presence=>sum=>:Total_Richness)|>
+                  filter(row -> row[:Total_Richness] > 0, _) 
+
 2565×5 DataFrame
   Row │ plot   Sampling_date_order  Longitude  Latitude  Total_Richness 
       │ Int64  Int64                Float64    Float64   Int64          
@@ -104,7 +106,7 @@ Dict{Int64, DataFrame} with 117 entries:
   ⋮   => ⋮
 
 julia> println(result[1])
-15×6 DataFrame
+14×6 DataFrame
  Row │ Time   Latitude  Longitude  Patch  Total_Richness  Group 
      │ Int64  Float64   Float64    Int64  Int64           Int64 
 ─────┼──────────────────────────────────────────────────────────
@@ -121,8 +123,7 @@ julia> println(result[1])
   11 │     1      36.0     -109.0     15               1      1
   12 │     1      36.5     -109.5     20               1      1
   13 │     1      36.5     -109.0     21               1      2
-  14 │     1      35.0     -108.0      5               0      2
-  15 │     1      36.5     -108.0     23               1      2
+  14 │     1      36.5     -108.0     23               1      2
 
 ```
 """
@@ -132,9 +133,10 @@ function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude
     #Create a DataFrame
     df = DataFrame(Time = time, Latitude = latitude, Longitude = longitude, Patch = patch, Total_Richness = total_richness)
     
-    for t in unique(df[:, :Time])
+    for t in unique(df.Time)
         subset_df = filter(row -> row[:Time] == t, df)
         num_sites = nrow(subset_df)
+
 
         # If fewer than 5 sites, clustering cannot proceed, groups assigned as missing
         if num_sites < 5
@@ -245,7 +247,9 @@ julia> total_presence_df=@pipe df|>
 julia> total_richness_df= @pipe df|>
                   innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
                   groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-                  combine(_,:Presence=>sum=>:Total_Richness)
+                  combine(_,:Presence=>sum=>:Total_Richness)|>
+                  filter(row -> row[:Total_Richness] > 0, _) 
+
 2565×5 DataFrame
   Row │ plot   Sampling_date_order  Longitude  Latitude  Total_Richness 
       │ Int64  Int64                Float64    Float64   Int64          
@@ -263,7 +267,7 @@ julia> total_richness_df= @pipe df|>
  2565 │    23                  117     -108.0      36.5               5
                                                        2555 rows omitted
 
-julia> result = create_clusters(total_richness_df.Sampling_date_order, total_richness_df.Latitude, total_richness_df.Longitude, total_richness_df.plot, total_richness_df.Total_Richness)
+julia> clustering_result = create_clusters(total_richness_df.Sampling_date_order, total_richness_df.Latitude, total_richness_df.Longitude, total_richness_df.plot, total_richness_df.Total_Richness)
 Dict{Int64, DataFrame} with 117 entries:
   5   => 17×6 DataFrame…
   56  => 23×6 DataFrame…
@@ -281,8 +285,8 @@ Dict{Int64, DataFrame} with 117 entries:
   73  => 23×6 DataFrame…
   ⋮   => ⋮
 
-julia> println(result[1])
-15×6 DataFrame
+julia> println(clustering_result[1])
+14×6 DataFrame
  Row │ Time   Latitude  Longitude  Patch  Total_Richness  Group 
      │ Int64  Float64   Float64    Int64  Int64           Int64 
 ─────┼──────────────────────────────────────────────────────────
@@ -299,8 +303,7 @@ julia> println(result[1])
   11 │     1      36.0     -109.0     15               1      1
   12 │     1      36.5     -109.5     20               1      1
   13 │     1      36.5     -109.0     21               1      2
-  14 │     1      35.0     -108.0      5               0      2
-  15 │     1      36.5     -108.0     23               1      2
+  14 │     1      36.5     -108.0     23               1      2
 
 julia> plot_clusters(result[1].Latitude, result[1].Longitude, result[1].Group)
 
@@ -387,12 +390,14 @@ julia> total_presence_df=@pipe df|>
  789 │ SH                        70               3
  790 │ SH                        73               5
  791 │ SH                       117               4
-                                    781 rows omitted   
+                                    781 rows omitted
 
 julia> total_richness_df= @pipe df|>
                   innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
                   groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-                  combine(_,:Presence=>sum=>:Total_Richness)
+                  combine(_,:Presence=>sum=>:Total_Richness)|>
+                  filter(row -> row[:Total_Richness] > 0, _) 
+
 2565×5 DataFrame
   Row │ plot   Sampling_date_order  Longitude  Latitude  Total_Richness 
       │ Int64  Int64                Float64    Float64   Int64          
@@ -428,8 +433,8 @@ Dict{Int64, DataFrame} with 117 entries:
   73  => 23×6 DataFrame…
   ⋮   => ⋮
 
-julia> println(result[1])
-15×6 DataFrame
+julia> println(clustering_result[1])
+14×6 DataFrame
  Row │ Time   Latitude  Longitude  Patch  Total_Richness  Group 
      │ Int64  Float64   Float64    Int64  Int64           Int64 
 ─────┼──────────────────────────────────────────────────────────
@@ -446,17 +451,17 @@ julia> println(result[1])
   11 │     1      36.0     -109.0     15               1      1
   12 │     1      36.5     -109.5     20               1      1
   13 │     1      36.5     -109.0     21               1      2
-  14 │     1      35.0     -108.0      5               0      2
-  15 │     1      36.5     -108.0     23               1      2
+  14 │     1      36.5     -108.0     23               1      2
 
 julia> comm= @pipe df|>
                   innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+                  innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
                   filter(row -> row[:Sampling_date_order] == 1, _) |>
                   select(_, [:plot, :Species, :Presence]) |>
                   unstack(_, :Species, :Presence, fill=0) |>
                   select(_, Not(:plot)) |>
                   Matrix(_)
-15×3 Matrix{Int64}:
+14×3 Matrix{Int64}:
  1  0  0
  1  0  0
  1  0  0
@@ -470,15 +475,14 @@ julia> comm= @pipe df|>
  1  0  0
  0  1  0
  0  0  1
- 0  0  0
  0  0  1
 
-julia> result = DNCI_multigroup(comm, clustering_result[1].Group, 1000; count = false)
+julia> DNCI_result = DNCI_multigroup(comm, clustering_result[1].Group, 1000; count = false)
 1×5 DataFrame
- Row │ group1  group2  DNCI       CI_DNCI  S_DNCI  
-     │ Int64   Int64   Float64    Float64  Float64 
-─────┼─────────────────────────────────────────────
-   1 │      1       2  -0.836142  5.02335  2.51167
+ Row │ group1  group2  DNCI      CI_DNCI  S_DNCI  
+     │ Int64   Int64   Float64   Float64  Float64 
+─────┼────────────────────────────────────────────
+   1 │      1       2  0.533635  7.06888  3.53444
 ```
 """
 function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) #for presence-absence data only
@@ -513,6 +517,11 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::B
         else
             error("One of the groups does not exist in the dictionary.")
         end
+        # Calculate a logical array indicating non-zero sum columns
+        non_zero_sum_columns = sum(paired_x, dims=1) .!= 0
+        # Convert logical index to actual column indices
+        column_indices = findall(x -> x, non_zero_sum_columns[:]) 
+
         # Calculate a logical array indicating non-zero sum columns
         non_zero_sum_columns = sum(paired_x, dims=1) .!= 0
         # Convert logical index to actual column indices
