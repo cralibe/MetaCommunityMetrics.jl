@@ -267,7 +267,7 @@ function CV_meta_simple(abundance::AbstractVector, time::AbstractVector, patch::
     abundance_matrices = zeros(Float64, num_species, num_times, num_patches)
 
     # Fill the abundance matrices
-    for (idx, row) in enumerate(eachrow(mdf))
+    for (idx, row) in enumerate(eachrow(df))
         i = findfirst(species_ids .== row.Species)
         j = findfirst(times .== row.Time)
         k = findfirst(patches .== row.Patch)
