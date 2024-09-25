@@ -79,7 +79,19 @@ julia> load_sample_data()
                                                                                           48712 rows omitted
 ```
 
+## Acknowledgements
+This package includes translations and adaptations of functions from the R packages `adespatial` (licensed under GPL-3), `vegan` (licensed under GPL-2 or later), and `DNCImper` (licensed under GPL-3). The original packages and their documentation are available at:
+
+- `adespatial`: https://cran.r-project.org/web/packages/adespatial/index.html
+- `vegan`: https://cran.r-project.org/web/packages/vegan/index.html
+- `DNCImper`: https://github.com/Corentin-Gibert-Paleontology/DNCImper
+
+Please refer to these sources for full details on the original implementations and licenses.
+
+
 [![Build Status](https://github.com/cralibe/MetaCommunityMetrics.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/cralibe/MetaCommunityMetrics.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://cralibe.github.io/MetaCommunityMetrics.jl/)
 [![codecov](https://codecov.io/github/cralibe/MetaCommunityMetrics.jl/graph/badge.svg?token=OKUWBS8R7U)](https://codecov.io/github/cralibe/MetaCommunityMetrics.jl)
 
+## License
+This project is licensed under the terms of the GNU General Public License v3.0. See the LICENSE file for more details.

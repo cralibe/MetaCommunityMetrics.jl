@@ -181,6 +181,8 @@ function check_condition_and_fix(grouped_df)
 end
 
 # A function to generate random binary matrices acoording to the assigned algorithm
+# This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
+# Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for present/absence data
 
     #Assign for different permutation algorithms
@@ -215,8 +217,12 @@ function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for p
     return permat
     
 end
+
+
     
 # A function to generate null models acoording to the assigned algorithm
+# This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
+# Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function nullmodel(m::AbstractMatrix{Int}, ALGO::AbstractString, times::Int)
     if ALGO == "r0"
         return nullmodel_r0(m, times)
@@ -230,6 +236,8 @@ function nullmodel(m::AbstractMatrix{Int}, ALGO::AbstractString, times::Int)
 end
 
 # A function to generate random binary matrices with preserved row sums
+# This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
+# Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function nullmodel_r0(comm::AbstractMatrix{Int}, times::Int)
     
     n, m = size(comm)
@@ -249,6 +257,8 @@ function nullmodel_r0(comm::AbstractMatrix{Int}, times::Int)
     return nullmodels
 end
 # A function to generate random binary matrices with preserved column sums
+# This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
+# Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function nullmodel_c0(comm::AbstractMatrix{Int}, times::Int)
 
     n, m = size(comm)
@@ -268,6 +278,8 @@ function nullmodel_c0(comm::AbstractMatrix{Int}, times::Int)
     return nullmodels
 end
 # A function to generate random binary matrices with preserved row and column sums using the Quasiswap algorithm
+# This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
+# Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function nullmodel_quasiswap(comm::AbstractMatrix{Int}, times::Int)
 
     n, m = size(comm)
@@ -329,7 +341,9 @@ function check_sums(original::AbstractMatrix{Int}, nullmodels::Vector{Matrix{Int
     return true
 end
 
-# A function to calculate Species contribution to average between-group dissimilarity (adpated from simper() in vegan.R)
+# A function to calculate Species contribution to average between-group dissimilarity.
+# This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
+# Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function simper(comm::Matrix, groups::Vector)
     # Set EPS to square root of machine epsilon
     EPS = sqrt(eps(Float64))
@@ -477,6 +491,8 @@ function correct_permutation(comm::Matrix)
 end
 
 #PerSIMPER function : identification of the main assembly process; adpated from Corentin Gibert
+#This function is a translation/adaptation of a function from the R package `DNCImper`, licensed under GPL-3.
+#Original package and documentation available at: https://github.com/Corentin-Gibert-Paleontology/DNCImper
 function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false) #only for present/absence data
 
     AnaSimp = simper(comm, groups)#Species contribution to average between-group dissimilarity on the compared groups
@@ -606,6 +622,8 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
 end
 
 #A function to calculate DNCI for only two groups
+#This function is a translation/adaptation of a function from the R package `DNCImper`, licensed under GPL-3.
+#Original package and documentation available at: https://github.com/Corentin-Gibert-Paleontology/DNCImper
 function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false) #for presence-absence data only
     group=sort(unique(groups))
     if  all(comm .== comm[1]) #check to see if every element in the matrix is the same

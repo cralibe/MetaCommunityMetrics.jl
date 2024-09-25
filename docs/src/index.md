@@ -38,6 +38,7 @@ using MetaCommunityMetrics
 - [`Niche Overlap Index`](https://cralibe.github.io/MetaCommunityMetrics.jl/NicheOverlapIndex/)
 - [`Occupied Patches Proportion`](https://cralibe.github.io/MetaCommunityMetrics.jl/OccupiedPatchesProportion/)
 - [`Variability Metrics`](https://cralibe.github.io/MetaCommunityMetrics.jl/VariabilityMetrics/)
+- [`Benchmarking`](https://cralibe.github.io/MetaCommunityMetrics.jl/docs/src/Benchmarking/)
 
 ## Accessing the Sample Data for exploring the functions
 This package utilizes rodent data from the Portal Project, a long-term study of a Chihuahuan desert ecosystem (available at https://github.com/weecology/portalr), as sample data for testing and benchmarking functions between Julia and R. The original rodent abundance data were collected monthly across 24 plots, recording a total of 24 species. For the purposes of this package, the data are filtered for the period from 2010 to 2023, transformed into long format, and species that were not recorded during this period are removed. Additionally, plots with no observations at a given time step are excluded. A new column, `Sampling_date_order`, was created to sequentially number the sampling dates, starting at 1 and continuing through 117, to facilitate analysis. The locations of the plots (`Latitude` and `Longitude`) were simulated for testing the DNCI functions. The scripts to download and wrangle the data can be found here:

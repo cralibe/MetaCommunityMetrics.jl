@@ -62,7 +62,7 @@ filter(row -> row[:Total_Richness] > 0, _)
 comm= @pipe df|>
             innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
             innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 1, _) |>
+            filter(row -> row[:Sampling_date_order] == 50, _) |>
             select(_, [:plot, :Species, :Presence]) |>
             unstack(_, :Species, :Presence, fill=0) |>
             select(_, Not(:plot)) |>
@@ -82,21 +82,21 @@ cluster_list = create_clusters(total_richness_df.Sampling_date_order,
         total_richness_df.plot,
         total_richness_df.Total_Richness) 
 
-plot_clusters_result = @benchmark plot_clusters(cluster_list[1].Latitude, cluster_list[1].Longitude, cluster_list[1].Group)
+plot_clusters_result = @benchmark plot_clusters(cluster_list[50].Latitude, cluster_list[50].Longitude, cluster_list[50].Group)
 
 # Save the wrangled data to CSV files for the R benchmarks
-comm_for_R= @pipe df|>
+comm_for_R_t50= @pipe df|>
             innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
             innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 1, _) |>
+            filter(row -> row[:Sampling_date_order] == 50, _) |>
             select(_, [:plot, :Species, :Presence]) |>
             unstack(_, :Species, :Presence, fill=0) |>
             select(_, Not(:plot)) 
-#CSV.write("benchmarks/benchmark_r/data/DNCI_comm.csv", comm_for_R)
-#CSV.write("benchmarks/benchmark_r/data/cluster_list_t1.csv", cluster_list[1])
+CSV.write("benchmarks/benchmark_r/data/DNCI_comm_t50.csv", comm_for_R_t50)
+CSV.write("benchmarks/benchmark_r/data/cluster_list_t50.csv", cluster_list[50])
 
 # Benchmark the DNCI_multigroup function
-DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[1].Group, 100; count = false) 
+DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[50].Group, 100; count = false) 
 
 ## Benchmark the niche_overlap function
 niche_overlap_result = @benchmark niche_overlap(df.Abundance, 
@@ -109,9 +109,6 @@ prop_patches_result = @benchmark prop_patches(df.Presence, df.Species, df.plot)
 
 ## Benchmark the variability metrics function
 # Benchmark the CV_meta function
-CV_test_df = @pipe df |>
-filter(row -> row[:Sampling_date_order] < 20, _)
-
 CV_meta_result = @benchmark CV_meta(df.Abundance, 
                     df.Sampling_date_order,
                     df.plot, 
@@ -122,11 +119,4 @@ CV_meta_simple_result = @benchmark CV_meta_simple(df.Abundance,
                             df.Sampling_date_order,
                             df.plot, 
                             df.Species)    
-
-
-
-                            df = DataFrames.DataFrame(
-        Abundance=df.abundance,
-        Time=time,
-        Patch=patch,
-        Species=species)
+                            

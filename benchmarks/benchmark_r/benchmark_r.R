@@ -9,9 +9,12 @@ library(adespatial)
 library(DNCImper)
 
 #Read in the sample data
-df <- read.csv("~/.julia/dev/MetaCommunityMetrics/data/metacomm_rodent_df.csv")
-comm_df_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/DNCI_comm.csv")
-grouping_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/cluster_list_t1.csv")
+df <- read.csv("~/.julia/dev/MetaCommunityMetrics/data/metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE)
+#comm_df_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/DNCI_comm.csv")
+#grouping_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/cluster_list_t1.csv")
+
+comm_df_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/DNCI_comm_t50.csv")
+grouping_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/cluster_list_t50.csv")
 
 #Data Wrangling
 community_matrix<-df %>%
@@ -196,12 +199,6 @@ memory_usage_mib <- as.numeric(temporal_beta_div_3$mem_alloc) / 1.048576e+6
 cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
 cat("Memory Usage (MiB):", memory_usage_mib, "\n")
 
-
-
-
-
-
-
 #### Benchmark the DNCI function
 groups <- grouping_for_DNCI$Group
 
@@ -209,23 +206,29 @@ DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_df_for_DNCI,
                                                        groups, Nperm = 100, 
                                                        symmetrize = FALSE, 
                                                        plotSIMPER = FALSE),
-                            iterations = 100,
-                            check = TRUE,
+                               iterations = 10,
+                               check = FALSE,
                             time_unit = "ms")
 
+DNCI_multigroup_result_2 <- mark(DNCImper:::DNCI_multigroup(comm_df_for_DNCI, 
+                                                          groups, Nperm = 100, 
+                                                          symmetrize = FALSE, 
+                                                          plotSIMPER = FALSE),
+                               iterations = 10,
+                               check = FALSE,
+                               time_unit = "ms")
+
 # Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(temporal_beta_div_3$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(temporal_beta_div_3$mem_alloc) / 1.048576e+6
+execution_time_millisecond <- as.numeric(mean(DNCI_multigroup_result $time[[1]])) * 1000
+memory_usage_mib <- as.numeric(DNCI_multigroup_result $mem_alloc) / 1.048576e+6
 
 # Print the results
 cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
 cat("Memory Usage (MiB):", memory_usage_mib, "\n")
 
 
-
-
 #### Benchmark the prop_patches function
-prop_patches_result <- mark(prop_patches <- df %>% 
+prop_patches_result <- mark(df %>% 
                               group_by(Species, plot) %>%
                               dplyr::summarise(mean_abundance = mean(Abundance)) %>% 
                               filter(mean_abundance  > 0) %>% 
@@ -245,25 +248,7 @@ cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
 cat("Memory Usage (MiB):", memory_usage_mib, "\n")
 
 #### Benchmark the CV_meta_simple function
-# Extract unique values for Species, Sampling_date_order, and plot
-species_vals <- unique(df$Species)
-date_vals <- unique(df$Sampling_date_order)
-plot_vals <- unique(df$plot)
-
-# Create the array with dimensions based on unique Species, Sampling_date_order, and plot
-metacomm_tsdata <- array(0, dim = c(length(species_vals), length(date_vals), length(plot_vals)))
-
-# Step 3: Populate the array with values from the data frame
-for(i in 1:nrow(df)){
-  # Map Species, Sampling_date_order, and plot to their corresponding indices
-  species_index <- which(species_vals == df$Species[i])
-  date_index <- which(date_vals == df$Sampling_date_order[i])
-  plot_index <- which(plot_vals == df$plot[i])
-  
-  # Assign the value from the data frame (Abundance) to the array
-  metacomm_tsdata[species_index, date_index, plot_index] <- df$Abundance[i]
-}
-
+# The R function “var.partition” to calculate variability and synchrony across hierarchical levels
 var.partition <- function(metacomm_tsdata){
   ## The function "var.partition" performs the partitioning of variability
   ## across hierarchical levesl within a metacommunity.
@@ -283,12 +268,56 @@ var.partition <- function(metacomm_tsdata){
   CV_C_L <- sum(sd_patch_k)/mean_metacom
   CV_S_R <- sum(sd_species_i)/mean_metacom
   CV_C_R <- sd_metacom/mean_metacom
-
-  summary <- c(CV_S_L=CV_S_L, CV_C_L=CV_C_L, CV_S_R=CV_S_R, CV_C_R=CV_C_R)
-  return(summary)
+  phi_S_L2R <- CV_S_R/CV_S_L
+  phi_C_L2R <- CV_C_R/CV_C_L
+  phi_S2C_L <- CV_C_L/CV_S_L
+  phi_S2C_R <- CV_C_R/CV_S_R
+  partition_3level <- c(CV_S_L=CV_S_L, CV_C_L=CV_C_L, CV_S_R=CV_S_R, CV_C_R=CV_C_R,
+                        phi_S_L2R=phi_S_L2R, phi_C_L2R=phi_C_L2R, phi_S2C_L=phi_S2C_L,
+                        phi_S2C_R=phi_S2C_R)
+  return(partition_3level)
 }
 
-test=var.partition(metacomm_tsdata)
+#The master funciton to be benchmarked
+CV_simple_function <- function(species, time, plot, abundance){
+  # Extract unique values for Species, Sampling_date_order, and plot
+  species_vals <- unique(species)
+  date_vals <- unique(time)
+  plot_vals <- unique(plot)
+  
+  # Create the array with dimensions based on unique Species, Sampling_date_order, and plot
+  metacomm_tsdata <- array(0, dim = c(length(species_vals), length(date_vals), length(plot_vals)))
+  
+  # Populate the array with values from the data frame
+  for(i in 1:nrow(df)){
+    # Map Species, Sampling_date_order, and plot to their corresponding indices
+    species_index <- which(species_vals == species[i])
+    date_index <- which(date_vals == time[i])
+    plot_index <- which(plot_vals == plot[i])
+    
+    # Assign the value from the data frame (Abundance) to the array
+    metacomm_tsdata[species_index, date_index, plot_index] <- abundance[i]
+  }
+  result <- var.partition(metacomm_tsdata)
+  
+  return(result)
+}
+  
+
+
+CV_meta_simple_result <- mark(CV_simple_function(df$Species, df$Sampling_date_order, df$plot, df$Abundance),
+                            iterations = 1000,
+                            check = TRUE,
+                            time_unit = "ms")
+
+# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
+execution_time_millisecond <- as.numeric(mean(CV_meta_simple_result$time[[1]])) * 1000
+memory_usage_mib <- as.numeric(CV_meta_simple_result$mem_alloc) / 1.048576e+6
+
+# Print the results
+cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
+cat("Memory Usage (MiB):", memory_usage_mib, "\n")
+
 
 
 

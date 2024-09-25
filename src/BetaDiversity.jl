@@ -20,9 +20,8 @@ Details
 - Species that were not recorded at the given time step have to be removed before calculation.
 - For binary data, the function calculates Podani family, Jaccard-based indices. 
 - For quantitative data, the function calculates Podani family, Ruzicka-based indices.
-
-
-
+- This function is a translation/adaptation of the beta.dov.comp function from the R package `adespatial`,licensed under GPL-3.
+- Original package and documentation available at: https://cran.r-project.org/web/packages/adespatial/index.html
 
 Example
 ```jildoctest

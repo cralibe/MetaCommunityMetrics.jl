@@ -348,6 +348,8 @@ Details
 - In contrast, a DNCI value significantly above zero suggests that niche processes play a primary role in shaping community composition. 
 - If the DNCI value is not significantly different from zero, it indicates that dispersal and niche processes contribute equally to variations in community composition.
 - Please remove singletons (taxa/species that occuring at one patch/site within a time step) before using this function.
+- This function is a translation/adaptation of a function from the R package `DNCImper`, licensed under GPL-3.
+- Original package and documentation available at: https://github.com/Corentin-Gibert-Paleontology/DNCImper
 
 Example
 ```jildoctest
