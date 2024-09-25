@@ -218,9 +218,18 @@ DNCI_multigroup_result_2 <- mark(DNCImper:::DNCI_multigroup(comm_df_for_DNCI,
                                check = FALSE,
                                time_unit = "ms")
 
+DNCI_multigroup_result_3 <- mark(DNCImper:::DNCI_multigroup(comm_df_for_DNCI, 
+                                                            groups, Nperm = 100, 
+                                                            symmetrize = FALSE, 
+                                                            plotSIMPER = FALSE),
+                                 iterations = 100,
+                                 check = FALSE,
+                                 time_unit = "ms")
+
+saveRDS(DNCI_multigroup_result_3, "~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/benchmarking_result_R/DNCI_multigroup_result_100iter.rds")
 # Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(DNCI_multigroup_result $time[[1]])) * 1000
-memory_usage_mib <- as.numeric(DNCI_multigroup_result $mem_alloc) / 1.048576e+6
+execution_time_millisecond <- as.numeric(mean(DNCI_multigroup_result_3$time[[1]])) * 1000
+memory_usage_mib <- as.numeric(DNCI_multigroup_result_3$mem_alloc) / 1.048576e+6
 
 # Print the results
 cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")

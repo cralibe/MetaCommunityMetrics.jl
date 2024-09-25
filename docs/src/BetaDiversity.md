@@ -18,4 +18,5 @@ spatial_beta_div
 temporal_beta_div
 ```
 ## References
+- Guzman, L. M. et al. Accounting for temporal change in multiple biodiversity patterns improves the inference of metacommunity processes. Ecology 103, e3683 (2022). https://doi.org:https://doi.org/10.1002/ecy.3683
 - Legendre, P. Interpreting the replacement and richness difference components of beta diversity. Global Ecology and Biogeography 23, 1324-1334 (2014). https://doi.org:https://doi.org/10.1111/geb.12207
