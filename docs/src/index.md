@@ -87,3 +87,6 @@ julia> load_sample_data()
  48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
                                                                                           48712 rows omitted
 ```
+
+## Acknowledgment
+[`Acknowledgment`](https://cralibe.github.io/MetaCommunityMetrics.jl/Acknowledgment/)

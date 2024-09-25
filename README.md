@@ -79,7 +79,7 @@ julia> load_sample_data()
                                                                                           48712 rows omitted
 ```
 
-## Acknowledgements
+## Acknowledgment
 This package includes translations and adaptations of functions from the R packages `adespatial` (licensed under GPL-3), `vegan` (licensed under GPL-2 or later), and `DNCImper` (licensed under GPL-3). The original packages and their documentation are available at:
 
 - `adespatial`: https://cran.r-project.org/web/packages/adespatial/index.html
