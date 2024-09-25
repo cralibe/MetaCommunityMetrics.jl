@@ -15,5 +15,6 @@ makedocs(
                 "Dispersal-Niche Continuum Index (DNCI) Functions" => "DNCI.md",
                 "Niche Overlap Index Function" => "NicheOverlapIndex.md",
                 "Occupied Patches Proportion Function" => "OccupiedPatchesProportion.md",
-                "Variability Metrics Functions" => "VariabilityMetrics.md"]
+                "Variability Metrics Functions" => "VariabilityMetrics.md",
+                "Benchmarking Julia vs R" => "Benchmarking.md"]
 )
