@@ -12,7 +12,7 @@ CurrentModule = MetaCommunityMetrics
 - **R Version**: 4.3.1
 
 ## Direct Comparison (When an equivalent fuction in R is avaliable)
-*Below is a comparison of the benchmarking results between my Julia package and functions/equivalent implmentation in R. All times are in millisecond, and memory is in mebibytes (MiB). Only mean execution times are presented here.*
+*Below is a comparison of the benchmarking results between my Julia package and functions/equivalent implementation in R. All times are in millisecond, and memory is in mebibytes (MiB). Only mean execution times are presented here.*
 
 | Test Case                | Julia Execution Time | R Execution Time  | Speedup (Julia/R) | Memory Usage (Julia) | Memory Usage (R) | R Function and Package used              | 
 |--------------------------|----------------------|-------------------|-------------------|----------------------|------------------|------------------------------------------|
