@@ -224,8 +224,6 @@ Returns
 
 Details
 - This function uses the `beta_diversity` function to calculate beta diversity components after aggregating .
-- This function will remove the empty patches before calculating beta diversity.
-- This function will remove species that were not recorded at the given time step before calculating beta diversity.
 - For binary data, the function calculates Podani family, Jaccard-based indices. 
 - For quantitative data, the function calculates Podani family, Ruzicka-based indices.
 - The beta diversity decompositions of a metacommunity in space is a set of metrics suggested by Guzman et al. (2022) to infer metacommunity processes.
@@ -318,8 +316,6 @@ Returns
 
 Details
 - This function uses the `beta_diversity` function to calculate beta diversity components for each patch.
-- This function will remove the empty patches before calculating beta diversity.
-- This function will remove species that were not recorded at the given time step before calculating beta diversity.
 - For binary data, the function calculates Podani family, Jaccard-based indices. 
 - For quantitative data, the function calculates Podani family, Ruzicka-based indices.
 - The beta diversity decompositions of a metacommunity in time is a set of metrics suggested by Guzman et al. (2022) to infer metacommunity processes.
