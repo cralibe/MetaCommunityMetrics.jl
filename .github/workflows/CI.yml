@@ -20,7 +20,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        version: ['1.9', '1.10']  # Julia versions
+        version: ['1.6', '1.9']  # Julia versions
         os: [ubuntu-latest, macos-latest, windows-latest]  # OS: Ubuntu, macOS, and Windows
         arch: [x64, arm64]  # Architecture
         dataframes-version: ['1.0', '1.6']  # DataFrames version range ">= 1.0, < 2.0"
