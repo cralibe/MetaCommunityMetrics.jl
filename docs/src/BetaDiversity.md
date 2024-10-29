@@ -8,8 +8,8 @@ The `beta_diversity` functions in `MetaCommunityMetrics` are adapted from the `b
 
 ## Choosing the Right Function
 - Use `beta_diversity` for a general, comprehensive measure of beta diversity across your dataset. This function provides an overall assessment of how species composition varies between sites or over time, capturing both replacement (the turnover of species) and richness difference(the difference in species richness). 
-- Opt for `spatial_beta_div` when your focus is on comparing diversity between different spatial locations of a metacommunity. 
-- Opt for `temporal_beta_div` to track how diversity changes over time of a metacommunity. 
+- Use `spatial_beta_div` to comparing diversity between different spatial locations of a metacommunity. 
+- Use `temporal_beta_div` to track how diversity changes over time of a metacommunity. 
 
 ## The Functions
 ```@docs

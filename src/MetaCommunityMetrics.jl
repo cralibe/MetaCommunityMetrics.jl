@@ -30,6 +30,7 @@ include("DNCI.jl")
 include("NicheOverlapIndex.jl")
 include("OccupiedPatchesProportion.jl")
 include("VariabilityMetrics.jl")
+include("Hypervolume.jl")
 
 # Function to load sample data
 function load_sample_data()
@@ -43,5 +44,5 @@ export
     beta_diversity, spatial_beta_div, temporal_beta_div, 
     create_clusters, plot_clusters, DNCI_multigroup, 
     niche_overlap, prop_patches, CV_meta, CV_meta_simple,
-    load_sample_data
+    load_sample_data, MVNH_det, MVNH_dissimilarity, average_MVNH_det, average_MVNH_dissimilarity
 end
