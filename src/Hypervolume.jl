@@ -156,9 +156,12 @@ function MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vec
 end
 
 """
-    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> Dict
+    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[]) -> Number
 
 Calculate the avaraged niche volume across all species in a given biodiversity data.
+
+Returns
+- `Number`: The computed average niche volume based on the `MVNH_det` functions.
 
 """
 function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
@@ -200,9 +203,12 @@ function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, specie
 end
 
 """
-    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> Dict
+    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> Number
 
 Calculate the avearaged niche overlap across all species pairs in a given biodiversity data. 
+
+Returns
+- `Number`: The computed average niche overlap based on the `MVNH_dissimilarity` functions.
 
 """
 function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
