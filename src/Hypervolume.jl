@@ -49,7 +49,6 @@ julia> result = MVNH_det(df; var_names=["Latitude", "Longitude"])
 ```
 
 """
-
 function MVNH_det(data::DataFrame; var_names::Vector{String}=String[]) 
     # If variable names are not provided, generate default names
     if isempty(var_names)
