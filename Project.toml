@@ -1,7 +1,7 @@
 name = "MetaCommunityMetrics"
 uuid = "3ccb93f7-bd98-4150-a201-b30c241572df"
 authors = ["Yan Yin Jenny Cheung <yanyinjennycheung@gmail.com>", "Laura Melissa Guzman <guzmanur@usc.edu>"]
-version = "0.1.5"
+version = "0.1.6"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
@@ -41,7 +41,7 @@ SortingAlgorithms = "1.1 - 2"   # [1.1.0, 2.0.0)
 SpecialFunctions = "^0.8"      # [1.0.0, 2.0.0)
 Statistics = "1"                # [1.0.0, 2.0.0)
 StatsBase = "0.24 - 0.34"       # [0.24.0, 0.35.0)
-julia = "1.6 - 1.10"             # [1.6.0, 2.0.0)
+julia = "1.6 - 1.11"             # [1.6.0, 2.0.0)
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
