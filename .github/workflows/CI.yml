@@ -76,7 +76,7 @@ jobs:
 
       - name: Upload Coverage to Codecov
         if: (matrix.version != '1.6' && matrix.os != 'macos-latest' && matrix.arch != 'arm64') || (matrix.version != '1.9' && matrix.os != 'ubuntu-latest' && matrix.arch != 'arm64') || (matrix.version != '1.9' && matrix.os != 'windows-latest' && matrix.arch != 'arm64')
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           file: lcov.info
