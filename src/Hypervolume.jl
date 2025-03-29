@@ -4,50 +4,77 @@
 """
     MVNH_det(data::DataFrame; var_names::Vector{String}=String[]) -> DataFrame
 
-Calculate the niche volume for a species in a given biodiversity data. 
+Calculate the niche hypervolume of a species based on environmental variables.
 
 Arguments
-- `data::DataFrame`: A dataframe where each row represents an obsevation of species and each column represent the environmental variables for that observation.
-- `var_names::Vector{String}`: A vector of strings with the names of the environmental variables. Default is an empty vector.
+- `data::DataFrame`: DataFrame where each row represents an observation of a species (presence points) and columns represent environmental variables.
+- `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
+
 Returns
-- `DataFrame`: A DataFrame with the following columns:
-    - `total`: The total hypervolume of the niche.
-    - `cor`: The correlation component of the hypervolume, also known as the determinant of the correlation matrix.
-    - `variable_i`: The variance of the environmental variable i.
+- `DataFrame`: A DataFrame containing:
+  - `Correlation`: The correlation component (calculated as det(COV)/prod(variances))
+  - One column for each environmental variable showing its variance
+  - `total`: The total hypervolume (calculated as the determinant of the covariance matrix)
 
 Details
-- Evirnomental variables are assumed to be normally distributed.
-- Evirnomental variables are encouraged to be normalized to avoid bias due to different scaling before using this function.
-- This function is a translation/adaptation of the MVNH_det function from the R package `MVNH`,licensed under GPL-3.
-- Original package and documentation available at: https://github.com/lvmuyang/MVNH
+- Environmental variables are assumed to follow a multivariate normal distribution
+- Variables should be normalized before using this function to avoid bias from different scales
+- The function computes the covariance matrix of the input data, extracts variances, and calculates the determinant
+- This function is a Julia implementation of the `MVNH_det` function from the R package `MVNH` (GPL-3)
+- Original package and documentation: https://github.com/lvmuyang/MVNH
 
 Example
 ```jildoctest
 julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia> df = load_sample_data()
-48735×10 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
-                                                                                          48725 rows omitted
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
+                                                                                                                      48725 rows omitted
 
 
-julia> result = MVNH_det(df; var_names=["Latitude", "Longitude"])
+julia> data = @pipe df |> 
+            filter(row -> row[:Presence] > 0, _) |>
+            filter(row -> row[:Species] == "BA", _) |>
+            select(_, [:temperature, :precipitation])
+143×2 DataFrame
+ Row │ temperature  precipitation 
+     │ Float64      Float64       
+─────┼────────────────────────────
+   1 │   7.99303          64.8003
+   2 │   1.95878          48.6883
+   3 │  15.995            51.9702
+   4 │  -0.0812167        39.1034
+   5 │  19.1706           58.3263
+  ⋮  │      ⋮             ⋮
+ 139 │  17.8614           66.4085
+ 140 │  14.5365           12.0312
+ 141 │  17.5499           14.3885
+ 142 │  10.2389           34.7715
+ 143 │  14.0303           39.0852
+                  133 rows omitted                                                                                 
+
+julia> result = MVNH_det(data; var_names=["Temperature", "Precipitation"])
+1×4 DataFrame
+ Row │ Correlation  Precipitation  Temperature  total   
+     │ Float64      Float64        Float64      Float64 
+─────┼──────────────────────────────────────────────────
+   1 │    0.997928        879.781      24.7847  21760.0
 
 ```
-
 """
 function MVNH_det(data::DataFrame; var_names::Vector{String}=String[]) 
     # If variable names are not provided, generate default names
@@ -83,10 +110,129 @@ function MVNH_det(data::DataFrame; var_names::Vector{String}=String[])
 end
 
 """
-    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> Dict
+    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> Dict{String, DataFrame}
 
-Calculate the niche overlap between two species in a given biodiversity data. 
+Calculate niche dissimilarity between two species based on their environmental variables, using the Bhattacharyya distance and its components.
 
+Arguments
+- `data_1::DataFrame`: DataFrame for the first species, where each row represents an observation and columns represent environmental variables.
+- `data_2::DataFrame`: DataFrame for the second species, with the same structure as `data_1`.
+- `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
+
+Returns
+- `Dict{String, DataFrame}`: A dictionary containing three DataFrames:
+  - `"Bhattacharyya_distance"`: The total Bhattacharyya distance and its components
+  - `"Mahalanobis_distance"`: The Mahalanobis component of the Bhattacharyya distance
+  - `"Determinant_ratio"`: The determinant ratio component of the Bhattacharyya distance
+
+  Each DataFrame contains:
+  - `total`: The total value of the respective distance measure
+  - `correlation`: The correlation component of the distance measure
+  - One column for each environmental variable showing its contribution to the distance
+
+# Details
+- The Bhattacharyya distance is calculated as the sum of two components:
+  1. Mahalanobis component: (1/8) × (μ₁-μ₂)ᵀ × (S₁+S₂)/2⁻¹ × (μ₁-μ₂)
+  2. Determinant ratio component: (1/2) × log(det((S₁+S₂)/2) / sqrt(det(S₁) × det(S₂)))
+- Each component is further decomposed into individual variable contributions and correlation effects
+- Environmental variables are assumed to follow a multivariate normal distribution
+- Variables should be normalized before using this function to avoid bias from different scales
+- This function is a Julia implementation inspired by the `MVNH` R package (GPL-3)
+- Original package and documentation: https://github.com/lvmuyang/MVNH
+
+Example
+```jildoctest
+julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+
+julia> df = load_sample_data()
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
+                                                                                                                      48725 rows omitted
+
+
+julia> data_1 = @pipe df |> 
+            filter(row -> row[:Presence] > 0, _) |>
+            filter(row -> row[:Species] == "BA", _) |>
+            select(_, [:temperature, :precipitation])
+143×2 DataFrame
+ Row │ temperature  precipitation 
+     │ Float64      Float64       
+─────┼────────────────────────────
+   1 │   7.99303          64.8003
+   2 │   1.95878          48.6883
+   3 │  15.995            51.9702
+   4 │  -0.0812167        39.1034
+   5 │  19.1706           58.3263
+  ⋮  │      ⋮             ⋮
+ 139 │  17.8614           66.4085
+ 140 │  14.5365           12.0312
+ 141 │  17.5499           14.3885
+ 142 │  10.2389           34.7715
+ 143 │  14.0303           39.0852
+                  133 rows omitted
+
+julia> data_2 = @pipe df |> 
+            filter(row -> row[:Presence] > 0, _) |>
+            filter(row -> row[:Species] == "SH", _) |>
+            select(_, [:temperature, :precipitation])
+58×2 DataFrame
+ Row │ temperature  precipitation 
+     │ Float64      Float64       
+─────┼────────────────────────────
+   1 │    16.5938         21.3197
+   2 │    16.1385         20.8511
+   3 │    18.4342         60.962
+   4 │    11.8572         49.7807
+   5 │    12.0075         30.7462
+  ⋮  │      ⋮             ⋮
+  54 │    12.206          23.0181
+  55 │    13.9233         62.2122
+  56 │    20.2339         37.0448
+  57 │     7.40668       116.384
+  58 │    20.0481         32.7878
+                   48 rows omitted
+                   
+julia> result = MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Precipitation"])
+Dict{String, DataFrame} with 3 entries:
+  "Determinant_ratio"      => 1×4 DataFrame…
+  "Bhattacharyya_distance" => 1×4 DataFrame…
+  "Mahalanobis_distance"   => 1×4 DataFrame…
+
+julia> result["Determinant_ratio"]
+1×4 DataFrame
+ Row │ total       correlation  Temperature  Precipitation 
+     │ Float64     Float64      Float64      Float64       
+─────┼─────────────────────────────────────────────────────
+   1 │ 0.00738662   2.84135e-5  0.000672539     0.00668567
+
+julia> result["Bhattacharyya_distance"]
+1×4 DataFrame
+ Row │ total      correlation  Temperature  Precipitation 
+     │ Float64    Float64      Float64      Float64       
+─────┼────────────────────────────────────────────────────
+   1 │ 0.0100511  0.000122951   0.00296459     0.00696354
+
+julia> result["Mahalanobis_distance"]
+1×4 DataFrame
+ Row │ total       correlation  Temperature  Precipitation 
+     │ Float64     Float64      Float64      Float64       
+─────┼─────────────────────────────────────────────────────
+   1 │ 0.00266447    9.4538e-5   0.00229205    0.000277876
+
+```
 """
 function MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) 
     # If variable names are not provided, generate default names
@@ -155,15 +301,78 @@ function MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vec
 end
 
 """
-    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[]) -> Number
+    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; 
+                     var_names::Vector{String}=String[]) -> Float64
 
-Calculate the avaraged niche volume across all species in a given biodiversity data.
+Calculate the average niche hypervolume across multiple species in a community dataset.
+
+Arguments
+- `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
+- `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
+- `species::Union{AbstractVector, String}`: Vector containing species identifiers corresponding to each observation in `data`.
+- `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
 
 Returns
-- `Number`: The computed average niche volume based on the `MVNH_det` functions.
+- `Float64`: The average hypervolume across all species with presence data.
 
+Details
+- For each unique species, the function:
+  1. Filters observations where the species is present (presence_absence = 1)
+  2. Calculates the niche hypervolume using the `MVNH_det` function
+  3. Extracts the total hypervolume value
+- The function then computes the mean of all individual species hypervolumes
+- Species with no presence data are skipped in the calculation
+- Environmental variables are assumed to follow a multivariate normal distribution
+- Variables should be normalized before using this function to avoid bias from different scales
+
+Example
+```jildoctest
+julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+
+julia> df = load_sample_data()
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
+                                                                                                                      48725 rows omitted
+
+julia> data = @pipe df |> 
+           select(_, [:temperature, :precipitation])
+           
+48735×2 DataFrame
+   Row │ temperature  precipitation 
+       │ Float64      Float64       
+───────┼────────────────────────────
+     1 │    19.0414         36.519
+     2 │     9.38964        64.928
+     3 │     9.47682        15.1981
+     4 │    12.915          45.2296
+     5 │    16.4379         42.2394
+   ⋮   │      ⋮             ⋮
+ 48731 │    15.7166        159.86
+ 48732 │    15.7419         96.5712
+ 48733 │    20.0481         32.7878
+ 48734 │    15.1438         34.5151
+ 48735 │    15.854          80.9382
+                  48725 rows omitted
+
+julia> result = average_MVNH_det(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
+22427.757500223863
+
+```                                                                                                                     
 """
-function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
+function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; var_names::Vector{String}=String[])
     # Ensure the presence_absence and species vectors match the DataFrame size
     @assert length(presence_absence) == nrow(data) "Mismatch in data length"
     @assert length(species) == nrow(data) "Mismatch in species length"
@@ -202,15 +411,79 @@ function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, specie
 end
 
 """
-    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> Number
+    average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; 
+                              var_names::Vector{String}=String[]) -> Float64
 
-Calculate the avearaged niche overlap across all species pairs in a given biodiversity data. 
+Calculate the average niche dissimilarity between all unique pairs of species in a community dataset using Bhattacharyya distance.
+
+Arguments
+- `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
+- `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
+- `species::Union{AbstractVector, String}`: Vector containing species identifiers corresponding to each observation in `data`.
+- `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
 
 Returns
-- `Number`: The computed average niche overlap based on the `MVNH_dissimilarity` functions.
+- `Float64`: The average Bhattacharyya distance across all unique species pairs.
 
+Details
+- For each unique pair of species, the function:
+  1. Filters observations where each species is present (presence_absence = 1)
+  2. Calculates the niche dissimilarity using the `MVNH_dissimilarity` function
+  3. Extracts the total Bhattacharyya distance value
+- The function then computes the mean of all pairwise Bhattacharyya distances
+- Species pairs where either species has no presence data are skipped
+- Each species pair is processed only once (i.e., sp1-sp2 is calculated, but sp2-sp1 is skipped)
+- Environmental variables are assumed to follow a multivariate normal distribution
+- Variables should be normalized before using this function to avoid bias from different scales
+
+Example
+```jildoctest
+julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+
+julia> df = load_sample_data()
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
+───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
+                                                                                                                      48725 rows omitted
+
+julia> data = @pipe df |> 
+           select(_, [:temperature, :precipitation])
+           
+48735×2 DataFrame
+   Row │ temperature  precipitation 
+       │ Float64      Float64       
+───────┼────────────────────────────
+     1 │    19.0414         36.519
+     2 │     9.38964        64.928
+     3 │     9.47682        15.1981
+     4 │    12.915          45.2296
+     5 │    16.4379         42.2394
+   ⋮   │      ⋮             ⋮
+ 48731 │    15.7166        159.86
+ 48732 │    15.7419         96.5712
+ 48733 │    20.0481         32.7878
+ 48734 │    15.1438         34.5151
+ 48735 │    15.854          80.9382
+                  48725 rows omitted
+
+julia> result = average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])     
+0.029651910867403767
+
+```
 """
-function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
+function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; var_names::Vector{String}=String[])
     @assert length(presence_absence) == nrow(data) "Mismatch in data length"
     @assert length(species) == nrow(data) "Mismatch in species length"
 
