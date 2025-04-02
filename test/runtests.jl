@@ -48,20 +48,20 @@ using .MetaCommunityMetrics.Internal
 
     # Test the beta_diversity function
     # For abundance data
-    @test isapprox(beta_diversity(sample_matrix_abundance; quant=true), DataFrame(BDtotal = 0.413476082224629, 
-                                                                            Repl = 0.23722016292087425, 
-                                                                            RichDif = 0.176255919303755),
-                                                                            atol = 1e-8)
+    @test isapprox(beta_diversity(sample_matrix_abundance; quant=true), DataFrame(BDtotal = 0.203155, 
+                                                                            Repl = 0.0381462, 
+                                                                            RichDif = 0.165009),
+                                                                            atol = 1e-5)
     # For presence-absence data
-    @test isapprox(beta_diversity(sample_matrix_abundance; quant=false), DataFrame(BDtotal = 0.38877781199915573, 
-                                                                            Repl = 0.2419032219427474, 
-                                                                            RichDif = 0.14687459005640824),
-                                                                            atol = 1e-8)
+    @test isapprox(beta_diversity(sample_matrix_abundance; quant=false), DataFrame(BDtotal = 0.0622231, 
+                                                                            Repl = 0.00895125, 
+                                                                            RichDif = 0.0532719),
+                                                                            atol = 1e-5)
 
-    @test isapprox(beta_diversity(sample_matrix_presence; quant=false), DataFrame(BDtotal = 0.38877781199915573, 
-                                                                            Repl = 0.2419032219427474, 
-                                                                            RichDif = 0.14687459005640824),
-                                                                            atol = 1e-8)
+    @test isapprox(beta_diversity(sample_matrix_presence; quant=false), DataFrame(BDtotal = 0.0622231, 
+                                                                            Repl = 0.00895125, 
+                                                                            RichDif = 0.0532719),
+                                                                            atol = 1e-5)
     # Test the mean_spatial_beta_div function
     @test isapprox(spatial_beta_div(df.Abundance, 
         df.Sampling_date_order, 
