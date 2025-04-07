@@ -1,114 +1,150 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Hypervolume Functions · MetaCommunityMetrics Documentation</title><meta name="title" content="Hypervolume Functions · MetaCommunityMetrics Documentation"/><meta property="og:title" content="Hypervolume Functions · MetaCommunityMetrics Documentation"/><meta property="twitter:title" content="Hypervolume Functions · MetaCommunityMetrics Documentation"/><meta name="description" content="Documentation for MetaCommunityMetrics Documentation."/><meta property="og:description" content="Documentation for MetaCommunityMetrics Documentation."/><meta property="twitter:description" content="Documentation for MetaCommunityMetrics Documentation."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="MetaCommunityMetrics Documentation logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">MetaCommunityMetrics Documentation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../BetaDiversity/">Beta Diverisity Functions</a></li><li><a class="tocitem" href="../DNCI/">Dispersal-Niche Continuum Index (DNCI) Functions</a></li><li><a class="tocitem" href="../NicheOverlapIndex/">Niche Overlap Index Function</a></li><li><a class="tocitem" href="../OccupiedPatchesProportion/">Occupied Patches Proportion Function</a></li><li><a class="tocitem" href="../VariabilityMetrics/">Variability Metrics Functions</a></li><li class="is-active"><a class="tocitem" href>Hypervolume Functions</a><ul class="internal"><li><a class="tocitem" href="#The-Functions"><span>The Functions</span></a></li></ul></li><li><a class="tocitem" href="../Benchmarking/">Benchmarking Julia vs R</a></li><li><a class="tocitem" href="../Acknowledgment/">Acknowledgment</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Hypervolume Functions</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Hypervolume Functions</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/cralibe/MetaCommunityMetrics.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Hypervolume-Functions"><a class="docs-heading-anchor" href="#Hypervolume-Functions">Hypervolume Functions</a><a id="Hypervolume-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Hypervolume-Functions" title="Permalink"></a></h1><p>Hypervolume is a method originally proposed by Hutchinson (1957). It provide methods to calculate the volume of a niche for a given specice and thus the ncihe overlap between two species. It helps to infer how niche breath of species has contribute to the co-occurance of different species in the same location at the same time. The hypervolume functions provide by this package are adapted from the R package <code>MVNH</code> (https://github.com/lvmuyang/MVNH)</p><h2 id="The-Functions"><a class="docs-heading-anchor" href="#The-Functions">The Functions</a><a id="The-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#The-Functions" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="MetaCommunityMetrics.MVNH_det" href="#MetaCommunityMetrics.MVNH_det"><code>MetaCommunityMetrics.MVNH_det</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">MVNH_det(data::DataFrame; var_names::Vector{String}=String[]) -&gt; DataFrame</code></pre><p>Calculate the niche hypervolume of a species based on environmental variables.</p><p>Arguments</p><ul><li><code>data::DataFrame</code>: DataFrame where each row represents an observation of a species (presence points) and columns represent environmental variables.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names &quot;variable1&quot;, &quot;variable2&quot;, etc. will be used.</li></ul><p>Returns</p><ul><li><code>DataFrame</code>: A DataFrame containing:<ul><li><code>Correlation</code>: The correlation component (calculated as det(COV)/prod(variances))</li><li>One column for each environmental variable showing its variance</li><li><code>total</code>: The total hypervolume (calculated as the determinant of the covariance matrix)</li></ul></li></ul><p>Details</p><ul><li>Environmental variables are assumed to follow a multivariate normal distribution</li><li>Variables should be normalized before using this function to avoid bias from different scales</li><li>The function computes the covariance matrix of the input data, extracts variances, and calculates the determinant</li><li>This function is a Julia implementation of the <code>MVNH_det</code> function from the R package <code>MVNH</code> (GPL-3)</li><li>Original package and documentation: https://github.com/lvmuyang/MVNH</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Hypervolume Functions · MetaCommunityMetrics Documentation</title><meta name="title" content="Hypervolume Functions · MetaCommunityMetrics Documentation"/><meta property="og:title" content="Hypervolume Functions · MetaCommunityMetrics Documentation"/><meta property="twitter:title" content="Hypervolume Functions · MetaCommunityMetrics Documentation"/><meta name="description" content="Documentation for MetaCommunityMetrics Documentation."/><meta property="og:description" content="Documentation for MetaCommunityMetrics Documentation."/><meta property="twitter:description" content="Documentation for MetaCommunityMetrics Documentation."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="MetaCommunityMetrics Documentation logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">MetaCommunityMetrics Documentation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../BetaDiversity/">Beta Diverisity Functions</a></li><li><a class="tocitem" href="../DNCI/">Dispersal-Niche Continuum Index (DNCI) Functions</a></li><li><a class="tocitem" href="../NicheOverlapIndex/">Niche Overlap Index Function</a></li><li><a class="tocitem" href="../OccupiedPatchesProportion/">Occupied Patches Proportion Function</a></li><li><a class="tocitem" href="../VariabilityMetrics/">Variability Metrics Functions</a></li><li class="is-active"><a class="tocitem" href>Hypervolume Functions</a><ul class="internal"><li><a class="tocitem" href="#An-Overview"><span>An Overview</span></a></li><li><a class="tocitem" href="#The-Functions"><span>The Functions</span></a></li><li><a class="tocitem" href="#References"><span>References</span></a></li></ul></li><li><a class="tocitem" href="../Benchmarking/">Benchmarking Julia vs R</a></li><li><a class="tocitem" href="../Acknowledgment/">Acknowledgment</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Hypervolume Functions</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Hypervolume Functions</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/cralibe/MetaCommunityMetrics.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Hypervolume-Functions"><a class="docs-heading-anchor" href="#Hypervolume-Functions">Hypervolume Functions</a><a id="Hypervolume-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#Hypervolume-Functions" title="Permalink"></a></h1><p>Hypervolume is a method originally proposed by Hutchinson (1957). It provide methods to calculate the volume of a niche for a given specice and thus the ncihe overlap between two species. It helps to infer how niche breath of species has contribute to the co-occurance of different species in the same location at the same time. The hypervolume functions provide by this package are adapted from the R package <code>MVNH</code> (https://github.com/lvmuyang/MVNH)</p><h2 id="An-Overview"><a class="docs-heading-anchor" href="#An-Overview">An Overview</a><a id="An-Overview-1"></a><a class="docs-heading-anchor-permalink" href="#An-Overview" title="Permalink"></a></h2><p>The MVNH framework provides parametric measures for analyzing ecological niches using the multivariate normal distribution model. This framework offers powerful tools for quantifying and comparing the size and dissimilarity of species&#39; niches, with each measure being partitionable into biologically meaningful components.</p><p>The framework models a species&#39; niche as a multivariate normal distribution in environmental space, where:</p><ul><li>Each environmental variable represents one dimension of the niche</li><li>The mean vector represents the niche optimum</li><li>The covariance matrix represents the niche breadth and shape</li></ul><p>There are four hypervolume functions in this package:</p><ul><li><code>MVNH_det</code> calculates the total hypervolume of a species&#39; niche based on the determinant of the covariance matrix (generalized variance). This measure can be partitioned into:</li><li><code>MVNH_dissimilarity</code> calculates the Bhattacharyya distance between two species&#39; niches, providing a comprehensive measure of niche differentiation. </li><li><code>average_MVNH_det</code> calculates the mean hypervolume across multiple species in a community, providing an overall measure of niche size at the community level.</li><li><code>average_MVNH_dissimilarity</code> calculates the mean Bhattacharyya distance between all unique pairs of species in a community, providing a measure of overall niche differentiation.</li></ul><h3 id="Practical-Considerations"><a class="docs-heading-anchor" href="#Practical-Considerations">Practical Considerations</a><a id="Practical-Considerations-1"></a><a class="docs-heading-anchor-permalink" href="#Practical-Considerations" title="Permalink"></a></h3><ul><li><p>Statistical assumptions: This framework relies on multivariate normal distribution of environmental data.</p><ul><li>When encountering skewed variables, apply appropriate transformations to normalize distributions.</li><li>Be aware that as you increase the number of variables, you face greater challenges with:<ul><li>Variable interdependence (collinearity) which can drive determinant values toward zero</li><li>Potential violations of the multivariate normality assumption</li></ul></li><li>Address variable interdependence through either:<ul><li>Thoughtful pre-selection of ecologically meaningful variables with direct influence on species distributions</li><li>Application of dimension reduction methods such as PCA (principal component analysis)<ul><li>Important note: PCA creates orthogonal axes, which forces the correlation component to 1.0, eliminating correlation structure information</li><li>For datasets containing multiple distinct groups of related environmental variables (such as climate factors, soil properties, or topographic features), consider using generalized canonical  variables to identify the most representative variables within each natural category while preserving the ecological relationships between different variable groups.</li></ul></li></ul></li></ul></li><li><p>Measurement standardization: Before analysis, standardize all environmental variables to comparable scales to prevent variables with larger numerical ranges from disproportionately influencing results</p></li></ul><h2 id="The-Functions"><a class="docs-heading-anchor" href="#The-Functions">The Functions</a><a id="The-Functions-1"></a><a class="docs-heading-anchor-permalink" href="#The-Functions" title="Permalink"></a></h2><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="MetaCommunityMetrics.MVNH_det" href="#MetaCommunityMetrics.MVNH_det"><code>MetaCommunityMetrics.MVNH_det</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">MVNH_det(data::DataFrame; var_names::Vector{String}=String[]) -&gt; DataFrame</code></pre><p>Calculate the niche hypervolume of a species based on environmental variables.</p><p>Arguments</p><ul><li><code>data::DataFrame</code>: DataFrame where each row represents an observation of a species (presence only, need to filter out absences) and columns represent environmental variables.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names &quot;variable1&quot;, &quot;variable2&quot;, etc. will be used.</li></ul><p>Returns</p><ul><li><code>DataFrame</code>: A DataFrame containing:<ul><li><code>Correlation</code>: The correlation component (calculated as det(COV)/prod(variances))</li><li>One column for each environmental variable showing its variance</li><li><code>total</code>: The total hypervolume (calculated as the determinant of the covariance matrix)</li></ul></li></ul><p>Details</p><ul><li>Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.</li><li>Variables should be normalized before using this function to avoid bias from different scales</li><li>The function computes the covariance matrix of the input data, extracts variances, and calculates the determinant</li><li>This function is a Julia implementation of the <code>MVNH_det</code> function from the R package <code>MVNH</code> (GPL-3)</li><li>Original package and documentation: https://github.com/lvmuyang/MVNH</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics, UnicodePlots
 
 julia&gt; df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
-
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 julia&gt; data = @pipe df |&gt; 
             filter(row -&gt; row[:Presence] &gt; 0, _) |&gt;
             filter(row -&gt; row[:Species] == &quot;BA&quot;, _) |&gt;
-            select(_, [:temperature, :precipitation])
+            select(_, [:normalized_temperature, :normalized_precipitation])
 143×2 DataFrame
- Row │ temperature  precipitation 
-     │ Float64      Float64       
-─────┼────────────────────────────
-   1 │   7.99303          64.8003
-   2 │   1.95878          48.6883
-   3 │  15.995            51.9702
-   4 │  -0.0812167        39.1034
-   5 │  19.1706           58.3263
-  ⋮  │      ⋮             ⋮
- 139 │  17.8614           66.4085
- 140 │  14.5365           12.0312
- 141 │  17.5499           14.3885
- 142 │  10.2389           34.7715
- 143 │  14.0303           39.0852
-                  133 rows omitted                                                                                 
+ Row │ normalized_temperature  normalized_precipitation 
+     │ Float64                 Float64                  
+─────┼──────────────────────────────────────────────────
+   1 │             -1.40523                   0.746757
+   2 │             -2.61504                   0.229756
+   3 │              0.199089                  0.347726
+   4 │             -3.02404                  -0.166723
+   5 │              0.835775                  0.556397
+  ⋮  │           ⋮                        ⋮
+ 139 │              0.573287                  0.79109
+ 140 │             -0.0933359                -2.29843
+ 141 │              0.510836                 -1.97484
+ 142 │             -0.954948                 -0.379064
+ 143 │             -0.194825                 -0.167562
+                                        133 rows omitted    
+
+julia&gt; UnicodePlots.histogram(data.normalized_temperature, 
+                         nbins = 10, 
+                         title = &quot;Temperature Histogram&quot;,  
+                         width=20,  
+                         height=5)   
+                 Temperature Histogram 
+                ┌                    ┐ 
+   [-4.0, -3.0) ┤▍ 1                   
+   [-3.0, -2.0) ┤█▎ 4                  
+   [-2.0, -1.0) ┤████▉ 16              
+   [-1.0,  0.0) ┤███████████████▏ 49   
+   [ 0.0,  1.0) ┤████████████████  52  
+   [ 1.0,  2.0) ┤█████▊ 19             
+   [ 2.0,  3.0) ┤▋ 2                   
+                └                    ┘ 
+                       Frequency  
+
+julia&gt; UnicodePlots.histogram(data.normalized_precipitation, 
+                                nbins = 10, 
+                                title = &quot;Precipitation Histogram&quot;,  
+                                width=20,  
+                                height=5)  
+                Precipitation Histogram 
+                ┌                    ┐ 
+   [-2.5, -2.0) ┤██  4                 
+   [-2.0, -1.5) ┤██▌ 5                 
+   [-1.5, -1.0) ┤█████  10             
+   [-1.0, -0.5) ┤████████▌ 17          
+   [-0.5,  0.0) ┤████████████████  32  
+   [ 0.0,  0.5) ┤████████████████  32  
+   [ 0.5,  1.0) ┤████████████  24      
+   [ 1.0,  1.5) ┤██▌ 5                 
+   [ 1.5,  2.0) ┤████▌ 9               
+   [ 2.0,  2.5) ┤██▌ 5                 
+                └                    ┘ 
+                       Frequency   
 
 julia&gt; result = MVNH_det(data; var_names=[&quot;Temperature&quot;, &quot;Precipitation&quot;])
 1×4 DataFrame
- Row │ Correlation  Precipitation  Temperature  total   
-     │ Float64      Float64        Float64      Float64 
-─────┼──────────────────────────────────────────────────
-   1 │    0.997928        879.781      24.7847  21760.0
-</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/cralibe/MetaCommunityMetrics.jl">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="MetaCommunityMetrics.MVNH_dissimilarity" href="#MetaCommunityMetrics.MVNH_dissimilarity"><code>MetaCommunityMetrics.MVNH_dissimilarity</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -&gt; Dict{String, DataFrame}</code></pre><p>Calculate niche dissimilarity between two species based on their environmental variables, using the Bhattacharyya distance and its components.</p><p>Arguments</p><ul><li><code>data_1::DataFrame</code>: DataFrame for the first species, where each row represents an observation and columns represent environmental variables.</li><li><code>data_2::DataFrame</code>: DataFrame for the second species, with the same structure as <code>data_1</code>.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names &quot;variable1&quot;, &quot;variable2&quot;, etc. will be used.</li></ul><p>Returns</p><ul><li><p><code>Dict{String, DataFrame}</code>: A dictionary containing three DataFrames:</p><ul><li><code>&quot;Bhattacharyya_distance&quot;</code>: The total Bhattacharyya distance and its components</li><li><code>&quot;Mahalanobis_distance&quot;</code>: The Mahalanobis component of the Bhattacharyya distance</li><li><code>&quot;Determinant_ratio&quot;</code>: The determinant ratio component of the Bhattacharyya distance</li></ul><p>Each DataFrame contains:</p><ul><li><code>total</code>: The total value of the respective distance measure</li><li><code>correlation</code>: The correlation component of the distance measure</li><li>One column for each environmental variable showing its contribution to the distance</li></ul></li></ul><p><strong>Details</strong></p><ul><li>The Bhattacharyya distance is calculated as the sum of two components:<ol><li>Mahalanobis component: (1/8) × (μ₁-μ₂)ᵀ × (S₁+S₂)/2⁻¹ × (μ₁-μ₂)</li><li>Determinant ratio component: (1/2) × log(det((S₁+S₂)/2) / sqrt(det(S₁) × det(S₂)))</li></ol></li><li>Each component is further decomposed into individual variable contributions and correlation effects</li><li>Environmental variables are assumed to follow a multivariate normal distribution</li><li>Variables should be normalized before using this function to avoid bias from different scales</li><li>This function is a Julia implementation inspired by the <code>MVNH</code> R package (GPL-3)</li><li>Original package and documentation: https://github.com/lvmuyang/MVNH</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+ Row │ Correlation  Precipitation  Temperature  total    
+     │ Float64      Float64        Float64      Float64  
+─────┼───────────────────────────────────────────────────
+   1 │    0.999758       0.942899      0.99626  0.939145
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/cralibe/MetaCommunityMetrics.jl">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="MetaCommunityMetrics.MVNH_dissimilarity" href="#MetaCommunityMetrics.MVNH_dissimilarity"><code>MetaCommunityMetrics.MVNH_dissimilarity</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -&gt; Dict{String, DataFrame}</code></pre><p>Calculate niche dissimilarity between two species based on their environmental variables, using the Bhattacharyya distance and its components.</p><p>Arguments</p><ul><li><code>data_1::DataFrame</code>: DataFrame for the first species, where each row represents an observation (presence only, need to filter out absences) and columns represent environmental variables.</li><li><code>data_2::DataFrame</code>: DataFrame for the second species, with the same structure as <code>data_1</code>.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names &quot;variable1&quot;, &quot;variable2&quot;, etc. will be used.</li></ul><p>Returns</p><ul><li><p><code>Dict{String, DataFrame}</code>: A dictionary containing three DataFrames:</p><ul><li><code>&quot;Bhattacharyya_distance&quot;</code>: The total Bhattacharyya distance and its components</li><li><code>&quot;Mahalanobis_distance&quot;</code>: The Mahalanobis component of the Bhattacharyya distance</li><li><code>&quot;Determinant_ratio&quot;</code>: The determinant ratio component of the Bhattacharyya distance</li></ul><p>Each DataFrame contains:</p><ul><li><code>total</code>: The total value of the respective distance measure</li><li><code>correlation</code>: The correlation component of the distance measure</li><li>One column for each environmental variable showing its contribution to the distance</li></ul></li></ul><p><strong>Details</strong></p><ul><li>The Bhattacharyya distance is calculated as the sum of two components:<ol><li>Mahalanobis component: (1/8) × (μ₁-μ₂)ᵀ × (S₁+S₂)/2⁻¹ × (μ₁-μ₂)</li><li>Determinant ratio component: (1/2) × log(det((S₁+S₂)/2) / sqrt(det(S₁) × det(S₂)))</li></ol></li><li>Each component is further decomposed into individual variable contributions and correlation effects</li><li>Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.</li><li>Variables should be normalized before using this function to avoid bias from different scales</li><li>This function is a Julia implementation inspired by the <code>MVNH</code> R package (GPL-3)</li><li>Original package and documentation: https://github.com/lvmuyang/MVNH</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia&gt; df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 
 julia&gt; data_1 = @pipe df |&gt; 
             filter(row -&gt; row[:Presence] &gt; 0, _) |&gt;
             filter(row -&gt; row[:Species] == &quot;BA&quot;, _) |&gt;
-            select(_, [:temperature, :precipitation])
+            select(_, [:normalized_temperature, :normalized_precipitation])
 143×2 DataFrame
- Row │ temperature  precipitation 
-     │ Float64      Float64       
-─────┼────────────────────────────
-   1 │   7.99303          64.8003
-   2 │   1.95878          48.6883
-   3 │  15.995            51.9702
-   4 │  -0.0812167        39.1034
-   5 │  19.1706           58.3263
-  ⋮  │      ⋮             ⋮
- 139 │  17.8614           66.4085
- 140 │  14.5365           12.0312
- 141 │  17.5499           14.3885
- 142 │  10.2389           34.7715
- 143 │  14.0303           39.0852
-                  133 rows omitted
+ Row │ normalized_temperature  normalized_precipitation 
+     │ Float64                 Float64                  
+─────┼──────────────────────────────────────────────────
+   1 │             -1.40523                   0.746757
+   2 │             -2.61504                   0.229756
+   3 │              0.199089                  0.347726
+   4 │             -3.02404                  -0.166723
+   5 │              0.835775                  0.556397
+  ⋮  │           ⋮                        ⋮
+ 139 │              0.573287                  0.79109
+ 140 │             -0.0933359                -2.29843
+ 141 │              0.510836                 -1.97484
+ 142 │             -0.954948                 -0.379064
+ 143 │             -0.194825                 -0.167562
+                                        133 rows omitted
 
 julia&gt; data_2 = @pipe df |&gt; 
             filter(row -&gt; row[:Presence] &gt; 0, _) |&gt;
             filter(row -&gt; row[:Species] == &quot;SH&quot;, _) |&gt;
-            select(_, [:temperature, :precipitation])
+            select(_, [:normalized_temperature, :normalized_precipitation])
 58×2 DataFrame
- Row │ temperature  precipitation 
-     │ Float64      Float64       
-─────┼────────────────────────────
-   1 │    16.5938         21.3197
-   2 │    16.1385         20.8511
-   3 │    18.4342         60.962
-   4 │    11.8572         49.7807
-   5 │    12.0075         30.7462
-  ⋮  │      ⋮             ⋮
-  54 │    12.206          23.0181
-  55 │    13.9233         62.2122
-  56 │    20.2339         37.0448
-  57 │     7.40668       116.384
-  58 │    20.0481         32.7878
-                   48 rows omitted
+ Row │ normalized_temperature  normalized_precipitation 
+     │ Float64                 Float64                  
+─────┼──────────────────────────────────────────────────
+   1 │               0.319133                -1.26372
+   2 │               0.227851                -1.30392
+   3 │               0.688124                 0.63633
+   4 │              -0.630506                 0.269884
+   5 │              -0.600362                -0.601565
+  ⋮  │           ⋮                        ⋮
+  54 │              -0.560579                -1.1251
+  55 │              -0.216268                 0.673043
+  56 │               1.04894                 -0.264528
+  57 │              -1.52279                  1.80578
+  58 │               1.01169                 -0.485298
+                                         48 rows omitted
                    
 julia&gt; result = MVNH_dissimilarity(data_1, data_2; var_names=[&quot;Temperature&quot;, &quot;Precipitation&quot;])
 Dict{String, DataFrame} with 3 entries:
@@ -118,108 +154,107 @@ Dict{String, DataFrame} with 3 entries:
 
 julia&gt; result[&quot;Determinant_ratio&quot;]
 1×4 DataFrame
- Row │ total       correlation  Temperature  Precipitation 
-     │ Float64     Float64      Float64      Float64       
-─────┼─────────────────────────────────────────────────────
-   1 │ 0.00738662   2.84135e-5  0.000672539     0.00668567
-
-julia&gt; result[&quot;Bhattacharyya_distance&quot;]
-1×4 DataFrame
  Row │ total      correlation  Temperature  Precipitation 
      │ Float64    Float64      Float64      Float64       
 ─────┼────────────────────────────────────────────────────
-   1 │ 0.0100511  0.000122951   0.00296459     0.00696354
+   1 │ 0.0048021  0.000767901  0.000672539     0.00336166
+
+julia&gt; result[&quot;Bhattacharyya_distance&quot;]
+1×4 DataFrame
+ Row │ total       correlation  Temperature  Precipitation 
+     │ Float64     Float64      Float64      Float64       
+─────┼─────────────────────────────────────────────────────
+   1 │ 0.00932099   0.00102573   0.00296459     0.00533067
 
 julia&gt; result[&quot;Mahalanobis_distance&quot;]
 1×4 DataFrame
  Row │ total       correlation  Temperature  Precipitation 
      │ Float64     Float64      Float64      Float64       
 ─────┼─────────────────────────────────────────────────────
-   1 │ 0.00266447    9.4538e-5   0.00229205    0.000277876
+   1 │ 0.00451889  0.000257828   0.00229205     0.00196901
 </code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/cralibe/MetaCommunityMetrics.jl">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="MetaCommunityMetrics.average_MVNH_det" href="#MetaCommunityMetrics.average_MVNH_det"><code>MetaCommunityMetrics.average_MVNH_det</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; 
-                 var_names::Vector{String}=String[]) -&gt; Float64</code></pre><p>Calculate the average niche hypervolume across multiple species in a community dataset.</p><p>Arguments</p><ul><li><code>data::DataFrame</code>: DataFrame containing environmental variables where each row represents an observation.</li><li><code>presence_absence::Vector{Int}</code>: Vector indicating presence (1) or absence (0) for each observation in <code>data</code>.</li><li><code>species::Union{AbstractVector, String}</code>: Vector containing species identifiers corresponding to each observation in <code>data</code>.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names will be used.</li></ul><p>Returns</p><ul><li><code>Float64</code>: The average hypervolume across all species with presence data.</li></ul><p>Details</p><ul><li>For each unique species, the function:<ol><li>Filters observations where the species is present (presence_absence = 1)</li><li>Calculates the niche hypervolume using the <code>MVNH_det</code> function</li><li>Extracts the total hypervolume value</li></ol></li><li>The function then computes the mean of all individual species hypervolumes</li><li>Species with no presence data are skipped in the calculation</li><li>Environmental variables are assumed to follow a multivariate normal distribution</li><li>Variables should be normalized before using this function to avoid bias from different scales</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+                 var_names::Vector{String}=String[]) -&gt; Float64</code></pre><p>Calculate the average niche hypervolume across multiple species in a community dataset.</p><p>Arguments</p><ul><li><code>data::DataFrame</code>: DataFrame containing environmental variables where each row represents an observation.</li><li><code>presence_absence::Vector{Int}</code>: Vector indicating presence (1) or absence (0) for each observation in <code>data</code>.</li><li><code>species::Union{AbstractVector, String}</code>: Vector containing species identifiers corresponding to each observation in <code>data</code>.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names will be used.</li></ul><p>Returns</p><ul><li><code>Float64</code>: The average hypervolume across all species with presence data.</li></ul><p>Details</p><ul><li>For each unique species, the function:<ol><li>Filters observations where the species is present (presence_absence &gt; 0)</li><li>Calculates the niche hypervolume using the <code>MVNH_det</code> function</li><li>Extracts the total hypervolume value</li></ol></li><li>The function then computes the mean of all individual species hypervolumes</li><li>Species with no presence data are skipped in the calculation</li><li>Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.</li><li>Variables should be normalized before using this function to avoid bias from different scales</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia&gt; df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 julia&gt; data = @pipe df |&gt; 
-           select(_, [:temperature, :precipitation])
+           select(_, [:normalized_temperature, :normalized_precipitation])
            
 48735×2 DataFrame
-   Row │ temperature  precipitation 
-       │ Float64      Float64       
-───────┼────────────────────────────
-     1 │    19.0414         36.519
-     2 │     9.38964        64.928
-     3 │     9.47682        15.1981
-     4 │    12.915          45.2296
-     5 │    16.4379         42.2394
-   ⋮   │      ⋮             ⋮
- 48731 │    15.7166        159.86
- 48732 │    15.7419         96.5712
- 48733 │    20.0481         32.7878
- 48734 │    15.1438         34.5151
- 48735 │    15.854          80.9382
-                  48725 rows omitted
+   Row │ normalized_temperature  normalized_precipitation 
+       │ Float64                 Float64                  
+───────┼──────────────────────────────────────────────────
+     1 │              0.80987                  -0.290381
+     2 │             -1.12523                   0.750317
+     3 │             -1.10775                  -1.87583
+     4 │             -0.418417                  0.0964911
+     5 │              0.287892                 -0.0272079
+   ⋮   │           ⋮                        ⋮
+ 48731 │              0.143276                  2.37981
+ 48732 │              0.148338                  1.4683
+ 48733 │              1.01169                  -0.485298
+ 48734 │              0.0284359                -0.392446
+ 48735 │              0.170814                  1.14892
+                                        48725 rows omitted
 
 julia&gt; result = average_MVNH_det(data, df.Presence, df.Species; var_names=[&quot;Temperature&quot;, &quot;Precipitation&quot;])
-22427.757500223863
+0.9842468737598974
 </code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/cralibe/MetaCommunityMetrics.jl">source</a></section></article><article class="docstring"><header><a class="docstring-article-toggle-button fa-solid fa-chevron-down" href="javascript:;" title="Collapse docstring"></a><a class="docstring-binding" id="MetaCommunityMetrics.average_MVNH_dissimilarity" href="#MetaCommunityMetrics.average_MVNH_dissimilarity"><code>MetaCommunityMetrics.average_MVNH_dissimilarity</code></a> — <span class="docstring-category">Function</span><span class="is-flex-grow-1 docstring-article-toggle-button" title="Collapse docstring"></span></header><section><div><pre><code class="language-julia hljs">average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; 
-                          var_names::Vector{String}=String[]) -&gt; Float64</code></pre><p>Calculate the average niche dissimilarity between all unique pairs of species in a community dataset using Bhattacharyya distance.</p><p>Arguments</p><ul><li><code>data::DataFrame</code>: DataFrame containing environmental variables where each row represents an observation.</li><li><code>presence_absence::Vector{Int}</code>: Vector indicating presence (1) or absence (0) for each observation in <code>data</code>.</li><li><code>species::Union{AbstractVector, String}</code>: Vector containing species identifiers corresponding to each observation in <code>data</code>.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names will be used.</li></ul><p>Returns</p><ul><li><code>Float64</code>: The average Bhattacharyya distance across all unique species pairs.</li></ul><p>Details</p><ul><li>For each unique pair of species, the function:<ol><li>Filters observations where each species is present (presence_absence = 1)</li><li>Calculates the niche dissimilarity using the <code>MVNH_dissimilarity</code> function</li><li>Extracts the total Bhattacharyya distance value</li></ol></li><li>The function then computes the mean of all pairwise Bhattacharyya distances</li><li>Species pairs where either species has no presence data are skipped</li><li>Each species pair is processed only once (i.e., sp1-sp2 is calculated, but sp2-sp1 is skipped)</li><li>Environmental variables are assumed to follow a multivariate normal distribution</li><li>Variables should be normalized before using this function to avoid bias from different scales</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+                          var_names::Vector{String}=String[]) -&gt; Float64</code></pre><p>Calculate the average niche dissimilarity between all unique pairs of species in a community dataset using Bhattacharyya distance.</p><p>Arguments</p><ul><li><code>data::DataFrame</code>: DataFrame containing environmental variables where each row represents an observation.</li><li><code>presence_absence::Vector{Int}</code>: Vector indicating presence (1) or absence (0) for each observation in <code>data</code>.</li><li><code>species::Union{AbstractVector, String}</code>: Vector containing species identifiers corresponding to each observation in <code>data</code>.</li><li><code>var_names::Vector{String}=String[]</code>: Optional vector specifying names for the environmental variables. If empty, default names will be used.</li></ul><p>Returns</p><ul><li><code>Float64</code>: The average Bhattacharyya distance across all unique species pairs.</li></ul><p>Details</p><ul><li>For each unique pair of species, the function:<ol><li>Filters observations where each species is present (presence_absence &gt; 0)</li><li>Calculates the niche dissimilarity using the <code>MVNH_dissimilarity</code> function</li><li>Extracts the total Bhattacharyya distance value</li></ol></li><li>The function then computes the mean of all pairwise Bhattacharyya distances</li><li>Species pairs where either species has no presence data are skipped</li><li>Each species pair is processed only once (i.e., sp1-sp2 is calculated, but sp2-sp1 is skipped)</li><li>Environmental variables are assumed to follow a multivariate normal distribution</li><li>Variables should be normalized before using this function to avoid bias from different scales</li></ul><p>Example</p><pre><code class="language-jildoctest hljs">julia&gt; using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia&gt; df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 julia&gt; data = @pipe df |&gt; 
-           select(_, [:temperature, :precipitation])
-           
+           select(_, [:normalized_temperature, :normalized_precipitation])    
 48735×2 DataFrame
-   Row │ temperature  precipitation 
-       │ Float64      Float64       
-───────┼────────────────────────────
-     1 │    19.0414         36.519
-     2 │     9.38964        64.928
-     3 │     9.47682        15.1981
-     4 │    12.915          45.2296
-     5 │    16.4379         42.2394
-   ⋮   │      ⋮             ⋮
- 48731 │    15.7166        159.86
- 48732 │    15.7419         96.5712
- 48733 │    20.0481         32.7878
- 48734 │    15.1438         34.5151
- 48735 │    15.854          80.9382
-                  48725 rows omitted
+   Row │ normalized_temperature  normalized_precipitation 
+       │ Float64                 Float64                  
+───────┼──────────────────────────────────────────────────
+     1 │              0.80987                  -0.290381
+     2 │             -1.12523                   0.750317
+     3 │             -1.10775                  -1.87583
+     4 │             -0.418417                  0.0964911
+     5 │              0.287892                 -0.0272079
+   ⋮   │           ⋮                        ⋮
+ 48731 │              0.143276                  2.37981
+ 48732 │              0.148338                  1.4683
+ 48733 │              1.01169                  -0.485298
+ 48734 │              0.0284359                -0.392446
+ 48735 │              0.170814                  1.14892
+                                        48725 rows omitted
 
 julia&gt; result = average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names=[&quot;Temperature&quot;, &quot;Precipitation&quot;])     
-0.029651910867403767
-</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/cralibe/MetaCommunityMetrics.jl">source</a></section></article></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../VariabilityMetrics/">« Variability Metrics Functions</a><a class="docs-footer-nextpage" href="../Benchmarking/">Benchmarking Julia vs R »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Wednesday 2 April 2025 00:38">Wednesday 2 April 2025</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+0.02923266035138391
+</code></pre></div><a class="docs-sourcelink" target="_blank" href="https://github.com/cralibe/MetaCommunityMetrics.jl">source</a></section></article><h2 id="References"><a class="docs-heading-anchor" href="#References">References</a><a id="References-1"></a><a class="docs-heading-anchor-permalink" href="#References" title="Permalink"></a></h2><ul><li>Lu, Muyang, Kevin Winner, and Walter Jetz. A unifying framework for quantifying and comparing n‐dimensional hypervolumes. Methods in Ecology and Evolution 12.10, 1953-1968 (2021). https://doi.org/10.1111/2041-210X.13665</li></ul></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../VariabilityMetrics/">« Variability Metrics Functions</a><a class="docs-footer-nextpage" href="../Benchmarking/">Benchmarking Julia vs R »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.10.1 on <span class="colophon-date" title="Monday 7 April 2025 23:00">Monday 7 April 2025</span>. Using Julia version 1.6.7.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
