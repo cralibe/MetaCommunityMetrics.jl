@@ -45,14 +45,14 @@ julia> df = load_sample_data()
  48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
                                                                                           48725 rows omitted
 
-julia> matrix_with_abundance =  @pipe df |>
+julia> matrix_with_abundance = @pipe df |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :temperature, :precipitation, :Presence)) |> 
            filter(row -> row[:Sampling_date_order] == 1, _) |> 
-           select(_, Not(:Presence)) |>
-           unstack(_, :Species, :Abundance, fill=0) |>
-           select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> 
-           Matrix(_) |> 
-           x -> x[:, sum(x, dims=1)[1, :] .!= 0] |> 
-           x -> x[vec(sum(x, dims=2)) .!= 0, :]
+           unstack(_, :Species, :Abundance) |>  
+           select(_, Not(:Sampling_date_order, :plot)) |> 
+           Matrix(_) |> #convert the dataframe to a matrix
+           _[:, sum(_, dims=1)[1, :] .!= 0] |> 
+           _[sum(_, dims=2)[:, 1] .!= 0,:] 
 15×5 Matrix{Int64}:
  1  0  0  0  0
  1  0  0  0  0
@@ -70,13 +70,14 @@ julia> matrix_with_abundance =  @pipe df |>
  0  0  1  0  0
  0  0  0  0  1
 
-julia> matrix_with_presence = @pipe df |> 
-           filter(row -> row[:Sampling_date_order] == 1, _) |> 
-           select(_, Not(:Abundance)) |>
-           unstack(_, :Species, :Presence, fill=0) |> #convert it back to the wide format 
-           select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> 
-           Matrix(_) |>     
-           x -> x[:, sum(x, dims=1)[1, :] .!= 0]
+julia> matrix_with_presence =  @pipe df |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :temperature, :precipitation, :Abundance)) |> 
+           filter(row -> row[:Sampling_date_order] == 1, _) |>
+           unstack(_, :Species, :Presence, fill=0) |> 
+           select(_, Not(:Sampling_date_order, :plot)) |> 
+           Matrix(_) |> #convert the dataframe to a matrix      
+           _[:, sum(_, dims=1)[1, :] .!= 0] |> 
+           _[sum(_, dims=2)[:, 1] .!= 0,:]
 15×5 Matrix{Int64}:
  1  0  0  0  0
  1  0  0  0  0

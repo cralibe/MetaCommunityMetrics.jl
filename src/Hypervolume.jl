@@ -7,7 +7,7 @@
 Calculate the niche hypervolume of a species based on environmental variables.
 
 Arguments
-- `data::DataFrame`: DataFrame where each row represents an observation of a species (presence points) and columns represent environmental variables.
+- `data::DataFrame`: DataFrame where each row represents an observation of a species (presence only, need to filter out absences) and columns represent environmental variables.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
@@ -17,7 +17,7 @@ Returns
   - `total`: The total hypervolume (calculated as the determinant of the covariance matrix)
 
 Details
-- Environmental variables are assumed to follow a multivariate normal distribution
+- Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
 - Variables should be normalized before using this function to avoid bias from different scales
 - The function computes the covariance matrix of the input data, extracts variances, and calculates the determinant
 - This function is a Julia implementation of the `MVNH_det` function from the R package `MVNH` (GPL-3)
@@ -25,54 +25,90 @@ Details
 
 Example
 ```jildoctest
-julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
+julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics, UnicodePlots
 
 julia> df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
-
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 julia> data = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
-            select(_, [:temperature, :precipitation])
+            select(_, [:normalized_temperature, :normalized_precipitation])
 143×2 DataFrame
- Row │ temperature  precipitation 
-     │ Float64      Float64       
-─────┼────────────────────────────
-   1 │   7.99303          64.8003
-   2 │   1.95878          48.6883
-   3 │  15.995            51.9702
-   4 │  -0.0812167        39.1034
-   5 │  19.1706           58.3263
-  ⋮  │      ⋮             ⋮
- 139 │  17.8614           66.4085
- 140 │  14.5365           12.0312
- 141 │  17.5499           14.3885
- 142 │  10.2389           34.7715
- 143 │  14.0303           39.0852
-                  133 rows omitted                                                                                 
+ Row │ normalized_temperature  normalized_precipitation 
+     │ Float64                 Float64                  
+─────┼──────────────────────────────────────────────────
+   1 │             -1.40523                   0.746757
+   2 │             -2.61504                   0.229756
+   3 │              0.199089                  0.347726
+   4 │             -3.02404                  -0.166723
+   5 │              0.835775                  0.556397
+  ⋮  │           ⋮                        ⋮
+ 139 │              0.573287                  0.79109
+ 140 │             -0.0933359                -2.29843
+ 141 │              0.510836                 -1.97484
+ 142 │             -0.954948                 -0.379064
+ 143 │             -0.194825                 -0.167562
+                                        133 rows omitted    
+
+julia> UnicodePlots.histogram(data.normalized_temperature, 
+                         nbins = 10, 
+                         title = "Temperature Histogram",  
+                         width=20,  
+                         height=5)   
+                 Temperature Histogram 
+                ┌                    ┐ 
+   [-4.0, -3.0) ┤▍ 1                   
+   [-3.0, -2.0) ┤█▎ 4                  
+   [-2.0, -1.0) ┤████▉ 16              
+   [-1.0,  0.0) ┤███████████████▏ 49   
+   [ 0.0,  1.0) ┤████████████████  52  
+   [ 1.0,  2.0) ┤█████▊ 19             
+   [ 2.0,  3.0) ┤▋ 2                   
+                └                    ┘ 
+                       Frequency  
+
+julia> UnicodePlots.histogram(data.normalized_precipitation, 
+                                nbins = 10, 
+                                title = "Precipitation Histogram",  
+                                width=20,  
+                                height=5)  
+                Precipitation Histogram 
+                ┌                    ┐ 
+   [-2.5, -2.0) ┤██  4                 
+   [-2.0, -1.5) ┤██▌ 5                 
+   [-1.5, -1.0) ┤█████  10             
+   [-1.0, -0.5) ┤████████▌ 17          
+   [-0.5,  0.0) ┤████████████████  32  
+   [ 0.0,  0.5) ┤████████████████  32  
+   [ 0.5,  1.0) ┤████████████  24      
+   [ 1.0,  1.5) ┤██▌ 5                 
+   [ 1.5,  2.0) ┤████▌ 9               
+   [ 2.0,  2.5) ┤██▌ 5                 
+                └                    ┘ 
+                       Frequency   
 
 julia> result = MVNH_det(data; var_names=["Temperature", "Precipitation"])
 1×4 DataFrame
- Row │ Correlation  Precipitation  Temperature  total   
-     │ Float64      Float64        Float64      Float64 
-─────┼──────────────────────────────────────────────────
-   1 │    0.997928        879.781      24.7847  21760.0
+ Row │ Correlation  Precipitation  Temperature  total    
+     │ Float64      Float64        Float64      Float64  
+─────┼───────────────────────────────────────────────────
+   1 │    0.999758       0.942899      0.99626  0.939145
 
 ```
 """
@@ -115,7 +151,7 @@ end
 Calculate niche dissimilarity between two species based on their environmental variables, using the Bhattacharyya distance and its components.
 
 Arguments
-- `data_1::DataFrame`: DataFrame for the first species, where each row represents an observation and columns represent environmental variables.
+- `data_1::DataFrame`: DataFrame for the first species, where each row represents an observation (presence only, need to filter out absences) and columns represent environmental variables.
 - `data_2::DataFrame`: DataFrame for the second species, with the same structure as `data_1`.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
@@ -135,7 +171,7 @@ Returns
   1. Mahalanobis component: (1/8) × (μ₁-μ₂)ᵀ × (S₁+S₂)/2⁻¹ × (μ₁-μ₂)
   2. Determinant ratio component: (1/2) × log(det((S₁+S₂)/2) / sqrt(det(S₁) × det(S₂)))
 - Each component is further decomposed into individual variable contributions and correlation effects
-- Environmental variables are assumed to follow a multivariate normal distribution
+- Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
 - Variables should be normalized before using this function to avoid bias from different scales
 - This function is a Julia implementation inspired by the `MVNH` R package (GPL-3)
 - Original package and documentation: https://github.com/lvmuyang/MVNH
@@ -146,64 +182,64 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia> df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 
 julia> data_1 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
-            select(_, [:temperature, :precipitation])
+            select(_, [:normalized_temperature, :normalized_precipitation])
 143×2 DataFrame
- Row │ temperature  precipitation 
-     │ Float64      Float64       
-─────┼────────────────────────────
-   1 │   7.99303          64.8003
-   2 │   1.95878          48.6883
-   3 │  15.995            51.9702
-   4 │  -0.0812167        39.1034
-   5 │  19.1706           58.3263
-  ⋮  │      ⋮             ⋮
- 139 │  17.8614           66.4085
- 140 │  14.5365           12.0312
- 141 │  17.5499           14.3885
- 142 │  10.2389           34.7715
- 143 │  14.0303           39.0852
-                  133 rows omitted
+ Row │ normalized_temperature  normalized_precipitation 
+     │ Float64                 Float64                  
+─────┼──────────────────────────────────────────────────
+   1 │             -1.40523                   0.746757
+   2 │             -2.61504                   0.229756
+   3 │              0.199089                  0.347726
+   4 │             -3.02404                  -0.166723
+   5 │              0.835775                  0.556397
+  ⋮  │           ⋮                        ⋮
+ 139 │              0.573287                  0.79109
+ 140 │             -0.0933359                -2.29843
+ 141 │              0.510836                 -1.97484
+ 142 │             -0.954948                 -0.379064
+ 143 │             -0.194825                 -0.167562
+                                        133 rows omitted
 
 julia> data_2 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
-            select(_, [:temperature, :precipitation])
+            select(_, [:normalized_temperature, :normalized_precipitation])
 58×2 DataFrame
- Row │ temperature  precipitation 
-     │ Float64      Float64       
-─────┼────────────────────────────
-   1 │    16.5938         21.3197
-   2 │    16.1385         20.8511
-   3 │    18.4342         60.962
-   4 │    11.8572         49.7807
-   5 │    12.0075         30.7462
-  ⋮  │      ⋮             ⋮
-  54 │    12.206          23.0181
-  55 │    13.9233         62.2122
-  56 │    20.2339         37.0448
-  57 │     7.40668       116.384
-  58 │    20.0481         32.7878
-                   48 rows omitted
+ Row │ normalized_temperature  normalized_precipitation 
+     │ Float64                 Float64                  
+─────┼──────────────────────────────────────────────────
+   1 │               0.319133                -1.26372
+   2 │               0.227851                -1.30392
+   3 │               0.688124                 0.63633
+   4 │              -0.630506                 0.269884
+   5 │              -0.600362                -0.601565
+  ⋮  │           ⋮                        ⋮
+  54 │              -0.560579                -1.1251
+  55 │              -0.216268                 0.673043
+  56 │               1.04894                 -0.264528
+  57 │              -1.52279                  1.80578
+  58 │               1.01169                 -0.485298
+                                         48 rows omitted
                    
 julia> result = MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Precipitation"])
 Dict{String, DataFrame} with 3 entries:
@@ -213,24 +249,24 @@ Dict{String, DataFrame} with 3 entries:
 
 julia> result["Determinant_ratio"]
 1×4 DataFrame
- Row │ total       correlation  Temperature  Precipitation 
-     │ Float64     Float64      Float64      Float64       
-─────┼─────────────────────────────────────────────────────
-   1 │ 0.00738662   2.84135e-5  0.000672539     0.00668567
-
-julia> result["Bhattacharyya_distance"]
-1×4 DataFrame
  Row │ total      correlation  Temperature  Precipitation 
      │ Float64    Float64      Float64      Float64       
 ─────┼────────────────────────────────────────────────────
-   1 │ 0.0100511  0.000122951   0.00296459     0.00696354
+   1 │ 0.0048021  0.000767901  0.000672539     0.00336166
+
+julia> result["Bhattacharyya_distance"]
+1×4 DataFrame
+ Row │ total       correlation  Temperature  Precipitation 
+     │ Float64     Float64      Float64      Float64       
+─────┼─────────────────────────────────────────────────────
+   1 │ 0.00932099   0.00102573   0.00296459     0.00533067
 
 julia> result["Mahalanobis_distance"]
 1×4 DataFrame
  Row │ total       correlation  Temperature  Precipitation 
      │ Float64     Float64      Float64      Float64       
 ─────┼─────────────────────────────────────────────────────
-   1 │ 0.00266447    9.4538e-5   0.00229205    0.000277876
+   1 │ 0.00451889  0.000257828   0.00229205     0.00196901
 
 ```
 """
@@ -317,12 +353,12 @@ Returns
 
 Details
 - For each unique species, the function:
-  1. Filters observations where the species is present (presence_absence = 1)
+  1. Filters observations where the species is present (presence_absence > 0)
   2. Calculates the niche hypervolume using the `MVNH_det` function
   3. Extracts the total hypervolume value
 - The function then computes the mean of all individual species hypervolumes
 - Species with no presence data are skipped in the calculation
-- Environmental variables are assumed to follow a multivariate normal distribution
+- Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
 - Variables should be normalized before using this function to avoid bias from different scales
 
 Example
@@ -331,44 +367,44 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia> df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 julia> data = @pipe df |> 
-           select(_, [:temperature, :precipitation])
+           select(_, [:normalized_temperature, :normalized_precipitation])
            
 48735×2 DataFrame
-   Row │ temperature  precipitation 
-       │ Float64      Float64       
-───────┼────────────────────────────
-     1 │    19.0414         36.519
-     2 │     9.38964        64.928
-     3 │     9.47682        15.1981
-     4 │    12.915          45.2296
-     5 │    16.4379         42.2394
-   ⋮   │      ⋮             ⋮
- 48731 │    15.7166        159.86
- 48732 │    15.7419         96.5712
- 48733 │    20.0481         32.7878
- 48734 │    15.1438         34.5151
- 48735 │    15.854          80.9382
-                  48725 rows omitted
+   Row │ normalized_temperature  normalized_precipitation 
+       │ Float64                 Float64                  
+───────┼──────────────────────────────────────────────────
+     1 │              0.80987                  -0.290381
+     2 │             -1.12523                   0.750317
+     3 │             -1.10775                  -1.87583
+     4 │             -0.418417                  0.0964911
+     5 │              0.287892                 -0.0272079
+   ⋮   │           ⋮                        ⋮
+ 48731 │              0.143276                  2.37981
+ 48732 │              0.148338                  1.4683
+ 48733 │              1.01169                  -0.485298
+ 48734 │              0.0284359                -0.392446
+ 48735 │              0.170814                  1.14892
+                                        48725 rows omitted
 
 julia> result = average_MVNH_det(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
-22427.757500223863
+0.9842468737598974
 
 ```                                                                                                                     
 """
@@ -427,7 +463,7 @@ Returns
 
 Details
 - For each unique pair of species, the function:
-  1. Filters observations where each species is present (presence_absence = 1)
+  1. Filters observations where each species is present (presence_absence > 0)
   2. Calculates the niche dissimilarity using the `MVNH_dissimilarity` function
   3. Extracts the total Bhattacharyya distance value
 - The function then computes the mean of all pairwise Bhattacharyya distances
@@ -442,44 +478,43 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia> df = load_sample_data()
 48735×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  temperature  precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64      Float64       
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0     19.0414         36.519
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5      9.38964        64.928
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5      9.47682        15.1981
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0     12.915          45.2296
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0     16.4379         42.2394
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮           ⋮             ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0     15.7166        159.86
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5     15.7419         96.5712
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5     20.0481         32.7878
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5     15.1438         34.5151
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0     15.854          80.9382
-                                                                                                                      48725 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                            48725 rows omitted
 
 julia> data = @pipe df |> 
-           select(_, [:temperature, :precipitation])
-           
+           select(_, [:normalized_temperature, :normalized_precipitation])    
 48735×2 DataFrame
-   Row │ temperature  precipitation 
-       │ Float64      Float64       
-───────┼────────────────────────────
-     1 │    19.0414         36.519
-     2 │     9.38964        64.928
-     3 │     9.47682        15.1981
-     4 │    12.915          45.2296
-     5 │    16.4379         42.2394
-   ⋮   │      ⋮             ⋮
- 48731 │    15.7166        159.86
- 48732 │    15.7419         96.5712
- 48733 │    20.0481         32.7878
- 48734 │    15.1438         34.5151
- 48735 │    15.854          80.9382
-                  48725 rows omitted
+   Row │ normalized_temperature  normalized_precipitation 
+       │ Float64                 Float64                  
+───────┼──────────────────────────────────────────────────
+     1 │              0.80987                  -0.290381
+     2 │             -1.12523                   0.750317
+     3 │             -1.10775                  -1.87583
+     4 │             -0.418417                  0.0964911
+     5 │              0.287892                 -0.0272079
+   ⋮   │           ⋮                        ⋮
+ 48731 │              0.143276                  2.37981
+ 48732 │              0.148338                  1.4683
+ 48733 │              1.01169                  -0.485298
+ 48734 │              0.0284359                -0.392446
+ 48735 │              0.170814                  1.14892
+                                        48725 rows omitted
 
 julia> result = average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])     
-0.029651910867403767
+0.02923266035138391
 
 ```
 """
@@ -503,11 +538,11 @@ function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{In
 
             # Filter rows for the current species pair with presence > 0
             filtered_data_1 = @pipe data |>
-                filter(row -> row.species == sp1 && row.presence_absence == 1, _) |>
+                filter(row -> row.species == sp1 && row.presence_absence > 0, _) |>
                 select(_, Not(:species,:presence_absence))
 
             filtered_data_2 = @pipe data |>
-                filter(row -> row.species == sp2 && row.presence_absence == 1, _) |>
+                filter(row -> row.species == sp2 && row.presence_absence > 0, _) |>
                 select(_, Not(:species,:presence_absence))
 
             # Skip if no valid rows for the species pair

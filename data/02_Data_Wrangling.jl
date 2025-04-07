@@ -66,13 +66,19 @@ metacomm_df = @pipe metacomm_df |>
 innerjoin(_, patch_coord_df, on = :plot) #joining the metacomm_df with the patch_coord_df
 
 #Generating environmental data
-temp = rand(Normal(15.0, 5.0), 48735)
+Random.seed!(123)
+temp = rand(Normal(15.0, 2.0), 48735)
 precip = rand(LogNormal(log(50.0) - 0.5*log(1 + (30.0/50.0)^2), sqrt(log(1 + (30.0/50.0)^2))), 48735)
 
-#Add the environmental data to the species data
-Random.seed!(123)
-metacomm_df.temperature .= rand(Normal(15.0, 5.0), 48735)
-metacomm_df.precipitation .= rand(LogNormal(log(50.0) - 0.5*log(1 + (30.0/50.0)^2), sqrt(log(1 + (30.0/50.0)^2))), 48735)
+#Transform precipitation to achieve normality
+log_precip = log.(precip)
+
+#Standardize both variables (z-score: subtract mean, divide by standard deviation)
+temp_normalized = (temp .- mean(temp)) ./ std(temp)
+precip_normalized = (log_precip .- mean(log_precip)) ./ std(log_precip)
+
+metacomm_df.normalized_temperature .= temp_normalized
+metacomm_df.normalized_precipitation .= precip_normalized
 
 #Save the metacomm_df to a csv file
 CSV.write(joinpath(pkgdir(MetaCommunityMetrics), "data", "metacomm_rodent_df.csv"), metacomm_df)

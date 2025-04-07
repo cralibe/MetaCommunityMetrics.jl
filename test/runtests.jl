@@ -17,20 +17,24 @@ using .MetaCommunityMetrics.Internal
     #Preparing the matric for calculating beta diveristy
     #matrix with the species abundance
     sample_matrix_abundance = @pipe df |> 
-    select(_, Not(:Presence)) |>
-    filter(row -> row[:Sampling_date_order] == 50, _) |> # filter rows where Sampling_date_order == 50
-    unstack(_, :Species, :Abundance, fill=0) |> #convert it back to the wide format 
-    select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> # remove the first four columns
+    select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> # remove the unused four columns
+    filter(row -> row[:Sampling_date_order] == 1, _) |> # filter rows where Sampling_date_order == 1
+    unstack(_, :Species, :Abundance) |> #convert it back to the wide format 
+    select(_, Not(:Sampling_date_order, :plot)) |> # remove the unused columns
     Matrix(_) |> #convert the dataframe to a matrix
-    _[:, sum(_, dims=1)[1, :] .!= 0] # Remove columns with sum of zero
+    _[:, sum(_, dims=1)[1, :] .!= 0] |> # Remove columns with sum of zero
+    _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
+
+
     #matrix with the species presence-absence data
     sample_matrix_presence = @pipe df |> 
-    select(_, Not(:Abundance)) |>
-    filter(row -> row[:Sampling_date_order] == 50, _) |># filter rows where Sampling_date_order == 50
+    select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Abundance)) |> # remove the unused four columns
+    filter(row -> row[:Sampling_date_order] == 1, _) |># filter rows where Sampling_date_order == 1
     unstack(_, :Species, :Presence, fill=0) |> #convert it back to the wide format 
-    select(_, Not(:Year, :Month, :Day, :Sampling_date_order, :plot, :Longitude, :Latitude)) |> # remove the first four columns
+    select(_, Not(:Sampling_date_order, :plot)) |> # remove the unused columns
     Matrix(_) |> #convert the dataframe to a matrix      
-    _[:, sum(_, dims=1)[1, :] .!= 0] # Remove columns with sum of zero
+    _[:, sum(_, dims=1)[1, :] .!= 0] |> # Remove columns with sum of zero
+    _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
 
     #Preparing the data for the DNCI analysis
     total_presence_df=@pipe df|>
@@ -47,20 +51,20 @@ using .MetaCommunityMetrics.Internal
     
 
     # Test the beta_diversity function
-    # For abundance data
-    @test isapprox(beta_diversity(sample_matrix_abundance; quant=true), DataFrame(BDtotal = 0.203155, 
-                                                                            Repl = 0.0381462, 
-                                                                            RichDif = 0.165009),
+    ## For abundance data
+    @test isapprox(beta_diversity(sample_matrix_abundance; quant=true), DataFrame(BDtotal = 0.390317, 
+                                                                            Repl = 0.2678, 
+                                                                            RichDif = 0.122517),
                                                                             atol = 1e-5)
-    # For presence-absence data
-    @test isapprox(beta_diversity(sample_matrix_abundance; quant=false), DataFrame(BDtotal = 0.0622231, 
-                                                                            Repl = 0.00895125, 
-                                                                            RichDif = 0.0532719),
+    ## For treating abundance data as presence-absence data using the function
+    @test isapprox(beta_diversity(sample_matrix_abundance; quant=false), DataFrame(BDtotal = 0.357143, 
+                                                                            Repl = 0.284127, 
+                                                                            RichDif = 0.0730159),
                                                                             atol = 1e-5)
-
-    @test isapprox(beta_diversity(sample_matrix_presence; quant=false), DataFrame(BDtotal = 0.0622231, 
-                                                                            Repl = 0.00895125, 
-                                                                            RichDif = 0.0532719),
+    ## For presence-absence data
+    @test isapprox(beta_diversity(sample_matrix_presence; quant=false), DataFrame(BDtotal = 0.357143, 
+                                                                            Repl = 0.284127, 
+                                                                            RichDif = 0.0730159),
                                                                             atol = 1e-5)
     # Test the mean_spatial_beta_div function
     @test isapprox(spatial_beta_div(df.Abundance, 
@@ -150,21 +154,65 @@ using .MetaCommunityMetrics.Internal
     @test isapprox(CV_meta(CV_test_df.Abundance, 
                     CV_test_df.Sampling_date_order,
                     CV_test_df.plot, 
-                    CV_test_df.Species), DataFrame(CV_s_l=1.05607236064782,
-                                            CV_s_r=0.8133239050934045,
-                                            CV_c_l=0.6561837274590009,
-                                            CV_c_r=0.5372991135672851),
+                    CV_test_df.Species), DataFrame(CV_s_l = 1.05607236064782,
+                                            CV_s_r = 0.8133239050934045,
+                                            CV_c_l = 0.6561837274590009,
+                                            CV_c_r = 0.5372991135672851),
                                             atol = 1e-8)      
     
     # Test the CV_meta_simple function
     @test isapprox(CV_meta_simple(CV_test_df.Abundance, 
                             CV_test_df.Sampling_date_order,
                             CV_test_df.plot, 
-                            CV_test_df.Species), DataFrame(CV_s_l= 1.2080844086744866,
-                                            CV_s_r= 0.9188619724139119,
-                                            CV_c_l= 0.8012160438000538,
-                                            CV_c_r= 0.6650823635388619),
-                                            atol = 1e-8)      
+                            CV_test_df.Species), DataFrame(CV_s_l = 1.2080844086744866,
+                                            CV_s_r = 0.9188619724139119,
+                                            CV_c_l = 0.8012160438000538,
+                                            CV_c_r = 0.6650823635388619),
+                                            atol = 1e-8)    
+    
+    # Test the MVNH_det function
+    data = @pipe df |> 
+    filter(row -> row[:Presence] > 0, _) |>
+    filter(row -> row[:Species] == "BA", _) |>
+    select(_, [:normalized_temperature, :normalized_precipitation])
+    @test isapprox(MVNH_det(data; var_names=["Temperature", "Precipitation"]), DataFrame(Correlation = 0.999758,
+                                            Precipitation =  0.942899,
+                                            Temperature = 0.99626,
+                                            total = 0.939145),
+                                            atol = 1e-5) 
+                                            
+    # Test the MVNH_dissimilarity function
+    data_2 = @pipe df |> 
+            filter(row -> row[:Presence] > 0, _) |>
+            filter(row -> row[:Species] == "SH", _) |>
+            select(_, [:normalized_temperature, :normalized_precipitation])
+    
+    result = MVNH_dissimilarity(data, data_2; var_names = ["Temperature", "Precipitation"])
+
+    @test isapprox(result["Determinant_ratio"], DataFrame(total = 0.0048021,
+                                            correlation = 0.000767901,
+                                            Temperature = 0.000672539,
+                                            Precipitation =  0.00336166),
+                                            atol = 1e-5) 
+    @test isapprox(result["Bhattacharyya_distance"], DataFrame(total = 0.00932099,
+                                            correlation = 0.00102573,
+                                            Temperature = 0.00296459,
+                                            Precipitation =  .00533067),
+                                            atol = 1e-5) 
+    @test isapprox(result["Mahalanobis_distance"], DataFrame(total = 0.00451889,
+                                            correlation = 0.000257828,
+                                            Temperature = 0.00229205,
+                                            Precipitation = 0.00196901),
+                                            atol = 1e-5)                                         
+    
+    # Test the average_MVNH_det function    
+    data = @pipe df |> 
+    select(_, [:normalized_temperature, :normalized_precipitation])
+
+    @test isapprox(average_MVNH_det(data, df.Presence, df.Species; var_names = ["Temperature", "Precipitation"]), 0.9842468737598974, atol = 1e-5)
+
+    # Test the average_MVNH_dissimilarity function
+    @test isapprox(average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names = ["Temperature", "Precipitation"]), 0.02923266035138391, atol = 1e-5)
 
 end
 
