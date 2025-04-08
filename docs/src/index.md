@@ -15,7 +15,7 @@ These metrics include:
 - Niche overlap indices to determine the extent of niche sharing among species within the metacommunity
 - The proportion of habitat patches occupied by each species
 - The variability of community composition across different spatial and temporal scales
-- Hypervolume measurements (individual species, average, and between-species dissimilarities)
+- Niche hypervolume measurements (individual species, average, and between-species dissimilarities)
 
 ## Getting Started
 
