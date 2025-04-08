@@ -20,6 +20,7 @@ These metrics include:
 - Niche overlap indices to determine the extent of niche sharing among species within the metacommunity
 - The proportion of habitat patches occupied by each species
 - The variability of community composition across different spatial and temporal scales
+- Niche hypervolume measurements (individual species, average, and between-species dissimilarities)
 
 
 ## Getting Started
@@ -48,35 +49,22 @@ load_sample_data()
 julia> using MetaCommunityMetrics
 
 julia> load_sample_data()
-48735×10 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
-     6 │  2010      1     16                    1     14  BA               0         0      36.0     -109.5
-     7 │  2010      1     16                    1     17  BA               0         0      36.0     -108.0
-     8 │  2010      1     16                    1     22  BA               0         0      36.5     -108.5
-     9 │  2010      1     16                    1      6  BA               0         0      35.0     -107.5
-    10 │  2010      1     16                    1     13  BA               0         0      36.0     -110.0
-    11 │  2010      1     16                    1     15  BA               0         0      36.0     -109.0
-    12 │  2010      1     16                    1     20  BA               0         0      36.5     -109.5
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
- 48725 │  2023      3     21                  117     15  SH               1         1      36.0     -109.0
- 48726 │  2023      3     21                  117     19  SH               0         0      36.5     -110.0
- 48727 │  2023      3     21                  117     20  SH               0         0      36.5     -109.5
- 48728 │  2023      3     21                  117     21  SH               0         0      36.5     -109.0
- 48729 │  2023      3     21                  117     22  SH               0         0      36.5     -108.5
- 48730 │  2023      3     21                  117      1  SH               0         0      35.0     -110.0
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
-                                                                                          48712 rows omitted
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
+                                                                                                                                           48725 rows omitted
 ```
 
 ## Acknowledgment
