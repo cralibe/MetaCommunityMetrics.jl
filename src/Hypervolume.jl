@@ -146,7 +146,7 @@ function MVNH_det(data::DataFrame; var_names::Vector{String}=String[])
 end
 
 """
-    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> Dict{String, DataFrame}
+    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> DataFrame
 
 Calculate niche dissimilarity between two species based on their environmental variables, using the Bhattacharyya distance and its components.
 
@@ -156,15 +156,15 @@ Arguments
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
-- `Dict{String, DataFrame}`: A dictionary containing three DataFrames:
+- `DataFrame`: A dataframe containing three metrics and their components:
   - `"Bhattacharyya_distance"`: The total Bhattacharyya distance and its components
   - `"Mahalanobis_distance"`: The Mahalanobis component of the Bhattacharyya distance
   - `"Determinant_ratio"`: The determinant ratio component of the Bhattacharyya distance
 
-  Each DataFrame contains:
+  Each metric contains:
   - `total`: The total value of the respective distance measure
   - `correlation`: The correlation component of the distance measure
-  - One column for each environmental variable showing its contribution to the distance
+  - One value for each environmental variable showing its contribution to the distance
 
 # Details
 - The Bhattacharyya distance is calculated as the sum of two components:
@@ -203,6 +203,7 @@ julia> data_1 = @pipe df |>
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
             select(_, [:normalized_temperature, :normalized_precipitation])
+
 143×2 DataFrame
  Row │ normalized_temperature  normalized_precipitation 
      │ Float64                 Float64                  
@@ -242,102 +243,104 @@ julia> data_2 = @pipe df |>
                                          48 rows omitted
                    
 julia> result = MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Precipitation"])
-Dict{String, DataFrame} with 3 entries:
-  "Determinant_ratio"      => 1×4 DataFrame…
-  "Bhattacharyya_distance" => 1×4 DataFrame…
-  "Mahalanobis_distance"   => 1×4 DataFrame…
-
-julia> result["Determinant_ratio"]
-1×4 DataFrame
- Row │ total      correlation  Temperature  Precipitation 
-     │ Float64    Float64      Float64      Float64       
-─────┼────────────────────────────────────────────────────
-   1 │ 0.0048021  0.000767901  0.000672539     0.00336166
-
-julia> result["Bhattacharyya_distance"]
-1×4 DataFrame
- Row │ total       correlation  Temperature  Precipitation 
-     │ Float64     Float64      Float64      Float64       
-─────┼─────────────────────────────────────────────────────
-   1 │ 0.00932099   0.00102573   0.00296459     0.00533067
-
-julia> result["Mahalanobis_distance"]
-1×4 DataFrame
- Row │ total       correlation  Temperature  Precipitation 
-     │ Float64     Float64      Float64      Float64       
-─────┼─────────────────────────────────────────────────────
-   1 │ 0.00451889  0.000257828   0.00229205     0.00196901
+3×5 DataFrame
+ Row │ metric                  total       correlation  Temperature  Precipitation 
+     │ String                  Float64     Float64      Float64      Float64       
+─────┼─────────────────────────────────────────────────────────────────────────────
+   1 │ Bhattacharyya_distance  0.00932099  0.00102573   0.00296459      0.00533067
+   2 │ Mahalanobis_distance    0.00451889  0.000257828  0.00229205      0.00196901
+   3 │ Determinant_ratio       0.0048021   0.000767901  0.000672539     0.00336166
 
 ```
 """
 function MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) 
     # If variable names are not provided, generate default names
     if isempty(var_names)
-        var_names = ["variable" * string(i) for i in 1:size(db1, 2)]
+        var_names = ["variable" * string(i) for i in 1:size(data_1, 2)]
     end
 
     # Compute covariance matrices for both datasets
-    db1 = Matrix(data_1[:, :])
-    db2 = Matrix(data_2[:, :])
-    S1 = cov(db1)
-    S2 = cov(db2)
-    S_avg = (S1 + S2) / 2  # Average covariance matrix
+    db1 = Matrix(data_1)
+    db2 = Matrix(data_2)
+
+    # Get dimensions
+    n1, p = size(db1)
+    n2 = size(db2, 1)
 
     # Compute the means for both datasets and convert them to vectors
-    u1 = vec(mean(db1, dims=1))  # Convert 1-row matrix to vector
-    u2 = vec(mean(db2, dims=1))  # Convert 1-row matrix to vector
+    u1 = vec(mean(db1, dims=1)) # Convert 1-row matrix to vector
+    u2 = vec(mean(db2, dims=1))
+    # Compute covariance matrices
+    S1 = ((db1 .- u1')' * (db1 .- u1')) / (n1 - 1)
+    S2 = ((db2 .- u2')' * (db2 .- u2')) / (n2 - 1)
+
+    # Compute average covariance
+    S_avg = (S1 + S2) / 2 
+
+    # Extract diagonal elements once for reuse
+    diag_S1 = diag(S1)
+    diag_S2 = diag(S2)
+    diag_S_avg = diag(S_avg)
 
     # Calculate the Mahalanobis component
     diff = u1 .- u2  # Element-wise subtraction of vectors
-    mahalanobis_dist = (1 / 8) * (diff' * inv(S_avg) * diff)
+
+
+    # Define mahalanobis_dist before try/catch
+    mahalanobis_dist = 0.0
+    # Use Cholesky decomposition 
+        try
+            C = cholesky(Symmetric(S_avg))
+            v = C.L \ diff
+            mahalanobis_dist = (1/8) * dot(v, v)
+        catch
+            # Fallback to direct method if Cholesky fails
+            mahalanobis_dist = (1/8) * (diff' * (S_avg \ diff))
+        end
+
+    # Calculate 1D components
     mahalanobis_1d = (1 / 8) * (diff.^2) ./ diag(S_avg)
-    mahalanobis_cor = mahalanobis_dist[1] - sum(mahalanobis_1d)
+    
+    # Calculate the correlation component
+    mahalanobis_cor = mahalanobis_dist - sum(mahalanobis_1d)
 
     # Calculate the determinant ratio component
-    determinant_ratio = (1 / 2) * log(det(S_avg) / sqrt(det(S1) * det(S2)))
-    determinant_1d = (1 / 2) * log.(diag(S_avg) ./ sqrt.(diag(S1) .* diag(S2)))
+    logdet_S1 = logdet(Symmetric(S1))
+    logdet_S2 = logdet(Symmetric(S2))
+    logdet_S_avg = logdet(Symmetric(S_avg))
+
+    determinant_ratio = (1/2) * (logdet_S_avg - 0.5 * (logdet_S1 + logdet_S2))
+    
+    # Calculate 1D components for determinant
+    determinant_1d = (1/2) * log.(diag_S_avg ./ sqrt.(diag_S1 .* diag_S2))
     determinant_cor = determinant_ratio - sum(determinant_1d)
 
     # Total Bhattacharyya distance
-    bhattacharyya_dist = mahalanobis_dist[1] + determinant_ratio
+    bhattacharyya_dist = mahalanobis_dist + determinant_ratio
     bhattacharyya_1d = mahalanobis_1d + determinant_1d
     bhattacharyya_cor = mahalanobis_cor + determinant_cor
 
-    # Create Dictionary for each component
-    mahalanobis_results = Dict("total" => mahalanobis_dist[1], "correlation" => mahalanobis_cor)
-    determinant_results = Dict("total" => determinant_ratio, "correlation" => determinant_cor)
-    bhattacharyya_results = Dict("total" => bhattacharyya_dist, "correlation" => bhattacharyya_cor)
-
-    for i in 1:length(var_names)
-        mahalanobis_results[var_names[i]] = mahalanobis_1d[i]
-        determinant_results[var_names[i]] = determinant_1d[i]
-        bhattacharyya_results[var_names[i]] = bhattacharyya_1d[i]
+    # Create a DataFrame with components as columns
+    result_df = DataFrame()
+    
+    # Set metrics as the row names (first column)
+    result_df.metric = ["Bhattacharyya_distance", "Mahalanobis_distance", "Determinant_ratio"]
+       
+    # Add a column for each component
+    result_df.total = [bhattacharyya_dist, mahalanobis_dist, determinant_ratio]
+    result_df.correlation = [bhattacharyya_cor, mahalanobis_cor, determinant_cor]
+       
+    # Add columns for each variable
+    for (i, var) in enumerate(var_names)
+        result_df[!, var] = [bhattacharyya_1d[i], mahalanobis_1d[i], determinant_1d[i]]
     end
-
-    # Convert to DataFrames
-    mahalanobis_df = DataFrame(mahalanobis_results)
-    determinant_df = DataFrame(determinant_results)
-    bhattacharyya_df = DataFrame(bhattacharyya_results)
-
-    # Set the desired column order: ["total", "correlation", var_names...]
-    column_order = vcat(["total", "correlation"], var_names)
-
-    # Reorder columns in the DataFrames
-    mahalanobis_df = select(mahalanobis_df, column_order)
-    determinant_df = select(determinant_df, column_order)
-    bhattacharyya_df = select(bhattacharyya_df, column_order)
-
-    # Return all three DataFrames in a dictionary
-    return Dict(
-        "Bhattacharyya_distance" => bhattacharyya_df,
-        "Mahalanobis_distance" => mahalanobis_df,
-        "Determinant_ratio" => determinant_df
-    )
+       
+    return result_df
 
 end
 
 """
-    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; 
+    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; 
                      var_names::Vector{String}=String[]) -> Float64
 
 Calculate the average niche hypervolume across multiple species in a community dataset.
@@ -345,7 +348,7 @@ Calculate the average niche hypervolume across multiple species in a community d
 Arguments
 - `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
 - `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
-- `species::Union{AbstractVector, String}`: Vector containing species identifiers corresponding to each observation in `data`.
+- `species::Vector{String}`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
 
 Returns
@@ -403,12 +406,12 @@ julia> data = @pipe df |>
  48735 │              0.170814                  1.14892
                                         48725 rows omitted
 
-julia> result = average_MVNH_det(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
+julia> result = average_MVNH_det(data, df.Presence, String.(df.Species); var_names=["Temperature", "Precipitation"])
 0.9842468737598974
 
 ```                                                                                                                     
 """
-function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; var_names::Vector{String}=String[])
+function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
     # Ensure the presence_absence and species vectors match the DataFrame size
     @assert length(presence_absence) == nrow(data) "Mismatch in data length"
     @assert length(species) == nrow(data) "Mismatch in species length"
@@ -447,7 +450,7 @@ function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, specie
 end
 
 """
-    average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; 
+    average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Union{Integer, String, PooledArrays.PooledVector}; 
                               var_names::Vector{String}=String[]) -> Float64
 
 Calculate the average niche dissimilarity between all unique pairs of species in a community dataset using Bhattacharyya distance.
@@ -455,7 +458,7 @@ Calculate the average niche dissimilarity between all unique pairs of species in
 Arguments
 - `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
 - `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
-- `species::Union{AbstractVector, String}`: Vector containing species identifiers corresponding to each observation in `data`.
+- `species::Vector{String}`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
 
 Returns
@@ -513,12 +516,12 @@ julia> data = @pipe df |>
  48735 │              0.170814                  1.14892
                                         48725 rows omitted
 
-julia> result = average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])     
-0.02923266035138391
+julia> result = average_MVNH_dissimilarity(data, df.Presence, String.(df.Species); var_names=["Temperature", "Precipitation"])     
+0.0292326603513839
 
 ```
 """
-function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Union{AbstractVector, String}; var_names::Vector{String}=String[])
+function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
     @assert length(presence_absence) == nrow(data) "Mismatch in data length"
     @assert length(species) == nrow(data) "Mismatch in species length"
 
@@ -552,9 +555,13 @@ function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{In
 
             # Compute the MVNH_dissimilarity result
             result = MVNH_dissimilarity(filtered_data_1, filtered_data_2; var_names)
+            
+            # Filter the result DataFrame to get the Bhattacharyya distance
+            filtered_df = filter(row -> row[:metric] == "Bhattacharyya_distance", result)
+            total_Bhattacharyya_distance = filtered_df[:, 2]
 
             # Add the species pair and its hypervolume dissimilarity to the final result DataFrame
-            push!(final_result, (species_1=sp1, species_2=sp2, hypervolume_dissimilarity=result["Bhattacharyya_distance"].total[1]))
+            push!(final_result, (species_1=sp1, species_2=sp2, hypervolume_dissimilarity=total_Bhattacharyya_distance[1]))
         
         end
     end
