@@ -175,10 +175,11 @@ using .MetaCommunityMetrics.Internal
     filter(row -> row[:Presence] > 0, _) |>
     filter(row -> row[:Species] == "BA", _) |>
     select(_, [:normalized_temperature, :normalized_precipitation])
-    @test isapprox(MVNH_det(data; var_names=["Temperature", "Precipitation"]), DataFrame(Correlation = 0.999758,
-                                            Precipitation =  0.942899,
-                                            Temperature = 0.99626,
-                                            total = 0.939145),
+
+    @test isapprox(MVNH_det(data; var_names=["Temperature", "Precipitation"]), DataFrame(total = 1.01755,
+                                            correlation = 0.975263,
+                                            Temperature = 1.03353,
+                                            Precipitation =  1.0095),
                                             atol = 1e-5) 
                                             
     # Test the MVNH_dissimilarity function
@@ -186,33 +187,31 @@ using .MetaCommunityMetrics.Internal
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
             select(_, [:normalized_temperature, :normalized_precipitation])
-    
-    result = MVNH_dissimilarity(data, data_2; var_names = ["Temperature", "Precipitation"])
 
-    @test isapprox(result["Determinant_ratio"], DataFrame(total = 0.0048021,
-                                            correlation = 0.000767901,
-                                            Temperature = 0.000672539,
-                                            Precipitation =  0.00336166),
-                                            atol = 1e-5) 
-    @test isapprox(result["Bhattacharyya_distance"], DataFrame(total = 0.00932099,
-                                            correlation = 0.00102573,
-                                            Temperature = 0.00296459,
-                                            Precipitation =  .00533067),
-                                            atol = 1e-5) 
-    @test isapprox(result["Mahalanobis_distance"], DataFrame(total = 0.00451889,
-                                            correlation = 0.000257828,
-                                            Temperature = 0.00229205,
-                                            Precipitation = 0.00196901),
-                                            atol = 1e-5)                                         
+    result_df = MVNH_dissimilarity(data, data_2; var_names = ["Temperature", "Precipitation"])
+    expected_df = DataFrame(
+                metric = ["Bhattacharyya_distance", "Mahalanobis_distance", "Determinant_ratio"],
+                total = [0.0213524, 0.0106699, 0.0106826],
+                correlation = [0.0073495, -0.00037229, 0.00772179],
+                Temperature = [0.00345875, 0.00342011, 3.86384e-5],
+                Precipitation = [0.0105442, 0.00762205, 0.00292214])
+    
+    @test result_df.metric == expected_df.metric
+    @test isapprox(result_df.total, expected_df.total, atol=1e-5)
+    @test isapprox(result_df.correlation, expected_df.correlation, atol=1e-5)
+    @test isapprox(result_df.Temperature, expected_df.Temperature, atol=1e-5)
+    @test isapprox(result_df.Precipitation, expected_df.Precipitation, atol=1e-5)                            
     
     # Test the average_MVNH_det function    
     data = @pipe df |> 
     select(_, [:normalized_temperature, :normalized_precipitation])
 
-    @test isapprox(average_MVNH_det(data, df.Presence, df.Species; var_names = ["Temperature", "Precipitation"]), 0.9842468737598974, atol = 1e-5)
+    @test isapprox(average_MVNH_det(data, df.Presence, String.(df.Species); var_names = ["Temperature", "Precipitation"]), 
+    1.0026800359830965, atol = 1e-5)
 
     # Test the average_MVNH_dissimilarity function
-    @test isapprox(average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names = ["Temperature", "Precipitation"]), 0.02923266035138391, atol = 1e-5)
+    @test isapprox(average_MVNH_dissimilarity(data, df.Presence, String.(df.Species); var_names = ["Temperature", "Precipitation"]), 
+    0.060650558475890445, atol = 1e-5)
 
 end
 
