@@ -9,7 +9,7 @@ library(adespatial)
 library(DNCImper)
 
 #Read in the sample data
-df <- read.csv("~/.julia/dev/MetaCommunityMetrics/data/metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE)
+df <- read.csv("~/.julia/dev/MetaCommunityMetrics/data/metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE) #There is a species called "NA", need to handle NAs with caution
 #comm_df_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/DNCI_comm.csv")
 #grouping_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/cluster_list_t1.csv")
 
@@ -265,9 +265,9 @@ var.partition <- function(metacomm_tsdata){
   ## the second represents time-series observations of length T, and the third represents M local communities.
   ## The output includes four variability and four synchrony metrics as defined in the main text.
   ## Note that, to be able to handle large metacommunities, this code has avoided calculating all covariance.
-  ts_metacom <- apply(metacomm_tsdata,2,sum)
-  ts_patch <- apply(metacomm_tsdata,c(2,3),sum)
-  ts_species <- apply(metacomm_tsdata,c(1,2),sum)
+  ts_metacom <- apply(metacomm_tsdata,2,sum) #summing the total biovolume across all species and patch at every time point
+  ts_patch <- apply(metacomm_tsdata,c(2,3),sum) #summing the total biovolume across all species in every patch at every time point
+  ts_species <- apply(metacomm_tsdata,c(1,2),sum)#summing the total biovolume across all patches for every species at every time point
   sd_metacom <- sd(ts_metacom)
   sd_patch_k <- apply(ts_patch,2,sd)
   sd_species_i <- apply(ts_species,1,sd)

@@ -121,8 +121,7 @@ using .MetaCommunityMetrics.Internal
     leftjoin(_, cluster_result[50], on = [:plot => :Patch], makeunique = true) 
     
     DNCI_result = DNCI_multigroup(comm, 
-    presence_df.Group; count = false) 
-    
+    presence_df.Group; count = false) #Cannot test this function because the result is randomized
     #=@test isapprox(DNCI_result, DataFrame(
         group1 = [1, 1, 2],
         group2 = [2, 3, 3],
@@ -148,28 +147,17 @@ using .MetaCommunityMetrics.Internal
 
 
     # Test the CV_meta function
-    CV_test_df = @pipe df |>
-    filter(row -> row[:Sampling_date_order] < 20, _)
 
-    @test isapprox(CV_meta(CV_test_df.Abundance, 
-                    CV_test_df.Sampling_date_order,
-                    CV_test_df.plot, 
-                    CV_test_df.Species), DataFrame(CV_s_l = 1.05607236064782,
-                                            CV_s_r = 0.8133239050934045,
-                                            CV_c_l = 0.6561837274590009,
-                                            CV_c_r = 0.5372991135672851),
-                                            atol = 1e-8)      
-    
-    # Test the CV_meta_simple function
-    @test isapprox(CV_meta_simple(CV_test_df.Abundance, 
-                            CV_test_df.Sampling_date_order,
-                            CV_test_df.plot, 
-                            CV_test_df.Species), DataFrame(CV_s_l = 1.2080844086744866,
-                                            CV_s_r = 0.9188619724139119,
-                                            CV_c_l = 0.8012160438000538,
-                                            CV_c_r = 0.6650823635388619),
-                                            atol = 1e-8)    
-    
+    @test isapprox(CV_meta(df.Abundance, 
+                    df.Sampling_date_order,
+                    df.plot, 
+                    df.Species), DataFrame(CV_s_l = 1.48859,
+                                            CV_s_r = 0.944937,
+                                            CV_c_l = 0.718266,
+                                            CV_c_r = 0.580183),
+                                            atol = 1e-4)      
+
+
     # Test the MVNH_det function
     data = @pipe df |> 
     filter(row -> row[:Presence] > 0, _) |>

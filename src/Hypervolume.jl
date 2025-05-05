@@ -552,6 +552,6 @@ function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{In
         end
     end
     
-    # Return average
+    # Return average (condition ? value_if_true : value_if_false)
     return pair_count > 0 ? total_dissimilarity / pair_count : 0.0
 end

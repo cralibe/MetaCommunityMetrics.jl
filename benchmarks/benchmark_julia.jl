@@ -7,7 +7,7 @@ using MetaCommunityMetrics
 using DataFrames
 using Pipe
 
-#Read in the sample data
+#Read in the sample data (small, medium and full sizes)
 df = load_sample_data()
     
 # Benchmarking Julia functions
@@ -114,9 +114,4 @@ CV_meta_result = @benchmark CV_meta(df.Abundance,
                     df.plot, 
                     df.Species)
 
-# Benchmark the CV_meta_simple function
-CV_meta_simple_result = @benchmark CV_meta_simple(df.Abundance, 
-                            df.Sampling_date_order,
-                            df.plot, 
-                            df.Species)    
                             

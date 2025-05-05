@@ -1,7 +1,7 @@
 name = "MetaCommunityMetrics"
 uuid = "3ccb93f7-bd98-4150-a201-b30c241572df"
 authors = ["Yan Yin Jenny Cheung <yanyinjennycheung@gmail.com>", "Laura Melissa Guzman <guzmanur@usc.edu>"]
-version = "0.2.2"
+version = "0.3.0"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

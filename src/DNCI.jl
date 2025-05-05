@@ -26,22 +26,21 @@ Example
 julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
-48735×10 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
-                                                                                          48725 rows omitted
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.838777                 -0.290705
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.10913                  -0.959396
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               0.313343                 -0.660172
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0               0.255048                 -0.821056
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0              -0.402463                 -0.925731
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.516463                 -0.887027
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               0.617823                 -0.50501
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.391502                 -0.834642
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.172865                 -0.280639
+                                                                                                                                            48726 rows omitted
                                                                                           
 julia> total_presence_df=@pipe df|>
                         groupby(_,[:Species,:Sampling_date_order])|>
@@ -89,7 +88,7 @@ julia> total_richness_df= @pipe df|>
 
 julia> result = create_clusters(total_richness_df.Sampling_date_order, total_richness_df.Latitude, total_richness_df.Longitude, total_richness_df.plot, total_richness_df.Total_Richness)
 Dict{Int64, DataFrame} with 117 entries:
-  5   => 17×6 DataFrame…
+  5   => 15×6 DataFrame…
   56  => 23×6 DataFrame…
   55  => 24×6 DataFrame…
   35  => 23×6 DataFrame…
@@ -98,11 +97,10 @@ Dict{Int64, DataFrame} with 117 entries:
   60  => 24×6 DataFrame…
   30  => 20×6 DataFrame…
   32  => 22×6 DataFrame…
-  6   => 19×6 DataFrame…
+  6   => 18×6 DataFrame…
   67  => 23×6 DataFrame…
   45  => 23×6 DataFrame…
   117 => 24×6 DataFrame…
-  73  => 23×6 DataFrame…
   ⋮   => ⋮
 
 julia> println(result[1])
@@ -206,22 +204,21 @@ Example
 julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
-48735×10 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
-                                                                                          48725 rows omitted
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.838777                 -0.290705
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.10913                  -0.959396
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               0.313343                 -0.660172
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0               0.255048                 -0.821056
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0              -0.402463                 -0.925731
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.516463                 -0.887027
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               0.617823                 -0.50501
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.391502                 -0.834642
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.172865                 -0.280639
+                                                                                                                                            48726 rows omitted
                                                                                           
 julia> total_presence_df=@pipe df|>
                         groupby(_,[:Species,:Sampling_date_order])|>
@@ -250,7 +247,7 @@ julia> total_richness_df= @pipe df|>
                   combine(_,:Presence=>sum=>:Total_Richness)|>
                   filter(row -> row[:Total_Richness] > 0, _) 
 
-2565×5 DataFrame
+2545×5 DataFrame
   Row │ plot   Sampling_date_order  Longitude  Latitude  Total_Richness 
       │ Int64  Int64                Float64    Float64   Int64          
 ──────┼─────────────────────────────────────────────────────────────────
@@ -260,12 +257,11 @@ julia> total_richness_df= @pipe df|>
     4 │     8                   41     -109.5      35.5               2
     5 │     9                   41     -109.0      35.5               3
   ⋮   │   ⋮             ⋮               ⋮         ⋮            ⋮
- 2561 │     9                  117     -109.0      35.5               5
- 2562 │    10                  117     -108.5      35.5               3
- 2563 │    12                  117     -107.5      35.5               6
- 2564 │    16                  117     -108.5      36.0               4
- 2565 │    23                  117     -108.0      36.5               5
-                                                       2555 rows omitted
+ 2542 │    10                  117     -108.5      35.5               3
+ 2543 │    12                  117     -107.5      35.5               6
+ 2544 │    16                  117     -108.5      36.0               4
+ 2545 │    23                  117     -108.0      36.5               5
+                                                       2536 rows omitted
 
 julia> clustering_result = create_clusters(total_richness_df.Sampling_date_order, total_richness_df.Latitude, total_richness_df.Longitude, total_richness_df.plot, total_richness_df.Total_Richness)
 Dict{Int64, DataFrame} with 117 entries:
@@ -353,25 +349,24 @@ Details
 
 Example
 ```jildoctest
-julia> using MetaCommunityMetrics, Pipe, DataFrames
+julia> using MetaCommunityMetrics, Pipe, DataFrames, Random
 
 julia> df = load_sample_data()
-48735×10 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64   
-───────┼────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0
-                                                                                          48725 rows omitted
+48735×12 DataFrame
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.838777                 -0.290705
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.10913                  -0.959396
+     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               0.313343                 -0.660172
+     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0               0.255048                 -0.821056
+     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0              -0.402463                 -0.925731
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
+ 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.516463                 -0.887027
+ 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               0.617823                 -0.50501
+ 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.391502                 -0.834642
+ 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.172865                 -0.280639
+                                                                                                                                            48726 rows omitted
                                                                                           
 julia> total_presence_df=@pipe df|>
                         groupby(_,[:Species,:Sampling_date_order])|>
@@ -479,12 +474,14 @@ julia> comm= @pipe df|>
  0  0  1
  0  0  1
 
+julia> Random.seed!(1234) 
+
 julia> DNCI_result = DNCI_multigroup(comm, clustering_result[1].Group, 1000; count = false)
 1×5 DataFrame
  Row │ group1  group2  DNCI      CI_DNCI  S_DNCI  
      │ Int64   Int64   Float64   Float64  Float64 
 ─────┼────────────────────────────────────────────
-   1 │      1       2  0.533635  7.06888  3.53444
+   1 │      1       2  0.045603  6.52576  3.26288
 ```
 """
 function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=true) #for presence-absence data only

@@ -529,19 +529,25 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
         simp2 = simper(dp2[i], groups)
         simp3 = simper(dp3[i], groups)
         simp4 = simper(dp4_filtered, dp4_groups)
-        #Storage of SIMPER results (ranked contribution to OAD)
-        df2[i,:] = sort(vec(simp2[1]), rev=true)
-        df3[i,:] = sort(vec(simp3[1]), rev=true)
-        df4[i,:] = sort(vec(simp4[1]), rev=true)
         
+        #Storage of SIMPER results (ranked contribution to OAD) and conversion to percentage of SIMPER results
+        sorted2 = sort(vec(simp2[1]), rev=true)
+        sorted3 = sort(vec(simp3[1]), rev=true)
+        sorted4 = sort(vec(simp4[1]), rev=true)
+        
+        sum2 = sum(sorted2)
+        sum3 = sum(sorted3)
+        sum4 = sum(sorted4)
+        
+        df2[i,:] = (sorted2/sum2) * 100
+        df3[i,:] = (sorted3/sum3) * 100
+        df4[i,:] = (sorted4/sum4) * 100
+
         if isnan(sum(df4[i,:]))
-        println("There are NaNs in the SIMPER results of the permuted matrix when the column sum is maintained, $i")
+            println("There are NaNs in the SIMPER results of the permuted matrix when the column sum is maintained, $i")
         end
 
-        #Conversion to percentage of SIMPER results
-        df2[i,:] = (df2[i,:]/sum(df2[i,:])) * 100
-        df3[i,:] = (df3[i,:]/sum(df3[i,:])) * 100
-        df4[i,:] = (df4[i,:]/sum(df4[i,:])) * 100
+
     end
     dn2=hcat([sort(df2[:, j]) for j in 1:size(df2, 2)]...)
     dn3=hcat([sort(df3[:, j]) for j in 1:size(df3, 2)]...)
@@ -564,31 +570,23 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
     VectorEcartCarreBlueLog = zeros(Nperm)
 
     for i in 1:Nperm
-        SommeEcartCarreOrange = zeros(size(Orange,2))
-        SommeEcartCarreGreen = zeros(size(Green,2))
-        SommeEcartCarreBlue = zeros(size(Blue,2))
-        # Computation of square deviations with empirical profile (obs)
-        for j in 1:size(obs,1)
-            SommeEcartCarreOrange[j] = (Orange[i,j] - obs[j])^2
-            SommeEcartCarreGreen[j] = (Green[i,j] - obs[j])^2
-            SommeEcartCarreBlue[j] = (Blue[i,j] - obs[j])^2
-        end
+        # Calculate the sum of square deviations for each profile
+        # between the empirical profile and the simulated profiles
+        SommeEcartCarreOrange = (Orange[i,:] .- obs).^2
+        SommeEcartCarreGreen = (Green[i,:] .- obs).^2
+        SommeEcartCarreBlue = (Blue[i,:] .- obs).^2
+        
         # Log conversion of the sum of square deviations
-        if sum(SommeEcartCarreOrange)==0
-            VectorEcartCarreOrangeLog[i] = log10(sum(SommeEcartCarreOrange)+1.0e-20)
-        else
-            VectorEcartCarreOrangeLog[i] = log10(sum(SommeEcartCarreOrange))
-        end
-        if sum(SommeEcartCarreGreen)==0
-            VectorEcartCarreGreenLog[i] = log10(sum(SommeEcartCarreGreen)+1.0e-20)
-        else
-            VectorEcartCarreGreenLog[i] = log10(sum(SommeEcartCarreGreen))
-        end
-        if sum(SommeEcartCarreBlue)==0
-            VectorEcartCarreBlueLog[i] = log10(sum(SommeEcartCarreBlue)+1.0e-20)
-        else
-            VectorEcartCarreBlueLog[i] = log10(sum(SommeEcartCarreBlue))
-        end
+    
+        sum_orange = sum(SommeEcartCarreOrange)
+        VectorEcartCarreOrangeLog[i] = log10(sum_orange + (sum_orange == 0 ? 1.0e-20 : 0))
+
+        sum_green = sum(SommeEcartCarreGreen)
+        VectorEcartCarreGreenLog[i] = log10(sum_green + (sum_green == 0 ? 1.0e-20 : 0))
+
+        sum_blue = sum(SommeEcartCarreBlue)
+        VectorEcartCarreBlueLog[i] = log10(sum_blue + (sum_blue == 0 ? 1.0e-20 : 0))
+
         if VectorEcartCarreOrangeLog[i]==-Inf
             println("-Inf in Orange, $i")
         end
@@ -642,18 +640,21 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fal
         results = PerSIMPER(comm, groups, Nperm; count)
         E = results["EcartCarreLog"]
 
-        if mean(E.Blue) == -20.0 && std(E.Blue, corrected=true) == 0 #For the special case when permuations from the dispersal and niche model are very similar.
-            #Calculate SES.d and SES.n based on E values from PERSIMPER function
+
+        # Precompute statistics
+        mean_blue = mean(E.Blue)
+        std_blue = std(E.Blue, corrected=true)
+    
+        # Handle special case when permuations from the dispersal and niche model are very similar
+        if mean_blue == -20.0 && std_blue == 0
             SES_d = zeros(size(E.Orange,1))
             SES_n = zeros(size(E.Green,1))
         else
-            #Calculate SES.d and SES.n based on E values from PERSIMPER function
-            SES_d = zeros(size(E.Orange,1))
-            SES_n = zeros(size(E.Green,1))
-            #Calculate SES.d and SES.n based on E values from PERSIMPER function
-            SES_d = (E.Orange .- mean(E.Blue))/std(E.Blue, corrected=true) #scaled for n-1
-            SES_n = (E.Green .- mean(E.Blue))/std(E.Blue, corrected=true)  # greater value of E.Green indicates greater dissimilarity with the niche null model, and dispersal matters more.
+            # Vectorized calculation of SES.d and SES.n based on E values from PERSIMPER function
+            SES_d = (E.Orange .- mean_blue) ./ std_blue
+            SES_n = (E.Green .- mean_blue) ./ std_blue
         end
+    
         #Calculate DNCI
         DNCI = mean(SES_d)-mean(SES_n)
         #sd related to DNCI
