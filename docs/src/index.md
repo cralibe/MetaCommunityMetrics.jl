@@ -39,6 +39,7 @@ using MetaCommunityMetrics
 - [`Occupied Patches Proportion`](https://cralibe.github.io/MetaCommunityMetrics.jl/OccupiedPatchesProportion/)
 - [`Variability Metrics`](https://cralibe.github.io/MetaCommunityMetrics.jl/VariabilityMetrics/)
 - [`Hypervolume`] (https://cralibe.github.io/MetaCommunityMetrics.jl/Hypervolume/)
+- [`Validation'] (https://cralibe.github.io/MetaCommunityMetrics.jl/Validation)
 - [`Benchmarking`](https://cralibe.github.io/MetaCommunityMetrics.jl/docs/src/Benchmarking/)
 
 

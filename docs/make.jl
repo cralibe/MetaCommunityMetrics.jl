@@ -17,6 +17,7 @@ makedocs(
                 "Occupied Patches Proportion Function" => "OccupiedPatchesProportion.md",
                 "Variability Metrics Functions" => "VariabilityMetrics.md",
                 "Hypervolume Functions" => "Hypervolume.md",
+                "Validation" => "Validation.md",
                 "Benchmarking Julia vs R" => "Benchmarking.md",
                 "Acknowledgment" => "Acknowledgment.md"]
 )
