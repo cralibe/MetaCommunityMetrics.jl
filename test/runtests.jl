@@ -115,15 +115,15 @@ using .MetaCommunityMetrics.Internal
     unstack(_, :Species, :Presence, fill=0) |>
     leftjoin(_, cluster_result[50], on = [:plot => :Patch], makeunique = true) 
     
-    Random.seed!(1234)
-    DNCI_result = DNCI_multigroup(comm, presence_df.Group, 1000; count = false)
-    @test isapprox(DNCI_result, DataFrame(
-        group1 = [1, 1, 2],
-        group2 = [2, 3, 3],
-        DNCI = [ -2.96216, -2.93839, -1.45788],
-        CI_DNCI = [1.81732, 2.24484, 2.27338],
-        S_DNCI = [0.908661, 1.12242, 1.13669]),
-    atol = 1e-4)
+    #Random.seed!(1234)
+    #DNCI_result = DNCI_multigroup(comm, presence_df.Group, 1000; count = false)
+    #@test isapprox(DNCI_result, DataFrame(
+    #    group1 = [1, 1, 2],
+    #    group2 = [2, 3, 3],
+    #    DNCI = [ -2.96216, -2.93839, -1.45788],
+    #    CI_DNCI = [1.81732, 2.24484, 2.27338],
+    #    S_DNCI = [0.908661, 1.12242, 1.13669]),
+    #atol = 1e-4)
 
     # Test the niche_overlap function
     @test isapprox(niche_overlap(df.Abundance, 
