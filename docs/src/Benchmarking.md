@@ -4,14 +4,14 @@ CurrentModule = MetaCommunityMetrics
 ```
 ## Computational Resources
 *All benchmarks were performed on the same machine to ensure consistent comparisons.*
-- **CPU**: Apple M1 Pro
+- **CPU**: Apple M4
 - **Number of Cores**: 10
 - **Memory**: 16GB RAM
-- **Operating System**: macOS Sonoma 14.7
+- **Operating System**: macOS Sequoia 15.4.1
 - **Julia Version**: 1.9.3
 - **R Version**: 4.3.1
 
-## Direct Comparison (When an equivalent fuction in R is avaliable)
+## Direct Comparison (When an equivalent function in R is avaliable)
 *Below is a comparison of the benchmarking results between my Julia package and functions/equivalent implementation in R. All times are in millisecond, and memory is in mebibytes (MiB). Only mean execution times are presented here.*
 
 | Test Case                | Julia Execution Time | R Execution Time  | Speedup (Julia/R) | Memory Usage (Julia) | Memory Usage (R) | R Function and Package used              | 

@@ -15,7 +15,6 @@ using StatsBase
 using DataStructures
 using ProgressMeter
 using Combinatorics
-using Plots
 using Random
 
 
@@ -41,8 +40,11 @@ end
 
 
 export 
+    load_sample_data,
     beta_diversity, spatial_beta_div, temporal_beta_div, 
     create_clusters, plot_clusters, DNCI_multigroup, 
-    niche_overlap, prop_patches, CV_meta,
-    load_sample_data, MVNH_det, MVNH_dissimilarity, average_MVNH_det, average_MVNH_dissimilarity
+    niche_overlap, 
+    prop_patches, 
+    CV_meta,
+    MVNH_det, MVNH_dissimilarity, average_MVNH_det, average_MVNH_dissimilarity
 end

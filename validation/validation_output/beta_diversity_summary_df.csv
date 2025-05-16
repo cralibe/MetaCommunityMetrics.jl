@@ -1,0 +1,10 @@
+TestCase,BDtotal,Repl,RichDif
+"Beta Diversity (Abundance, quant=true)",0.0000,0.0000,0.0000
+"Beta Diversity (Abundance, quant=false)",0.0000,0.0000,0.0000
+"Beta Diversity (Presence, quant=false)",0.0000,0.0000,0.0000
+"Spatial Beta Diversity (Abundance, quant=true)",0.0000,0.0000,0.0000
+"Spatial Beta Diversity (Abundance, quant=false)",0.0000,0.0000,0.0000
+"Spatial Beta Diversity (Presence, quant=false)",0.0000,0.0000,0.0000
+"Temporal Beta Diversity (Abundance, quant=true)",0.0000,0.0000,0.0000
+"Temporal Beta Diversity (Abundance, quant=false)",0.0000,0.0000,0.0000
+"Temporal Beta Diversity (Presence, quant=false)",0.0000,0.0000,0.0000

@@ -513,17 +513,32 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
     df4 = zeros(Nperm, size(comm, 2))
 
     for i in 1:Nperm
+        
         if count == true && (i < 100 || i > round(Int, Nperm * 0.9))
             println(i)
         end
         
-        dp4 = correct_permutation(comm)
-        
-        #Identify rows with zero sum
-        zero_sum_rows = vec(sum(dp4[1], dims=2) .== 0)
-        #filter out rows with zero sum
-        dp4_filtered = dp4[1][.!zero_sum_rows, :]
-        dp4_groups=vec(groups[.!zero_sum_rows,:])
+        local dp4_filtered, dp4_groups
+        while true
+            dp4 = correct_permutation(comm)
+            zero_sum_rows = vec(sum(dp4[1], dims=2) .== 0)
+    
+            # Skip if all rows would be filtered out
+            if all(zero_sum_rows)
+                continue
+            end
+    
+            # Keep only non-zero rows
+            dp4_filtered = dp4[1][.!zero_sum_rows, :]
+    
+            # Filter groups the same way (assuming groups is a vector)
+            dp4_groups = groups[.!zero_sum_rows]
+    
+            # Check if we have at least 2 unique groups
+            if length(unique(dp4_groups)) >= 2
+                break
+            end
+        end
 
         #SIMPER analysis performed on each permutated matrix
         simp2 = simper(dp2[i], groups)

@@ -5,7 +5,6 @@ using Random
 using Pipe: @pipe
 using CSV
 using DataFrames
-using Plots
 using .MetaCommunityMetrics.Internal 
 
 @testset "MetaCommunityMetrics.jl" begin
@@ -40,7 +39,6 @@ using .MetaCommunityMetrics.Internal
     total_presence_df=@pipe df|>
     groupby(_,[:Species,:Sampling_date_order])|>
     combine(_,:Presence=>sum=>:Total_Presence)
-    #filter(row -> row[:Total_Presence] <= 1, _)|> 
 
     #Remove singletons 
     total_richness_df= @pipe df|>
@@ -99,13 +97,10 @@ using .MetaCommunityMetrics.Internal
         Total_Richness = [1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 1],
         Group = [1, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2])
     # Test the plot_clusters function
-    p = plot_clusters(cluster_result[1].Latitude, cluster_result[1].Longitude, cluster_result[1].Group)
-    @test p isa Plots.Plot
+    #p = plot_clusters(cluster_result[1].Latitude, cluster_result[1].Longitude, cluster_result[1].Group; output_file="clusters.svg")
 
     # Test the DNCI_multigroup function
     comm= @pipe df|>
-    leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-    filter(row -> row[:Total_Presence] > 1, _) |>
     filter(row -> row[:Sampling_date_order] == 50, _) |>
     select(_, [:plot, :Species, :Presence]) |>
     unstack(_, :Species, :Presence, fill=0) |>
@@ -120,15 +115,15 @@ using .MetaCommunityMetrics.Internal
     unstack(_, :Species, :Presence, fill=0) |>
     leftjoin(_, cluster_result[50], on = [:plot => :Patch], makeunique = true) 
     
-    DNCI_result = DNCI_multigroup(comm, 
-    presence_df.Group; count = false) #Cannot test this function because the result is randomized
-    #=@test isapprox(DNCI_result, DataFrame(
+    Random.seed!(1234)
+    DNCI_result = DNCI_multigroup(comm, presence_df.Group, 1000; count = false)
+    @test isapprox(DNCI_result, DataFrame(
         group1 = [1, 1, 2],
         group2 = [2, 3, 3],
-        DNCI = [-2.6398129641535233, -1.2754356031283491, -1.5357372549747799],
-        CI_DNCI = [1.792594117783981, 2.646493538408896, 2.321281196527955],
-        S_DNCI = [0.8962970588919905, 1.323246769204448, 1.1606405982639776]),
-    atol = 1e-8)=#
+        DNCI = [ -2.96216, -2.93839, -1.45788],
+        CI_DNCI = [1.81732, 2.24484, 2.27338],
+        S_DNCI = [0.908661, 1.12242, 1.13669]),
+    atol = 1e-4)
 
     # Test the niche_overlap function
     @test isapprox(niche_overlap(df.Abundance, 

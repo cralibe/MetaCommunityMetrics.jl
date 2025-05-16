@@ -29,7 +29,7 @@ matrix_with_abundance <- df %>%
   filter(Sampling_date_order == 50) %>% 
   select(-Presence) %>%
   pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
@@ -298,7 +298,7 @@ CV_simple_function <- function(species, time, plot, abundance){
   metacomm_tsdata <- array(0, dim = c(length(species_vals), length(date_vals), length(plot_vals)))
   
   # Populate the array with values from the data frame
-  for(i in 1:nrow(df)){
+  for(i in 1:nrow(data)){
     # Map Species, Sampling_date_order, and plot to their corresponding indices
     species_index <- which(species_vals == species[i])
     date_index <- which(date_vals == time[i])
@@ -329,5 +329,5 @@ cat("Memory Usage (MiB):", memory_usage_mib, "\n")
 
 
 
-
+MVNH_det()
 

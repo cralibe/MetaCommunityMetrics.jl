@@ -182,22 +182,24 @@ function create_clusters(time::Vector{Int}, latitude::Vector{Float64}, longitude
 end
 
 """
-    plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::Union{AbstractVector, String}) 
+    plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::Union{AbstractVector, String}, output_file="clusters.svg") -> String
 
-Plots the clustering result at one time step of the `create_cluster` function using the geographic coordinates and cluster assignments of patches/sites.
+Visualizes clustering results by generating an SVG image displaying the geographic coordinates and cluster assignments of patches/sites.
 
-Arguments
+# Arguments
 - `latitude::Vector{Float64}`: A vector of latitude coordinates of the patches/sites.
 - `longitude::Vector{Float64}`: A vector of longitude coordinates of the patches/sites.
 - `group::Union{AbstractVector, String}`: A vector or string indicating the cluster assignments for each data point.
+- `output_file::String="clusters.svg"`: The filename for the output SVG visualization. Default is "clusters.svg".
 
-Returns
-- A plot showing the patches/sites colored by the cluster assignment from the `create_clusters` function.
+# Returns
+- `String`: The path to the created SVG file.
 
-Details
-- The function assigns a unique color to each cluster and plots the patches/sites based on their geographic coordinates.
-- The patches/sites are colored according to the cluster assignment.
-- The plot includes black borders around the markers for better visibility.
+# Details
+- The function generates a standalone SVG file that can be viewed in any web browser or image viewer.
+- Each cluster is assigned a unique color, and patches/sites are plotted based on their geographic coordinates.
+- The visualization includes a legend identifying each cluster.
+
 
 Example
 ```jildoctest
@@ -301,26 +303,116 @@ julia> println(clustering_result[1])
   13 │     1      36.5     -109.0     21               1      2
   14 │     1      36.5     -108.0     23               1      2
 
-julia> plot_clusters(result[1].Latitude, result[1].Longitude, result[1].Group)
+julia> plot_clusters(clustering_result[1].Latitude, clustering_result[1].Longitude, clustering_result[1].Group; output_file="clusters.svg")
 
 ```
 """
-function plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::Union{AbstractVector, String})
+function plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::Union{AbstractVector, String}; output_file="clusters.svg")
     # Get unique cluster IDs and assign numeric identifiers
     unique_clusters = unique(group)
     cluster_map = Dict(cluster => i for (i, cluster) in enumerate(unique_clusters))
-
-    # Assign numeric identifiers to cluster IDs
     numeric_ids = [cluster_map[cluster] for cluster in group]
-
-    # Define color palette for clusters
-    colors = distinguishable_colors(length(unique_clusters), colorant"blue")
-
-    # Plot the points, color by cluster ID
-    scatter(longitude, latitude, marker_z=numeric_ids,
-            xlabel="Longitude", ylabel="Latitude", title="Cluster Visualization",
-            legend=false, markerstrokecolor=:black, markerstrokewidth=0.5,
-            markersize=5, color=colors[numeric_ids], label=false)
+    
+    # Define a set of distinctive colors
+    base_colors = [
+        "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", 
+        "#ffff33", "#a65628", "#f781bf", "#999999", "#66c2a5", 
+        "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f"
+    ]
+    
+    # Generate colors for each cluster
+    colors = if length(unique_clusters) <= length(base_colors)
+        base_colors[1:length(unique_clusters)]
+    else
+        # Generate additional colors if needed
+        c = copy(base_colors)
+        while length(c) < length(unique_clusters)
+            push!(c, "#" * join(rand('0':'9', 6)))
+        end
+        c
+    end
+    
+    # Calculate bounds with padding
+    lon_padding = 0.05 * (maximum(longitude) - minimum(longitude))
+    lat_padding = 0.05 * (maximum(latitude) - minimum(latitude))
+    
+    min_lon = minimum(longitude) - lon_padding
+    max_lon = maximum(longitude) + lon_padding
+    min_lat = minimum(latitude) - lat_padding
+    max_lat = maximum(latitude) + lat_padding
+    
+    # SVG dimensions
+    width = 800
+    height = 600
+    margin = 100
+    
+    # Map coordinates to SVG space
+    function map_coords(lon, lat)
+        x = margin + (lon - min_lon) / (max_lon - min_lon) * (width - 2 * margin)
+        # Flip y-axis (SVG has origin at top-left)
+        y = height - margin - (lat - min_lat) / (max_lat - min_lat) * (height - 2 * margin)
+        return round(x, digits=1), round(y, digits=1)
+    end
+    
+    # Start building SVG content
+    svg = """<?xml version="1.0" encoding="UTF-8"?>
+    <svg width="$(width)" height="$(height)" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" fill="white"/>
+    
+    <!-- Title -->
+    <text x="$(width/2)" y="25" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">Cluster Visualization</text>
+    
+    <!-- Axes -->
+    <line x1="$(margin)" y1="$(height-margin)" x2="$(width-margin)" y2="$(height-margin)" stroke="black" stroke-width="1.5"/>
+    <line x1="$(margin)" y1="$(margin)" x2="$(margin)" y2="$(height-margin)" stroke="black" stroke-width="1.5"/>
+    
+    <!-- Axis labels -->
+    <text x="$(width/2)" y="$(height-10)" font-family="Arial" font-size="14" text-anchor="middle">Longitude</text>
+    <text x="15" y="$(height/2)" font-family="Arial" font-size="14" text-anchor="middle" transform="rotate(-90, 15, $(height/2))">Latitude</text>
+    
+    <!-- Data points -->
+    """
+    
+    # Add all data points
+    for i in 1:length(latitude)
+        x, y = map_coords(longitude[i], latitude[i])
+        cluster_id = numeric_ids[i]
+        color = colors[cluster_id]
+        
+        svg *= """
+        <circle cx="$(x)" cy="$(y)" r="5" fill="$(color)" stroke="black" stroke-width="0.5" opacity="0.8"/>
+        """
+    end
+    
+    # Add legend
+    legend_x = width - margin + 15
+    legend_y = margin + 20
+    
+    svg *= """
+    <!-- Legend -->
+    <text x="$(legend_x)" y="$(legend_y - 15)" font-family="Arial" font-size="12" font-weight="bold">Clusters</text>
+    """
+    
+    for (i, cluster) in enumerate(unique_clusters)
+        y_pos = legend_y + (i-1) * 20
+        svg *= """
+        <rect x="$(legend_x)" y="$(y_pos-10)" width="10" height="10" fill="$(colors[i])" stroke="black" stroke-width="0.5"/>
+        <text x="$(legend_x + 20)" y="$(y_pos)" font-family="Arial" font-size="12">$(cluster)</text>
+        """
+    end
+    
+    # Close SVG
+    svg *= "</svg>"
+    
+    # Write to file
+    open(output_file, "w") do f
+        write(f, svg)
+    end
+    
+    println("Cluster visualization saved to $(abspath(output_file))")
+    println("Open this file in any web browser or image viewer to see the visualization")
+    
+    return output_file
 end
 
 

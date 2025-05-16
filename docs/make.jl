@@ -9,7 +9,7 @@ makedocs(
     modules = [MetaCommunityMetrics],
     clean = true,
     doctest = true,  
-    format = Documenter.HTML(),
+    format = Documenter.HTML(edit_link = "main"),
     pages = ["Home" => "index.md",
                 "Beta Diverisity Functions" => "BetaDiversity.md",
                 "Dispersal-Niche Continuum Index (DNCI) Functions" => "DNCI.md",

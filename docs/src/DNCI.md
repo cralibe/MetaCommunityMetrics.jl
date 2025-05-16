@@ -22,7 +22,7 @@ create_clusters
 plot_clusters
 ```
 This plot shows the clustering result for time step 1 based on geographic coordinates:
-![Cluster Plot](assets/clustering_result.svg)
+![Cluster Plot](assets/clusters.svg)
 
 ```@docs
 DNCI_multigroup
