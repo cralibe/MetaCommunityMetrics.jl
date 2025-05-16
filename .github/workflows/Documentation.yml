@@ -18,13 +18,15 @@ jobs:
     - name: Set up Julia
       uses: julia-actions/setup-julia@v1
       with:
-        version: '1.6'
+        version: '1.9'
 
     - name: Install dependencies
       run: |
-        julia -e 'using Pkg; Pkg.add("Documenter")'
-        julia -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd()))'
-        julia -e 'using Pkg; Pkg.instantiate()'
+        julia --project=docs/ -e '
+          using Pkg
+          Pkg.develop(PackageSpec(path=pwd()))
+          Pkg.add("Documenter")
+          Pkg.instantiate()'
 
     - name: Build documentation
       run: julia --project=docs/ docs/make.jl
