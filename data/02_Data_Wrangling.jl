@@ -21,10 +21,10 @@ groupby(_, :Species) |> #group the dataframe by every species
 combine(_, :Abundance => sum => :Total_Abundance) |> #calculate the total abundance of every spesice within the whole sampling period
 filter(row -> row[:Total_Abundance] > 0, _) #select rows that has a total abundance >0.
 
-#A dataframe that idetifies non empty patch at every time step
+#A dataframe that idetifies non empty patch during the sampling period (The patches that has at least one species with positive total abundance)
 non_empty_site = 
 @pipe sample_df[in(persist_sp_df.Species).(sample_df.Species), :] |>
-groupby(_, [:Sampling_date_order, :plot]) |>
+groupby(_, [:plot]) |>
 combine(_, :Abundance => sum => :Total_Abundance) |>
 filter(row -> row[:Total_Abundance] > 0, _)
 
@@ -32,7 +32,7 @@ filter(row -> row[:Total_Abundance] > 0, _)
 metacomm_df=
 @pipe sample_df|>
 filter(row -> row.Species in persist_sp_df.Species, _) |> # filter species with positive total abundance
-innerjoin(_, non_empty_site, on = [:Sampling_date_order, :plot]) |> # join with non-empty sites
+innerjoin(_, non_empty_site, on = [:plot]) |> # join with non-empty sites
 select(_, Not(:Total_Abundance)) |> # remove `Total_Abundance` to avoid confusion
 transform(_, :Abundance => ByRow(x->ifelse.(x> 0, 1, 0)) => :Presence) #create a presence-absence column from the abundance column
 
@@ -72,8 +72,8 @@ combine(x -> DataFrame(normalized_temperature = 0.0, normalized_precipitation = 
 
 #Generate random environmental data
 Random.seed!(123)
-temp = rand(Normal(15.0, 2.0), 2565)
-precip = rand(LogNormal(log(50.0) - 0.5*log(1 + (30.0/50.0)^2), sqrt(log(1 + (30.0/50.0)^2))), 2565)
+temp = rand(Normal(15.0, 2.0), 2808)
+precip = rand(LogNormal(log(50.0) - 0.5*log(1 + (30.0/50.0)^2), sqrt(log(1 + (30.0/50.0)^2))), 2808)
 
 #Transform precipitation to achieve normality
 log_precip = log.(precip)

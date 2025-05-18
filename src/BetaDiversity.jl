@@ -28,26 +28,27 @@ Example
 julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
-48735×12 DataFrame
+53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
+       │ Int64  Int64  Int64  Int64                Int64  String   Int64      Int64     Float64   Float64    Float64?                Float64?                 
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.838777                 -0.290705
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.10913                  -0.959396
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               0.313343                 -0.660172
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0               0.255048                 -0.821056
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0              -0.402463                 -0.925731
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
    ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.516463                 -0.887027
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               0.617823                 -0.50501
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.391502                 -0.834642
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.172865                 -0.280639
-                                                                                                                                            48726 rows omitted
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
+                                                                                                                                            53342 rows omitted
 
 julia> matrix_with_abundance = @pipe df |> 
            select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> 
            filter(row -> row[:Sampling_date_order] == 1, _) |> 
-           unstack(_, :Species, :Abundance) |>  
+           unstack(_, :Species, :Abundance, fill=0) |>  
            select(_, Not(:Sampling_date_order, :plot)) |> 
            Matrix(_) |> #convert the dataframe to a matrix
            _[:, sum(_, dims=1)[1, :] .!= 0] |> 
@@ -231,21 +232,22 @@ Example
 julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
-48735×12 DataFrame
+53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.838777                 -0.290705
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.10913                  -0.959396
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               0.313343                 -0.660172
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0               0.255048                 -0.821056
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0              -0.402463                 -0.925731
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
    ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.516463                 -0.887027
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               0.617823                 -0.50501
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.391502                 -0.834642
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.172865                 -0.280639
-                                                                                                                                            48726 rows omitted
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
+                                                                                                                                            53342 rows omitted
 
 julia> result_using_abanduce_data_1 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
@@ -283,7 +285,9 @@ function spatial_beta_div(abundance::AbstractVector, time::AbstractVector, patch
         combine(_, :N => sum => :total_N) |>
         unstack(_, :Species, :total_N, fill=0) |>
         select(_, Not(:Patch, )) |>
-        Matrix(_) 
+        Matrix(_) |>
+        _[:, sum(_, dims=1)[1, :] .!= 0] |> 
+        _[sum(_, dims=2)[:, 1] .!= 0,:] 
     
     #Calculate beta diversity components
     components = beta_diversity(df_matrix; quant=quant)
@@ -322,21 +326,22 @@ Example
 julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
-48735×12 DataFrame
+53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.838777                 -0.290705
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.10913                  -0.959396
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               0.313343                 -0.660172
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0               0.255048                 -0.821056
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0              -0.402463                 -0.925731
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
    ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.516463                 -0.887027
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               0.617823                 -0.50501
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.391502                 -0.834642
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.172865                 -0.280639
-                                                                                                                                            48726 rows omitted
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
+                                                                                                                                            53342 rows omitted
 
 julia> result_using_abanduce_data_1 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
@@ -374,7 +379,9 @@ function temporal_beta_div(abundance::AbstractVector, time::AbstractVector, patc
         combine(_, :N => sum => :total_N) |>
         unstack(_, :Species, :total_N, fill=0) |>
         select(_, Not(:Time)) |>
-        Matrix(_) 
+        Matrix(_) |>
+        _[:, sum(_, dims=1)[1, :] .!= 0] |> 
+        _[sum(_, dims=2)[:, 1] .!= 0,:] 
     
     #Calculate beta diversity components
     components = beta_diversity(df_matrix; quant=quant)

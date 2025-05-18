@@ -29,8 +29,8 @@ small_df = shuffled_df[1:small_size, :]
 medium_df = shuffled_df[1:medium_size, :]
 
 # Save the datasets to CSV files
-small_path = joinpath("benchmarks", "data_for_testing", "small_dataset.csv")
-medium_path = joinpath("benchmarks", "data_for_testing", "medium_dataset.csv")
+small_path = joinpath("data", "data_for_testing", "small_dataset.csv")
+medium_path = joinpath("data", "data_for_testing", "medium_dataset.csv")
 
 CSV.write(small_path, small_df)
 CSV.write(medium_path, medium_df)

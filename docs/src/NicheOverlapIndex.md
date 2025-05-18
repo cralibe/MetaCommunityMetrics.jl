@@ -11,8 +11,6 @@ To capture the changes in density-independent abiotic response, also known as ni
 The Niche Overlap Index functions in MetaCommunityMetrics provide a robust framework for calculating niche overlap based on species abundance or presence-absence data. These functions allow you to evaluate how species share ecological space within a metacommunity, offering valuable insights into community dynamics and species interactions.
 
 ## The Function
-- `niche_overlap`: This function calculates the Niche Overlap Index for a given set of species across different patches. It provides metrics for mean, minimum, and maximum niche overlap, allowing for a comprehensive assessment of niche sharing within the community.
-
 ```@docs
 niche_overlap
 ```

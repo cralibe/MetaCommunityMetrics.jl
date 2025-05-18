@@ -14,9 +14,6 @@ The function provides four metrics that are designed to quantify variability at 
 - Local-scale average community variability (`CV_c_l`)
 - Regional-scale community variability (`CV_c_r`)
 
-The variability metrics are calculated as follows:
-
-
 ## The Function
 ```@docs
 CV_meta

@@ -1,5 +1,4 @@
 # benchmarks/benchmark_r.R
-
 # Load necessary libraries
 library(data.table)  
 library(tidyverse)
@@ -7,23 +6,25 @@ library(bench)
 ## R packages that provide equivalent functions of my package  
 library(adespatial) 
 library(DNCImper)
+library(MVNH)
 
 #Read in the sample data
-df <- read.csv("~/.julia/dev/MetaCommunityMetrics/data/metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE) #There is a species called "NA", need to handle NAs with caution
-#comm_df_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/DNCI_comm.csv")
-#grouping_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/cluster_list_t1.csv")
+full_df <- read.csv("metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE) #There is a species called "NA", need to handle NAs with caution
+comm_full<- read.csv("data_for_testing/comm_full_df.csv")
+groups_full<- read.csv("data_for_testing/groups_full_df.csv")
 
-comm_df_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/DNCI_comm_t50.csv")
-grouping_for_DNCI<-read.csv("~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/data/cluster_list_t50.csv")
+medium_df <- read.csv("data_for_testing/medium_dataset.csv")
+comm_medium <- read.csv("data_for_testing/comm_medium_df.csv")
+groups_medium <- read.csv("data_for_testing/groups_medium_df.csv")
+
+small_df <- read.csv("data_for_testing/small_dataset.csv")
+comm_small <- read.csv("data_for_testing/comm_small_df.csv")
+groups_small <-read.csv("data_for_testing/groups_small_df.csv")
 
 #Data Wrangling
-community_matrix<-df %>%
-  select(-Presence) %>%
-  pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude)) %>% 
-  select(which(colSums(.) !=0)) %>%
-  filter(rowSums(.) != 0)
-
+#Full Dataset####
+df <- full_df%>%
+  mutate(Species = ifelse(Species=="NA", "N_A", Species))
 ## The abundance matrix
 matrix_with_abundance <- df %>%
   filter(Sampling_date_order == 50) %>% 
@@ -33,54 +34,30 @@ matrix_with_abundance <- df %>%
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
-### The binary matrix
+### The presence/absence matrix
 matrix_with_presence <- df %>%
   filter(Sampling_date_order == 50) %>% 
   select(-Abundance) %>%
   pivot_wider(names_from = Species, values_from = Presence, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
 #### Benchmark the `beta.div.comp` function
 beta_diversity_1 <- mark(beta.div.comp(matrix_with_abundance, coef = "J", quant = TRUE),
-  iterations = 10000,
+  iterations = 100,
   check = TRUE,
-  time_unit = "us")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_microseconds <- as.numeric(mean(beta_diversity_1$time[[1]])) * 1e+6
-memory_usage_kib <- as.numeric(beta_diversity_1$mem_alloc) / 1024
-
-# Print the results
-cat("Execution Time (Microseconds):", execution_time_microseconds, "\n")
-cat("Memory Usage (KiB):", memory_usage_kib, "\n")
+  time_unit = "ms")
 
 beta_diversity_2 <- mark(beta.div.comp(matrix_with_abundance, coef = "J", quant = FALSE),
-                         iterations = 10000,
+                         iterations = 100,
                          check = TRUE,
-                         time_unit = "us")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_microseconds <- mean(beta_diversity_2$time[[1]])* 1e+6
-memory_usage_kib <- as.numeric(beta_diversity_2$mem_alloc) / 1024
-
-# Print the results
-cat("Execution Time (Microseconds):", execution_time_microseconds, "\n")
-cat("Memory Usage (KiB):", memory_usage_kib, "\n")
+                         time_unit = "ms")
 
 beta_diversity_3 <- mark(beta.div.comp(matrix_with_presence, coef = "J", quant = FALSE),
-                         iterations = 10000,
+                         iterations = 100,
                          check = TRUE,
-                         time_unit = "us")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_microseconds <- as.numeric(mean(beta_diversity_3$time[[1]])) * 1e+6
-memory_usage_kib <- as.numeric(beta_diversity_3$mem_alloc) / 1024
-
-# Print the results
-cat("Execution Time (Microseconds):", execution_time_microseconds, "\n")
-cat("Memory Usage (KiB):", memory_usage_kib, "\n")
+                         time_unit = "ms")
 
 ####Benchmark the spatial beta diversity function
 spatial_beta_div_1 <- mark(df %>% 
@@ -90,17 +67,9 @@ spatial_beta_div_1 <- mark(df %>%
                            ungroup() %>% 
                            dplyr::select(-plot) %>% 
                            beta.div.comp(coef = "J", quant = TRUE, save.abc = FALSE),
-                          iterations = 1000,
+                          iterations = 100,
                           check = TRUE,
-                          time_unit = "us")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(spatial_beta_div_1$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(spatial_beta_div_1$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
+                          time_unit = "ms")
 
 spatial_beta_div_2 <- mark(df %>% 
                              group_by(plot,Species) %>%
@@ -109,18 +78,9 @@ spatial_beta_div_2 <- mark(df %>%
                              ungroup() %>% 
                              dplyr::select(-plot) %>% 
                              beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
-                           iterations = 1000,
+                           iterations = 100,
                            check = TRUE,
-                           time_unit = "us")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(spatial_beta_div_2$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(spatial_beta_div_2$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
-
+                           time_unit = "ms")
 
 spatial_beta_div_3 <- mark(df %>% 
                              group_by(plot,Species) %>%
@@ -129,19 +89,10 @@ spatial_beta_div_3 <- mark(df %>%
                              ungroup() %>% 
                              dplyr::select(-plot) %>% 
                              beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
-                           iterations = 1000,
+                           iterations = 100,
                            check = TRUE,
                            time_unit = "ms")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(spatial_beta_div_3$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(spatial_beta_div_3$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
-
-
+####Benchmark the temproal beta diversity function
 temporal_beta_div_1 <- mark(df %>% 
                               group_by(Sampling_date_order,Species) %>%
                               summarise(Abundance = sum(Abundance)) %>% 
@@ -149,17 +100,9 @@ temporal_beta_div_1 <- mark(df %>%
                               ungroup() %>% 
                               select(-Sampling_date_order) %>% 
                               beta.div.comp(coef = "J", quant = TRUE, save.abc = FALSE),
-                           iterations = 1000,
+                           iterations = 100,
                            check = TRUE,
                            time_unit = "ms")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(temporal_beta_div_1$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(temporal_beta_div_1$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
 
 temporal_beta_div_2 <- mark(df %>% 
                               group_by(Sampling_date_order,Species) %>%
@@ -168,17 +111,9 @@ temporal_beta_div_2 <- mark(df %>%
                               ungroup() %>% 
                               select(-Sampling_date_order) %>% 
                               beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
-                            iterations = 1000,
+                            iterations = 100,
                             check = TRUE,
                             time_unit = "ms")
-
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(temporal_beta_div_2$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(temporal_beta_div_2$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
 
 temporal_beta_div_3 <- mark(df %>% 
                               group_by(Sampling_date_order,Species) %>%
@@ -187,55 +122,21 @@ temporal_beta_div_3 <- mark(df %>%
                               ungroup() %>% 
                               select(-Sampling_date_order) %>% 
                               beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
-                            iterations = 1000,
+                            iterations = 100,
                             check = TRUE,
                             time_unit = "ms")
 
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(temporal_beta_div_3$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(temporal_beta_div_3$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
-
 #### Benchmark the DNCI function
-groups <- grouping_for_DNCI$Group
-
-DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_df_for_DNCI, 
-                                                       groups, Nperm = 100, 
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full, 
+                                                       groups_full$Group, Nperm = 100, 
                                                        symmetrize = FALSE, 
-                                                       plotSIMPER = FALSE),
-                               iterations = 10,
+                                                       plotSIMPER = FALSE,
+                                                      parallelComputing = FALSE)
+                               iterations = 100,
                                check = FALSE,
                             time_unit = "ms")
-
-DNCI_multigroup_result_2 <- mark(DNCImper:::DNCI_multigroup(comm_df_for_DNCI, 
-                                                          groups, Nperm = 100, 
-                                                          symmetrize = FALSE, 
-                                                          plotSIMPER = FALSE),
-                               iterations = 10,
-                               check = FALSE,
-                               time_unit = "ms")
-
-DNCI_multigroup_result_3 <- mark(DNCImper:::DNCI_multigroup(comm_df_for_DNCI, 
-                                                            groups, Nperm = 100, 
-                                                            symmetrize = FALSE, 
-                                                            plotSIMPER = FALSE),
-                                 iterations = 100,
-                                 check = FALSE,
-                                 time_unit = "ms")
-
-saveRDS(DNCI_multigroup_result_3, "~/.julia/dev/MetaCommunityMetrics/benchmarks/benchmark_r/benchmarking_result_R/DNCI_multigroup_result_100iter.rds")
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(DNCI_multigroup_result_3$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(DNCI_multigroup_result_3$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
-
-
+saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_full_result.rds")
+DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_full_result.rds")
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
                               group_by(Species, plot) %>%
@@ -244,19 +145,11 @@ prop_patches_result <- mark(df %>%
                               dplyr::summarise(n_patches = n()) %>% 
                               mutate(prop_patches = n_patches/max(df$plot)) %>% 
                               summarise(mean_prop_patches = mean(prop_patches), min_prop_patches = min(prop_patches), max_prop_patches = max(prop_patches)),
-                            iterations = 1000,
+                            iterations = 100,
                             check = TRUE,
                             time_unit = "ms")
 
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(prop_patches_result$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(prop_patches_result$mem_alloc) / 1.048576e+6
-
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
-
-#### Benchmark the CV_meta_simple function
+#### Benchmark the CV_meta function
 # The R function “var.partition” to calculate variability and synchrony across hierarchical levels
 var.partition <- function(metacomm_tsdata){
   ## The function "var.partition" performs the partitioning of variability
@@ -277,18 +170,19 @@ var.partition <- function(metacomm_tsdata){
   CV_C_L <- sum(sd_patch_k)/mean_metacom
   CV_S_R <- sum(sd_species_i)/mean_metacom
   CV_C_R <- sd_metacom/mean_metacom
-  phi_S_L2R <- CV_S_R/CV_S_L
-  phi_C_L2R <- CV_C_R/CV_C_L
-  phi_S2C_L <- CV_C_L/CV_S_L
-  phi_S2C_R <- CV_C_R/CV_S_R
-  partition_3level <- c(CV_S_L=CV_S_L, CV_C_L=CV_C_L, CV_S_R=CV_S_R, CV_C_R=CV_C_R,
-                        phi_S_L2R=phi_S_L2R, phi_C_L2R=phi_C_L2R, phi_S2C_L=phi_S2C_L,
-                        phi_S2C_R=phi_S2C_R)
+  #phi_S_L2R <- CV_S_R/CV_S_L
+  #phi_C_L2R <- CV_C_R/CV_C_L
+  #phi_S2C_L <- CV_C_L/CV_S_L
+  #phi_S2C_R <- CV_C_R/CV_S_R
+  partition_3level <- c(CV_S_L=CV_S_L, CV_C_L=CV_C_L, CV_S_R=CV_S_R, CV_C_R=CV_C_R)
+                        #,
+                        #phi_S_L2R=phi_S_L2R, phi_C_L2R=phi_C_L2R, phi_S2C_L=phi_S2C_L,
+                        #phi_S2C_R=phi_S2C_R)
   return(partition_3level)
 }
 
 #The master funciton to be benchmarked
-CV_simple_function <- function(species, time, plot, abundance){
+CV_meta <- function(data, species, time, plot, abundance){
   # Extract unique values for Species, Sampling_date_order, and plot
   species_vals <- unique(species)
   date_vals <- unique(time)
@@ -314,20 +208,608 @@ CV_simple_function <- function(species, time, plot, abundance){
   
 
 
-CV_meta_simple_result <- mark(CV_simple_function(df$Species, df$Sampling_date_order, df$plot, df$Abundance),
-                            iterations = 1000,
+CV_meta_result <- mark(CV_meta(df, df$Species, df$Sampling_date_order, df$plot, df$Abundance),
+                            iterations = 100,
                             check = TRUE,
                             time_unit = "ms")
 
-# Convert execution time to microseconds (µs) and memory allocation to kibibytes (KiB)
-execution_time_millisecond <- as.numeric(mean(CV_meta_simple_result$time[[1]])) * 1000
-memory_usage_mib <- as.numeric(CV_meta_simple_result$mem_alloc) / 1.048576e+6
+#### Benchmark the hypervolume functions
+data_1 <- df%>%
+  filter(Presence >0)%>%
+  filter(Species =="BA")%>%
+  select(normalized_temperature, normalized_precipitation)
 
-# Print the results
-cat("Execution Time (Milliseconds):", execution_time_millisecond, "\n")
-cat("Memory Usage (MiB):", memory_usage_mib, "\n")
+data_2 <- df%>%
+  filter(Presence >0)%>%
+  filter(Species =="SH")%>%
+  select(normalized_temperature, normalized_precipitation)
+
+hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Precipitation")), iterations = 100,
+                               check = TRUE,
+                               time_unit = "ms")
+
+hypervolume_dis_result <- mark(MVNH_dissimilarity(data_1, data_2, var.names = c("Temperature", "Precipitation")), iterations = 100,
+                                check = TRUE,
+                                time_unit = "ms")
+
+benchmark_result_full_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
+                                                "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
+                                                "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
+                                                "DNCI_multigroup_result",
+                                                "prop_patches_result", "CV_meta_result", "hypervolume_det_result", "hypervolume_dis_result"),
+                                  Time_minimum = c(as.numeric(min(beta_diversity_1$time[[1]])) * 1e+3,
+                                                  as.numeric(min(beta_diversity_2$time[[1]])) * 1e+3,
+                                                  as.numeric(min(beta_diversity_3$time[[1]])) * 1e+3,
+                                                  as.numeric(min(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                  as.numeric(min(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                  as.numeric(min(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                  as.numeric(min(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                  as.numeric(min(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                  as.numeric(min(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                  as.numeric(min(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                  as.numeric(min(prop_patches_result$time[[1]])) * 1e+3,
+                                                  as.numeric(min(CV_meta_result$time[[1]])) * 1e+3,
+                                                  as.numeric(min(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                  as.numeric(min(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                  Time_median = c(as.numeric(median(beta_diversity_1$time[[1]])) * 1e+3,
+                                                   as.numeric(median(beta_diversity_2$time[[1]])) * 1e+3,
+                                                   as.numeric(median(beta_diversity_3$time[[1]])) * 1e+3,
+                                                   as.numeric(median(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                   as.numeric(median(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                   as.numeric(median(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                   as.numeric(median(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                   as.numeric(median(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                   as.numeric(median(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                   as.numeric(median(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                   as.numeric(median(prop_patches_result$time[[1]])) * 1e+3,
+                                                   as.numeric(median(CV_meta_result$time[[1]])) * 1e+3,
+                                                  as.numeric(median(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                  as.numeric(median(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                  Time_mean = c(as.numeric(mean(beta_diversity_1$time[[1]])) * 1e+3,
+                                                as.numeric(mean(beta_diversity_2$time[[1]])) * 1e+3,
+                                                as.numeric(mean(beta_diversity_3$time[[1]])) * 1e+3,
+                                                as.numeric(mean(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                as.numeric(mean(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                as.numeric(mean(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                as.numeric(mean(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                as.numeric(mean(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                as.numeric(mean(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                as.numeric(mean(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                as.numeric(mean(prop_patches_result$time[[1]])) * 1e+3,
+                                                as.numeric(mean(CV_meta_result$time[[1]])) * 1e+3,
+                                                as.numeric(mean(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                as.numeric(mean(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                  Time_maximum = c(as.numeric(max(beta_diversity_1$time[[1]])) * 1e+3,
+                                                as.numeric(max(beta_diversity_2$time[[1]])) * 1e+3,
+                                                as.numeric(max(beta_diversity_3$time[[1]])) * 1e+3,
+                                                as.numeric(max(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                as.numeric(max(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                as.numeric(max(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                as.numeric(max(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                as.numeric(max(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                as.numeric(max(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                as.numeric(max(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                as.numeric(max(prop_patches_result$time[[1]])) * 1e+3,
+                                                as.numeric(max(CV_meta_result$time[[1]])) * 1e+3,
+                                                as.numeric(max(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                as.numeric(max(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                  Time_std = c(as.numeric(sd(beta_diversity_1$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(beta_diversity_2$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(beta_diversity_3$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(prop_patches_result$time[[1]])) * 1e+3,
+                                                   as.numeric(sd(CV_meta_result$time[[1]])) * 1e+3,
+                                               as.numeric(sd(hypervolume_det_result$time[[1]])) * 1e+3,
+                                               as.numeric(sd(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                  memory = c(as.numeric(beta_diversity_1$mem_alloc) / 1024^2,
+                                               as.numeric(beta_diversity_2$mem_alloc) / 1024^2,
+                                               as.numeric(beta_diversity_3$mem_alloc) / 1024^2,
+                                               as.numeric(spatial_beta_div_1$mem_alloc) / 1024^2,
+                                               as.numeric(spatial_beta_div_2$mem_alloc) / 1024^2,
+                                               as.numeric(spatial_beta_div_3$mem_alloc) / 1024^2,
+                                               as.numeric(temporal_beta_div_1$mem_alloc) / 1024^2,
+                                               as.numeric(temporal_beta_div_2$mem_alloc) / 1024^2,
+                                               as.numeric(temporal_beta_div_3$mem_alloc) / 1024^2,
+                                               as.numeric(DNCI_multigroup_result$mem_alloc) / 1024^2,
+                                               as.numeric(prop_patches_result$mem_alloc) / 1024^2,
+                                               as.numeric(CV_meta_result$mem_alloc) / 1024^2,
+                                  as.numeric(hypervolume_det_result$mem_alloc) / 1024^2,
+                                  as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
+           
+write.csv(benchmark_result_full_df, "../benchmarks/result/benchmark_result_full_df_r.csv")
+
+#Medium Dataset####
+df <- medium_df%>%
+  mutate(Species = ifelse(Species=="NA", "N_A", Species))
+## The abundance matrix
+matrix_with_abundance <- df %>%
+  filter(Sampling_date_order == 50) %>% 
+  select(-Presence) %>%
+  pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(which(colSums(.) !=0)) %>%
+  filter(rowSums(.) != 0)
+
+### The presence/absence matrix
+matrix_with_presence <- df %>%
+  filter(Sampling_date_order == 50) %>% 
+  select(-Abundance) %>%
+  pivot_wider(names_from = Species, values_from = Presence, values_fill=0) %>%
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(which(colSums(.) !=0)) %>%
+  filter(rowSums(.) != 0)
+
+#### Benchmark the `beta.div.comp` function
+beta_diversity_1 <- mark(beta.div.comp(matrix_with_abundance, coef = "J", quant = TRUE),
+                         iterations = 100,
+                         check = TRUE,
+                         time_unit = "ms")
+
+beta_diversity_2 <- mark(beta.div.comp(matrix_with_abundance, coef = "J", quant = FALSE),
+                         iterations = 100,
+                         check = TRUE,
+                         time_unit = "ms")
+
+beta_diversity_3 <- mark(beta.div.comp(matrix_with_presence, coef = "J", quant = FALSE),
+                         iterations = 100,
+                         check = TRUE,
+                         time_unit = "ms")
+
+####Benchmark the spatial beta diversity function
+spatial_beta_div_1 <- mark(df %>% 
+                             group_by(plot,Species) %>%
+                             dplyr::summarise(Abundance = sum(Abundance)) %>% 
+                             spread(key = Species, value = Abundance, fill = 0) %>% 
+                             ungroup() %>% 
+                             dplyr::select(-plot) %>% 
+                             beta.div.comp(coef = "J", quant = TRUE, save.abc = FALSE),
+                           iterations = 100,
+                           check = TRUE,
+                           time_unit = "ms")
+
+spatial_beta_div_2 <- mark(df %>% 
+                             group_by(plot,Species) %>%
+                             dplyr::summarise(Abundance = sum(Abundance)) %>% 
+                             spread(key = Species, value = Abundance, fill = 0) %>% 
+                             ungroup() %>% 
+                             dplyr::select(-plot) %>% 
+                             beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                           iterations = 100,
+                           check = TRUE,
+                           time_unit = "ms")
+
+spatial_beta_div_3 <- mark(df %>% 
+                             group_by(plot,Species) %>%
+                             dplyr::summarise(Sum_Presence = sum(Presence)) %>% 
+                             spread(key = Species, value = Sum_Presence, fill = 0) %>% 
+                             ungroup() %>% 
+                             dplyr::select(-plot) %>% 
+                             beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                           iterations = 100,
+                           check = TRUE,
+                           time_unit = "ms")
+####Benchmark the temproal beta diversity function
+temporal_beta_div_1 <- mark(df %>% 
+                              group_by(Sampling_date_order,Species) %>%
+                              summarise(Abundance = sum(Abundance)) %>% 
+                              spread(key = Species, value = Abundance, fill = 0) %>% 
+                              ungroup() %>% 
+                              select(-Sampling_date_order) %>% 
+                              beta.div.comp(coef = "J", quant = TRUE, save.abc = FALSE),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+temporal_beta_div_2 <- mark(df %>% 
+                              group_by(Sampling_date_order,Species) %>%
+                              summarise(Abundance = sum(Abundance)) %>% 
+                              spread(key = Species, value = Abundance, fill = 0) %>% 
+                              ungroup() %>% 
+                              select(-Sampling_date_order) %>% 
+                              beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+temporal_beta_div_3 <- mark(df %>% 
+                              group_by(Sampling_date_order,Species) %>%
+                              dplyr::summarise(Sum_Presence = sum(Presence)) %>% 
+                              spread(key = Species, value = Sum_Presence, fill = 0) %>% 
+                              ungroup() %>% 
+                              select(-Sampling_date_order) %>% 
+                              beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+#### Benchmark the DNCI function
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium, 
+                                                          groups_medium$Group, Nperm = 100, 
+                                                          symmetrize = FALSE, 
+                                                          plotSIMPER = FALSE,
+                                                          parallelComputing = FALSE),
+                               iterations = 100,
+                               check = FALSE,
+                               time_unit = "ms")
+saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_medium_result.rds")
+DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_medium_result.rds")
+#### Benchmark the prop_patches function
+prop_patches_result <- mark(df %>% 
+                              group_by(Species, plot) %>%
+                              dplyr::summarise(mean_abundance = mean(Abundance)) %>% 
+                              filter(mean_abundance  > 0) %>% 
+                              dplyr::summarise(n_patches = n()) %>% 
+                              mutate(prop_patches = n_patches/max(df$plot)) %>% 
+                              summarise(mean_prop_patches = mean(prop_patches), min_prop_patches = min(prop_patches), max_prop_patches = max(prop_patches)),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+CV_meta_result <- mark(CV_meta(df, df$Species, df$Sampling_date_order, df$plot, df$Abundance),
+                       iterations = 100,
+                       check = TRUE,
+                       time_unit = "ms")
+
+#### Benchmark the hypervolume functions
+data_1 <- df%>%
+  filter(Presence >0)%>%
+  filter(Species =="BA")%>%
+  select(normalized_temperature, normalized_precipitation)
+
+data_2 <- df%>%
+  filter(Presence >0)%>%
+  filter(Species =="SH")%>%
+  select(normalized_temperature, normalized_precipitation)
+
+hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Precipitation")), iterations = 100,
+                               check = TRUE,
+                               time_unit = "ms")
+
+hypervolume_dis_result <- mark(MVNH_dissimilarity(data_1, data_2, var.names = c("Temperature", "Precipitation")), iterations = 100,
+                               check = TRUE,
+                               time_unit = "ms")
+
+benchmark_result_medium_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
+                                                  "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
+                                                  "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
+                                                  "DNCI_multigroup_result",
+                                                  "prop_patches_result", "CV_meta_result", "hypervolume_det_result", "hypervolume_dis_result"),
+                                     Time_minimum = c(as.numeric(min(beta_diversity_1$time[[1]])) * 1e+3,
+                                                      as.numeric(min(beta_diversity_2$time[[1]])) * 1e+3,
+                                                      as.numeric(min(beta_diversity_3$time[[1]])) * 1e+3,
+                                                      as.numeric(min(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                      as.numeric(min(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                      as.numeric(min(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                      as.numeric(min(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                      as.numeric(min(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                      as.numeric(min(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                      as.numeric(min(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                      as.numeric(min(prop_patches_result$time[[1]])) * 1e+3,
+                                                      as.numeric(min(CV_meta_result$time[[1]])) * 1e+3,
+                                                      as.numeric(min(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                      as.numeric(min(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                     Time_median = c(as.numeric(median(beta_diversity_1$time[[1]])) * 1e+3,
+                                                     as.numeric(median(beta_diversity_2$time[[1]])) * 1e+3,
+                                                     as.numeric(median(beta_diversity_3$time[[1]])) * 1e+3,
+                                                     as.numeric(median(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                     as.numeric(median(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                     as.numeric(median(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                     as.numeric(median(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                     as.numeric(median(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                     as.numeric(median(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                     as.numeric(median(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                     as.numeric(median(prop_patches_result$time[[1]])) * 1e+3,
+                                                     as.numeric(median(CV_meta_result$time[[1]])) * 1e+3,
+                                                     as.numeric(median(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                     as.numeric(median(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                     Time_mean = c(as.numeric(mean(beta_diversity_1$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(beta_diversity_2$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(beta_diversity_3$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(prop_patches_result$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(CV_meta_result$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                   as.numeric(mean(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                     Time_maximum = c(as.numeric(max(beta_diversity_1$time[[1]])) * 1e+3,
+                                                      as.numeric(max(beta_diversity_2$time[[1]])) * 1e+3,
+                                                      as.numeric(max(beta_diversity_3$time[[1]])) * 1e+3,
+                                                      as.numeric(max(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                      as.numeric(max(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                      as.numeric(max(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                      as.numeric(max(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                      as.numeric(max(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                      as.numeric(max(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                      as.numeric(max(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                      as.numeric(max(prop_patches_result$time[[1]])) * 1e+3,
+                                                      as.numeric(max(CV_meta_result$time[[1]])) * 1e+3,
+                                                      as.numeric(max(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                      as.numeric(max(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                     Time_std = c(as.numeric(sd(beta_diversity_1$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(beta_diversity_2$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(beta_diversity_3$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(prop_patches_result$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(CV_meta_result$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                  as.numeric(sd(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                     memory = c(as.numeric(beta_diversity_1$mem_alloc) / 1024^2,
+                                                as.numeric(beta_diversity_2$mem_alloc) / 1024^2,
+                                                as.numeric(beta_diversity_3$mem_alloc) / 1024^2,
+                                                as.numeric(spatial_beta_div_1$mem_alloc) / 1024^2,
+                                                as.numeric(spatial_beta_div_2$mem_alloc) / 1024^2,
+                                                as.numeric(spatial_beta_div_3$mem_alloc) / 1024^2,
+                                                as.numeric(temporal_beta_div_1$mem_alloc) / 1024^2,
+                                                as.numeric(temporal_beta_div_2$mem_alloc) / 1024^2,
+                                                as.numeric(temporal_beta_div_3$mem_alloc) / 1024^2,
+                                                as.numeric(DNCI_multigroup_result$mem_alloc) / 1024^2,
+                                                as.numeric(prop_patches_result$mem_alloc) / 1024^2,
+                                                as.numeric(CV_meta_result$mem_alloc) / 1024^2,
+                                                as.numeric(hypervolume_det_result$mem_alloc) / 1024^2,
+                                                as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
 
 
 
-MVNH_det()
+write.csv(benchmark_result_medium_df, "../benchmarks/result/benchmark_result_medium_df_r.csv")
 
+#Small Dataset####
+df <- small_df%>%
+  mutate(Species = ifelse(Species=="NA", "N_A", Species))
+## The abundance matrix
+matrix_with_abundance <- df %>%
+  filter(Sampling_date_order == 55) %>% 
+  select(-Presence) %>%
+  pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(which(colSums(.) !=0)) %>%
+  filter(rowSums(.) != 0)
+
+### The presence/absence matrix
+matrix_with_presence <- df %>%
+  filter(Sampling_date_order == 55) %>% 
+  select(-Abundance) %>%
+  pivot_wider(names_from = Species, values_from = Presence, values_fill=0) %>%
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(which(colSums(.) !=0)) %>%
+  filter(rowSums(.) != 0)
+
+#### Benchmark the `beta.div.comp` function
+beta_diversity_1 <- mark(beta.div.comp(matrix_with_abundance, coef = "J", quant = TRUE),
+                         iterations = 100,
+                         check = TRUE,
+                         time_unit = "ms")
+
+beta_diversity_2 <- mark(beta.div.comp(matrix_with_abundance, coef = "J", quant = FALSE),
+                         iterations = 100,
+                         check = TRUE,
+                         time_unit = "ms")
+
+beta_diversity_3 <- mark(beta.div.comp(matrix_with_presence, coef = "J", quant = FALSE),
+                         iterations = 100,
+                         check = TRUE,
+                         time_unit = "ms")
+
+####Benchmark the spatial beta diversity function
+spatial_beta_div_1 <- mark(df %>% 
+                             group_by(plot,Species) %>%
+                             dplyr::summarise(Abundance = sum(Abundance)) %>% 
+                             spread(key = Species, value = Abundance, fill = 0) %>% 
+                             ungroup() %>% 
+                             dplyr::select(-plot) %>% 
+                             beta.div.comp(coef = "J", quant = TRUE, save.abc = FALSE),
+                           iterations = 100,
+                           check = TRUE,
+                           time_unit = "ms")
+
+spatial_beta_div_2 <- mark(df %>% 
+                             group_by(plot,Species) %>%
+                             dplyr::summarise(Abundance = sum(Abundance)) %>% 
+                             spread(key = Species, value = Abundance, fill = 0) %>% 
+                             ungroup() %>% 
+                             dplyr::select(-plot) %>% 
+                             beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                           iterations = 100,
+                           check = TRUE,
+                           time_unit = "ms")
+
+spatial_beta_div_3 <- mark(df %>% 
+                             group_by(plot,Species) %>%
+                             dplyr::summarise(Sum_Presence = sum(Presence)) %>% 
+                             spread(key = Species, value = Sum_Presence, fill = 0) %>% 
+                             ungroup() %>% 
+                             dplyr::select(-plot) %>% 
+                             beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                           iterations = 100,
+                           check = TRUE,
+                           time_unit = "ms")
+####Benchmark the temproal beta diversity function
+temporal_beta_div_1 <- mark(df %>% 
+                              group_by(Sampling_date_order,Species) %>%
+                              summarise(Abundance = sum(Abundance)) %>% 
+                              spread(key = Species, value = Abundance, fill = 0) %>% 
+                              ungroup() %>% 
+                              select(-Sampling_date_order) %>% 
+                              beta.div.comp(coef = "J", quant = TRUE, save.abc = FALSE),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+temporal_beta_div_2 <- mark(df %>% 
+                              group_by(Sampling_date_order,Species) %>%
+                              summarise(Abundance = sum(Abundance)) %>% 
+                              spread(key = Species, value = Abundance, fill = 0) %>% 
+                              ungroup() %>% 
+                              select(-Sampling_date_order) %>% 
+                              beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+temporal_beta_div_3 <- mark(df %>% 
+                              group_by(Sampling_date_order,Species) %>%
+                              dplyr::summarise(Sum_Presence = sum(Presence)) %>% 
+                              spread(key = Species, value = Sum_Presence, fill = 0) %>% 
+                              ungroup() %>% 
+                              select(-Sampling_date_order) %>% 
+                              beta.div.comp(coef = "J", quant = FALSE, save.abc = FALSE),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+#### Benchmark the DNCI function
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small, 
+                                                          groups_small$Group, Nperm = 100, 
+                                                          symmetrize = FALSE, 
+                                                          plotSIMPER = FALSE,
+                                                          parallelComputing = FALSE),
+                               iterations = 100,
+                               check = FALSE,
+                               time_unit = "ms")
+saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_small_result.rds")
+DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_small_result.rds")
+
+#### Benchmark the prop_patches function
+prop_patches_result <- mark(df %>% 
+                              group_by(Species, plot) %>%
+                              dplyr::summarise(mean_abundance = mean(Abundance)) %>% 
+                              filter(mean_abundance  > 0) %>% 
+                              dplyr::summarise(n_patches = n()) %>% 
+                              mutate(prop_patches = n_patches/max(df$plot)) %>% 
+                              summarise(mean_prop_patches = mean(prop_patches), min_prop_patches = min(prop_patches), max_prop_patches = max(prop_patches)),
+                            iterations = 100,
+                            check = TRUE,
+                            time_unit = "ms")
+
+CV_meta_result <- mark(CV_meta(df, df$Species, df$Sampling_date_order, df$plot, df$Abundance),
+                       iterations = 100,
+                       check = TRUE,
+                       time_unit = "ms")
+
+#### Benchmark the hypervolume functions
+data_1 <- df%>%
+  filter(Presence >0)%>%
+  filter(Species =="BA")%>%
+  select(normalized_temperature, normalized_precipitation)
+
+data_2 <- df%>%
+  filter(Presence >0)%>%
+  filter(Species =="SH")%>%
+  select(normalized_temperature, normalized_precipitation)
+
+hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Precipitation")), iterations = 100,
+                               check = TRUE,
+                               time_unit = "ms")
+
+hypervolume_dis_result <- mark(MVNH_dissimilarity(data_1, data_2, var.names = c("Temperature", "Precipitation")), iterations = 100,
+                               check = TRUE,
+                               time_unit = "ms")
+
+benchmark_result_small_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
+                                                    "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
+                                                    "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
+                                                    "DNCI_multigroup_result",
+                                                    "prop_patches_result", "CV_meta_result", "hypervolume_det_result", "hypervolume_dis_result"),
+                                       Time_minimum = c(as.numeric(min(beta_diversity_1$time[[1]])) * 1e+3,
+                                                        as.numeric(min(beta_diversity_2$time[[1]])) * 1e+3,
+                                                        as.numeric(min(beta_diversity_3$time[[1]])) * 1e+3,
+                                                        as.numeric(min(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                        as.numeric(min(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                        as.numeric(min(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                        as.numeric(min(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                        as.numeric(min(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                        as.numeric(min(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                        as.numeric(min(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                        as.numeric(min(prop_patches_result$time[[1]])) * 1e+3,
+                                                        as.numeric(min(CV_meta_result$time[[1]])) * 1e+3,
+                                                        as.numeric(min(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                        as.numeric(min(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                       Time_median = c(as.numeric(median(beta_diversity_1$time[[1]])) * 1e+3,
+                                                       as.numeric(median(beta_diversity_2$time[[1]])) * 1e+3,
+                                                       as.numeric(median(beta_diversity_3$time[[1]])) * 1e+3,
+                                                       as.numeric(median(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                       as.numeric(median(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                       as.numeric(median(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                       as.numeric(median(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                       as.numeric(median(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                       as.numeric(median(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                       as.numeric(median(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                       as.numeric(median(prop_patches_result$time[[1]])) * 1e+3,
+                                                       as.numeric(median(CV_meta_result$time[[1]])) * 1e+3,
+                                                       as.numeric(median(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                       as.numeric(median(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                       Time_mean = c(as.numeric(mean(beta_diversity_1$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(beta_diversity_2$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(beta_diversity_3$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(prop_patches_result$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(CV_meta_result$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                     as.numeric(mean(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                       Time_maximum = c(as.numeric(max(beta_diversity_1$time[[1]])) * 1e+3,
+                                                        as.numeric(max(beta_diversity_2$time[[1]])) * 1e+3,
+                                                        as.numeric(max(beta_diversity_3$time[[1]])) * 1e+3,
+                                                        as.numeric(max(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                        as.numeric(max(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                        as.numeric(max(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                        as.numeric(max(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                        as.numeric(max(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                        as.numeric(max(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                        as.numeric(max(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                        as.numeric(max(prop_patches_result$time[[1]])) * 1e+3,
+                                                        as.numeric(max(CV_meta_result$time[[1]])) * 1e+3,
+                                                        as.numeric(max(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                        as.numeric(max(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                       Time_std = c(as.numeric(sd(beta_diversity_1$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(beta_diversity_2$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(beta_diversity_3$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(spatial_beta_div_1$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(spatial_beta_div_2$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(spatial_beta_div_3$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(temporal_beta_div_1$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(temporal_beta_div_2$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(temporal_beta_div_3$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(DNCI_multigroup_result$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(prop_patches_result$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(CV_meta_result$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(hypervolume_det_result$time[[1]])) * 1e+3,
+                                                    as.numeric(sd(hypervolume_dis_result$time[[1]])) * 1e+3),
+                                       memory = c(as.numeric(beta_diversity_1$mem_alloc) / 1024^2,
+                                                  as.numeric(beta_diversity_2$mem_alloc) / 1024^2,
+                                                  as.numeric(beta_diversity_3$mem_alloc) / 1024^2,
+                                                  as.numeric(spatial_beta_div_1$mem_alloc) / 1024^2,
+                                                  as.numeric(spatial_beta_div_2$mem_alloc) / 1024^2,
+                                                  as.numeric(spatial_beta_div_3$mem_alloc) / 1024^2,
+                                                  as.numeric(temporal_beta_div_1$mem_alloc) / 1024^2,
+                                                  as.numeric(temporal_beta_div_2$mem_alloc) / 1024^2,
+                                                  as.numeric(temporal_beta_div_3$mem_alloc) / 1024^2,
+                                                  as.numeric(DNCI_multigroup_result$mem_alloc) / 1024^2,
+                                                  as.numeric(prop_patches_result$mem_alloc) / 1024^2,
+                                                  as.numeric(CV_meta_result$mem_alloc) / 1024^2,
+                                                  as.numeric(hypervolume_det_result$mem_alloc) / 1024^2,
+                                                  as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
+
+
+write.csv(benchmark_result_small_df, "../benchmarks/result/benchmark_result_small_df_r.csv")

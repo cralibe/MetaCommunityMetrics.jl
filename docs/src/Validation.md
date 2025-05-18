@@ -8,6 +8,7 @@ We validate all the calcuations in `MetaCommunityMetrics` that have equvilant fu
 *Below is a comparison of the results between `MetaCommunityMetrics` and functions/equivalent implementation in R.*
 ### Beta Diversity
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here. All values *
+
 | TestCase                                         | BDtotal | Repl   | RichDif |
 |--------------------------------------------------|---------|--------|---------|
 | Beta Diversity (Abundance, quant=true)           | 0.0000  | 0.0000 | 0.0000  |
@@ -22,27 +23,31 @@ We validate all the calcuations in `MetaCommunityMetrics` that have equvilant fu
 
 ### Dispersal-niche continuum index
 *A plot showing the distribution of the DNCI values of diffent group pairs from different programming language, each pair are runned for 100 times.
-![Cluster Plot](assets/clustering_result.svg)
+![Cluster Plot](assets/dncni_plot.svg)
 
 ### Occupied Patches Proportion
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here.*
+
 | min_prop_patches | mean_prop_patches | max_prop_patches |
 |------------------|-------------------|------------------|
 | 0.0000           | 0.0000            | 0.0000           |
 
 ### Variability Metrics
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here.*
+
 | CV_S_L | CV_C_L | CV_S_R | CV_C_R |
 |--------|--------|--------|--------|
 | 0.0000 | 0.0000 | 0.0000 | 0.0000 |
 
 ### Hypervolume
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here.*
+
 #### Volume
 | total  | correlation | Temperature | Precipitation |
 |--------|-------------|-------------|---------------|
 | 0.0000 | 0.0000      | 0.0000      | 0.0000        |
-### Volume dissimilarity
+
+#### Volume dissimilarity
 | Metric                 | total  | correlation | Temperature | Precipitation |
 |------------------------|--------|-------------|-------------|---------------|
 | Bhattacharyya_distance | 0.0000 | 0.0000      | 0.0000      | 0.0000        |

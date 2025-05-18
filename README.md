@@ -33,8 +33,6 @@ To install MetaCommunityMetrics, use the following command:
 using Pkg
 
 Pkg.add("MetaCommunityMetrics")
-
-using MetaCommunityMetrics
 ```
 ### Sample Data
 To assess the sample data, use the following command:
@@ -49,22 +47,22 @@ load_sample_data()
 julia> using MetaCommunityMetrics
 
 julia> load_sample_data()
-48735×12 DataFrame
+53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.80987                  -0.290381
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.12523                   0.750317
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5              -1.10775                  -1.87583
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0              -0.418417                  0.0964911
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0               0.287892                 -0.0272079
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
    ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               0.143276                  2.37981
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.148338                  1.4683
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               1.01169                  -0.485298
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.0284359                -0.392446
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.170814                  1.14892
-                                                                                                                                           48725 rows omitted
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
+                                                                                                                                            53342 rows omitted
 ```
 
 ## Acknowledgment
@@ -74,6 +72,9 @@ This package includes translations and adaptations of functions from the R packa
 - `vegan`: [https://cran.r-project.org/web/packages/vegan/index.html](https://cran.r-project.org/web/packages/vegan/index.html)
 - `DNCImper`: [https://github.com/Corentin-Gibert-Paleontology/DNCImper](https://github.com/Corentin-Gibert-Paleontology/DNCImper)
 
+This package also includes translations and adaptations of functions that are provided by the scripts of these papers:
+- Wang, S., Lamy, T., Hallett, L. M. & Loreau, M. Stability and synchrony across ecological hierarchies in heterogeneous metacommunities: linking theory to data. Ecography 42, 1200-1211 (2019). [https://doi.org:https://doi.org/10.1111/ecog.04290](https://doi.org:https://doi.org/10.1111/ecog.04290)
+- Guzman, L. M. et al. Accounting for temporal change in multiple biodiversity patterns improves the inference of metacommunity processes. Ecology 103, e3683 (2022). [https://doi.org:https://doi.org/10.1002/ecy.3683](https://doi.org:https://doi.org/10.1002/ecy.3683)
 
 Please refer to these sources for full details on the original implementations and licenses.
 

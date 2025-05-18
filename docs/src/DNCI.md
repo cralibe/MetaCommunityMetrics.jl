@@ -13,10 +13,6 @@ The DNCI (Dispersal-Niche Continuum Index) further extends this approach by tran
 The DNCI functions in `MetaCommunityMetrics` allow you to analyze the processes driving species assembly within your dataset. By comparing empirical data with randomized permutations, one can determine the extent to which niche and dispersal processes influence the structure of metacommunities. Before calculating the DNCI, groupings of sites (clusters) are required, as the DNCI relies on analyzing community composition across spatial groups. This package provides a function to perform the necessary clustering, which is not available in the equivalent R package. When the DNCI value is significantly below zero, dispersal processes are likely the dominant drivers of community composition. In contrast, a DNCI value significantly above zero suggests that niche processes play a primary role in shaping community composition. If the DNCI value is not significantly different from zero, it indicates that dispersal and niche processes contribute equally to variations in community composition.
 
 ## The Functions 
-- create_clusters: Groups sampling locations based on their spatial attributes and species richness, which can then be used to assess DNCI.
-- plot_clusters: Visualizes the clusters created, allowing for an intuitive understanding of spatial groupings.
-- DNCI_multigroup: Computes the Dispersal-Niche Continuum Index (DNCI) across multiple groups, helping to quantify the relative influence of niche versus dispersal processes.
-
 ```@docs
 create_clusters
 plot_clusters

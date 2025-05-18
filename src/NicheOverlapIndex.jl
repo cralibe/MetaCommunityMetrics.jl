@@ -22,22 +22,22 @@ The niche overlap index is calculated based on the method suggested by Pianka (1
 julia> using MetaCommunityMetrics
 
 julia> df = load_sample_data()
-48735×12 DataFrame
+53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0               0.838777                 -0.290705
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5              -1.10913                  -0.959396
-     3 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               0.313343                 -0.660172
-     4 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0               0.255048                 -0.821056
-     5 │  2010      1     16                    1     11  BA               0         0      35.5     -108.0              -0.402463                 -0.925731
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
    ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 48731 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0              -0.332365                 -0.189471
- 48732 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               0.516463                 -0.887027
- 48733 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5               0.617823                 -0.50501
- 48734 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               0.391502                 -0.834642
- 48735 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0               0.172865                 -0.280639
-                                                                                                                                            48725 rows omitted
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
+                                                                                                                                            53342 rows omitted
                                                                                           
 julia> result = niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order)
 1×3 DataFrame
@@ -63,7 +63,7 @@ function niche_overlap(abundance::AbstractVector, species::Union{AbstractVector,
     groupby(_, [:Species]) |>
     transform(_, :N => sum => :total_N)|> #total abundance of species i in all sites and times for cross checking
     select(_, [:Species,:relativ_N, :Patch ,:Time]) |>#select columns Species, total_N, relativ_N, env
-    unstack(_, :Species,:relativ_N) |> #pivot wider
+    unstack(_, :Species,:relativ_N, fill = 0) |> #pivot wider
     _[!, Not(:Patch, :Time)] |> # only retain the Proportional use values for each species
     permutedims(_) #transpose the data frame 
 
