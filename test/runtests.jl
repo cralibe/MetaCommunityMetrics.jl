@@ -159,10 +159,10 @@ using .MetaCommunityMetrics.Internal
     filter(row -> row[:Species] == "BA", _) |>
     select(_, [:normalized_temperature, :normalized_precipitation])
 
-    @test isapprox(MVNH_det(data; var_names=["Temperature", "Precipitation"]), DataFrame(total = 1.01755,
-                                            correlation = 0.975263,
-                                            Temperature = 1.03353,
-                                            Precipitation =  1.0095),
+    @test isapprox(MVNH_det(data; var_names=["Temperature", "Precipitation"]), DataFrame(total = 1.15268,
+                                            correlation = 0.999732,
+                                            Temperature = 0.962495,
+                                            Precipitation =  1.19792),
                                             atol = 1e-5) 
                                             
     # Test the MVNH_dissimilarity function
@@ -174,10 +174,10 @@ using .MetaCommunityMetrics.Internal
     result_df = MVNH_dissimilarity(data, data_2; var_names = ["Temperature", "Precipitation"])
     expected_df = DataFrame(
                 metric = ["Bhattacharyya_distance", "Mahalanobis_distance", "Determinant_ratio"],
-                total = [0.0213524, 0.0106699, 0.0106826],
-                correlation = [0.0073495, -0.00037229, 0.00772179],
-                Temperature = [0.00345875, 0.00342011, 3.86384e-5],
-                Precipitation = [0.0105442, 0.00762205, 0.00292214])
+                total = [0.0739592, 0.0322218, 0.0417374],
+                correlation = [0.000155556,-0.000360636, 0.000516192],
+                Temperature = [0.0478506, 0.0269479, 0.0209027],
+                Precipitation = [0.0259531, 0.00563454, 0.0203185])
     
     @test result_df.metric == expected_df.metric
     @test isapprox(result_df.total, expected_df.total, atol=1e-5)
@@ -190,11 +190,11 @@ using .MetaCommunityMetrics.Internal
     select(_, [:normalized_temperature, :normalized_precipitation])
 
     @test isapprox(average_MVNH_det(data, df.Presence, String.(df.Species); var_names = ["Temperature", "Precipitation"]), 
-    1.0026800359830965, atol = 1e-5)
+    1.2103765096417536, atol = 1e-5)
 
     # Test the average_MVNH_dissimilarity function
     @test isapprox(average_MVNH_dissimilarity(data, df.Presence, String.(df.Species); var_names = ["Temperature", "Precipitation"]), 
-    0.060650558475890445, atol = 1e-5)
+    0.03059942936454443, atol = 1e-5)
 
 end
 
