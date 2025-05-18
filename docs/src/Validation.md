@@ -23,7 +23,7 @@ We validate all the calcuations in `MetaCommunityMetrics` that have equvilant fu
 
 ### Dispersal-niche continuum index
 *A plot showing the distribution of the DNCI values of diffent group pairs from different programming language, each pair are runned for 100 times.
-![Julia vs. R](assets/dncni_plot.png)
+![Julia vs. R](assets/dnci_plot.png)
 
 ### Occupied Patches Proportion
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here.*
