@@ -21,3 +21,9 @@ makedocs(
                 "Benchmarking Julia vs R" => "Benchmarking.md",
                 "Acknowledgment" => "Acknowledgment.md"]
 )
+
+deploydocs(
+    repo = "https://github.com/cralibe/MetaCommunityMetrics.jl",
+    devbranch = "main",  # This specifies main as your development branch
+    versions = ["stable" => "v^", "v#.#", "dev" => "dev"]
+)
