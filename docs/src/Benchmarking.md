@@ -54,22 +54,22 @@ To assess the efficiency of `MetaCommunityMetrics`compared to equivalent `R` imp
 | Hypervolume Dissimilarity                        | 0.1825       | 0.2540      | 0.3457     | 0.8766       | 0.1756    | 0.0145    |
 
 #### Speedup
-| TestCase                                         | Time_median_julia | Time_median_r | Speedup  |
-|--------------------------------------------------|-------------------|---------------|----------|
-| Beta Diversity (Abundance, quant=true)           | 0.1359            | 4.4541        | 32.7757  |
-| Beta Diversity (Abundance, quant=false)          | 0.0170            | 0.2601        | 15.3026  |
-| Beta Diversity (Presence, quant=false)           | 0.0115            | 0.2670        | 23.1789  |
-| Spatial Beta Diversity (Abundance, quant=true)   | 1.1159            | 21.9025       | 19.6281  |
-| Spatial Beta Diversity (Abundance, quant=false)  | 1.0091            | 16.5718       | 16.4223  |
-| Spatial Beta Diversity (Presence, quant=false)   | 1.0448            | 14.6347       | 14.0068  |
-| Temporal Beta Diversity (Abundance, quant=true)  | 4.4040            | 114.8494      | 26.0784  |
-| Temporal Beta Diversity (Abundance, quant=false) | 1.8266            | 18.4020       | 10.0744  |
-| Temporal Beta Diversity (Presence, quant=false)  | 1.8623            | 18.3448       | 9.8507   |
-| Dispersal-niche continuum index                  | 147.7740          | 23881.0763    | 161.6054 |
-| Occupied Patches Proportion                      | 0.9106            | 16.1346       | 17.7182  |
-| Variability Metrics                              | 12.5781           | 314.4044      | 24.9962  |
-| Hypervolume Estimation                           | 0.0038            | 0.1042        | 27.7980  |
-| Hypervolume Dissimilarity                        | 0.0064            | 0.2540        | 39.7179  |
+| TestCase                                         | `Time_median_julia` | `Time_median_r` | `Speedup` |
+|--------------------------------------------------|---------------------|-----------------|-----------|
+| Beta Diversity (Abundance, quant=true)           | 0.1359              | 4.4541          | 32.7757   |
+| Beta Diversity (Abundance, quant=false)          | 0.0170              | 0.2601          | 15.3026   |
+| Beta Diversity (Presence, quant=false)           | 0.0115              | 0.2670          | 23.1789   |
+| Spatial Beta Diversity (Abundance, quant=true)   | 1.1159              | 21.9025         | 19.6281   |
+| Spatial Beta Diversity (Abundance, quant=false)  | 1.0091              | 16.5718         | 16.4223   |
+| Spatial Beta Diversity (Presence, quant=false)   | 1.0448              | 14.6347         | 14.0068   |
+| Temporal Beta Diversity (Abundance, quant=true)  | 4.4040              | 114.8494        | 26.0784   |
+| Temporal Beta Diversity (Abundance, quant=false) | 1.8266              | 18.4020         | 10.0744   |
+| Temporal Beta Diversity (Presence, quant=false)  | 1.8623              | 18.3448         | 9.8507    |
+| Dispersal-niche continuum index                  | 147.7740            | 23881.0763      | 161.6054  |
+| Occupied Patches Proportion                      | 0.9106              | 16.1346         | 17.7182   |
+| Variability Metrics                              | 12.5781             | 314.4044        | 24.9962   |
+| Hypervolume Estimation                           | 0.0038              | 0.1042          | 27.7980   |
+| Hypervolume Dissimilarity                        | 0.0064              | 0.2540          | 39.7179   |
 
 ### Benchmarking using the medium dataset
 *All times are in millisecond (ms), and memory is in mebibytes (MiB). All values are rounded up to 4 decimal places.*
@@ -111,22 +111,22 @@ To assess the efficiency of `MetaCommunityMetrics`compared to equivalent `R` imp
 | Hypervolume Dissimilarity                        | 0.1382       | 0.2190      | 0.4250    | 3.6017       | 0.5595    | 0.0077    |
 
 #### Speedup
-| TestCase                                         | Time_median_julia | Time_median_r | Speedup  |
-|--------------------------------------------------|-------------------|---------------|----------|
-| Beta Diversity (Abundance, quant=true)           | 0.0853            | 2.7219        | 31.8970  |
-| Beta Diversity (Abundance, quant=false)          | 0.0160            | 0.3299        | 20.5928  |
-| Beta Diversity (Presence, quant=false)           | 0.0083            | 0.3195        | 38.3334  |
-| Spatial Beta Diversity (Abundance, quant=true)   | 0.9022            | 20.6098       | 22.8437  |
-| Spatial Beta Diversity (Abundance, quant=false)  | 0.7594            | 13.5177       | 17.8001  |
-| Spatial Beta Diversity (Presence, quant=false)   | 0.7095            | 14.7190       | 20.7449  |
-| Temporal Beta Diversity (Abundance, quant=true)  | 4.0110            | 114.5111      | 28.5494  |
-| Temporal Beta Diversity (Abundance, quant=false) | 1.3314            | 17.6840       | 13.2821  |
-| Temporal Beta Diversity (Presence, quant=false)  | 1.2106            | 18.3145       | 15.1279  |
-| Dispersal-niche continuum index                  | 53.4701           | 9162.7688     | 171.3625 |
-| Occupied Patches Proportion                      | 0.6862            | 14.9776       | 21.8266  |
-| Variability Metrics                              | 7.4703            | 141.9484      | 19.0017  |
-| Hypervolume Estimation                           | 0.0034            | 0.0402        | 11.7786  |
-| Hypervolume Dissimilarity                        | 0.0054            | 0.2190        | 40.7483  |
+| TestCase                                         | `Time_median_julia` | `Time_median_r` | `Speedup` |
+|--------------------------------------------------|---------------------|-----------------|-----------|
+| Beta Diversity (Abundance, quant=true)           | 0.0853              | 2.7219          | 31.8970   |
+| Beta Diversity (Abundance, quant=false)          | 0.0160              | 0.3299          | 20.5928   |
+| Beta Diversity (Presence, quant=false)           | 0.0083              | 0.3195          | 38.3334   |
+| Spatial Beta Diversity (Abundance, quant=true)   | 0.9022              | 20.6098         | 22.8437   |
+| Spatial Beta Diversity (Abundance, quant=false)  | 0.7594              | 13.5177         | 17.8001   |
+| Spatial Beta Diversity (Presence, quant=false)   | 0.7095              | 14.7190         | 20.7449   |
+| Temporal Beta Diversity (Abundance, quant=true)  | 4.0110              | 114.5111        | 28.5494   |
+| Temporal Beta Diversity (Abundance, quant=false) | 1.3314              | 17.6840         | 13.2821   |
+| Temporal Beta Diversity (Presence, quant=false)  | 1.2106              | 18.3145         | 15.1279   |
+| Dispersal-niche continuum index                  | 53.4701             | 9162.7688       | 171.3625  |
+| Occupied Patches Proportion                      | 0.6862              | 14.9776         | 21.8266   |
+| Variability Metrics                              | 7.4703              | 141.9484        | 19.0017   |
+| Hypervolume Estimation                           | 0.0034              | 0.0402          | 11.7786   |
+| Hypervolume Dissimilarity                        | 0.0054              | 0.2190          | 40.7483   |
 
 ### Benchmarking using the small dataset
 *All times are in millisecond (ms), and memory is in mebibytes (MiB). All values are rounded up to 4 decimal places.*
@@ -168,22 +168,22 @@ To assess the efficiency of `MetaCommunityMetrics`compared to equivalent `R` imp
 | Hypervolume Dissimilarity                        | 0.1456       | 0.1991      | 0.3145    | 1.4536       | 0.2514    | 0.0014   |
 
 #### Speedup
-| TestCase                                         | Time_median_julia | Time_median_r | Speedup  |
-|--------------------------------------------------|-------------------|---------------|----------|
-| Beta Diversity (Abundance, quant=true)           | 0.0423            | 1.5902        | 37.6006  |
-| Beta Diversity (Abundance, quant=false)          | 0.0115            | 0.3371        | 29.3155  |
-| Beta Diversity (Presence, quant=false)           | 0.0115            | 0.3569        | 31.0334  |
-| Spatial Beta Diversity (Abundance, quant=true)   | 0.6942            | 16.8506       | 24.2731  |
-| Spatial Beta Diversity (Abundance, quant=false)  | 0.5395            | 12.0729       | 22.3779  |
-| Spatial Beta Diversity (Presence, quant=false)   | 0.5296            | 11.8902       | 22.4529  |
-| Temporal Beta Diversity (Abundance, quant=true)  | 3.5487            | 98.1867       | 27.6683  |
-| Temporal Beta Diversity (Abundance, quant=false) | 1.0069            | 17.6707       | 17.5490  |
-| Temporal Beta Diversity (Presence, quant=false)  | 0.9875            | 16.1048       | 16.3087  |
-| Dispersal-niche continuum index                  | 14.7842           | 4616.0343     | 312.2269 |
-| Occupied Patches Proportion                      | 0.2222            | 15.5675       | 70.0713  |
-| Variability Metrics                              | 2.4428            | 43.4103       | 17.7706  |
-| Hypervolume Estimation                           | 0.0031            | 0.0465        | 14.8715  |
-| Hypervolume Dissimilarity                        | 0.0056            | 0.1991        | 35.6574  |
+| TestCase                                         | `Time_median_julia` | `Time_median_r` | `Speedup` |
+|--------------------------------------------------|---------------------|-----------------|-----------|
+| Beta Diversity (Abundance, quant=true)           | 0.0423              | 1.5902          | 37.6006   |
+| Beta Diversity (Abundance, quant=false)          | 0.0115              | 0.3371          | 29.3155   |
+| Beta Diversity (Presence, quant=false)           | 0.0115              | 0.3569          | 31.0334   |
+| Spatial Beta Diversity (Abundance, quant=true)   | 0.6942              | 16.8506         | 24.2731   |
+| Spatial Beta Diversity (Abundance, quant=false)  | 0.5395              | 12.0729         | 22.3779   |
+| Spatial Beta Diversity (Presence, quant=false)   | 0.5296              | 11.8902         | 22.4529   |
+| Temporal Beta Diversity (Abundance, quant=true)  | 3.5487              | 98.1867         | 27.6683   |
+| Temporal Beta Diversity (Abundance, quant=false) | 1.0069              | 17.6707         | 17.5490   |
+| Temporal Beta Diversity (Presence, quant=false)  | 0.9875              | 16.1048         | 16.3087   |
+| Dispersal-niche continuum index                  | 14.7842             | 4616.0343       | 312.2269  |
+| Occupied Patches Proportion                      | 0.2222              | 15.5675         | 70.0713   |
+| Variability Metrics                              | 2.4428              | 43.4103         | 17.7706   |
+| Hypervolume Estimation                           | 0.0031              | 0.0465          | 14.8715   |
+| Hypervolume Dissimilarity                        | 0.0056              | 0.1991          | 35.6574   |
 
 ## Remarks
 - Speedup is calculated as the `R` median execution time divided by the `Julia` median execution time. 

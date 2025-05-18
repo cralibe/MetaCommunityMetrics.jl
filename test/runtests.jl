@@ -90,12 +90,13 @@ using .MetaCommunityMetrics.Internal
         total_richness_df.Total_Richness) 
 
     @test cluster_result[1] == DataFrame(
-        Time = repeat([1], 15),
-        Latitude = [35.0, 35.0, 35.5, 35.5, 35.5, 36.0, 36.0, 36.5, 35.0, 36.0, 36.0, 36.5, 36.5, 35.0, 36.5],
-        Longitude = [-110.0, -109.5, -109.5, -109.0, -108.0, -109.5, -108.0, -108.5, -107.5, -110.0, -109.0, -109.5, -109.0, -108.0, -108.0],
-        Patch = [1, 2, 8, 9, 11, 14, 17, 22, 6, 13, 15, 20, 21, 5, 23],
-        Total_Richness = [1, 1, 1, 1, 2, 2, 1, 1, 1, 1, 1, 1, 1, 0, 1],
-        Group = [1, 1, 1, 1, 2, 1, 2, 2, 2, 1, 1, 1, 2, 2, 2])
+                                    Time = fill(1, 24),
+                                    Latitude = [35.0, 35.0, 35.0, 35.5, 35.5, 35.5, 35.5, 36.0, 36.0, 36.5, 35.0, 35.0, 36.0, 36.0, 36.0, 36.5, 36.5, 36.5, 35.0, 35.5, 35.5, 36.0, 36.5, 36.5],
+                                    Longitude = [-110.0, -109.5, -108.5, -109.5, -109.0, -108.0, -107.5, -109.5, -108.0, -108.5, -109.0, -107.5, -110.0, -109.0, -107.5, -110.0, -109.5, -109.0, -108.0, -110.0, -108.5, -108.5, -108.0, -107.5],
+                                    Patch = [1, 2, 4, 8, 9, 11, 12, 14, 17, 22, 3, 6, 13, 15, 18, 19, 20, 21, 5, 7, 10, 16, 23, 24],
+                                    Total_Richness = [1, 1, 0, 1, 1, 2, 0, 2, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
+                                    Group = [1, 1, 2, 1, 1, 2, 2, 4, 3, 3, 1, 2, 4, 1, 3, 4, 4, 4, 2, 1, 2, 3, 3, 3]
+                                    )
     # Test the plot_clusters function
     #p = plot_clusters(cluster_result[1].Latitude, cluster_result[1].Longitude, cluster_result[1].Group; output_file="clusters.svg")
 
@@ -174,10 +175,10 @@ using .MetaCommunityMetrics.Internal
     result_df = MVNH_dissimilarity(data, data_2; var_names = ["Temperature", "Precipitation"])
     expected_df = DataFrame(
                 metric = ["Bhattacharyya_distance", "Mahalanobis_distance", "Determinant_ratio"],
-                total = [0.0739592, 0.0322218, 0.0417374],
-                correlation = [0.000155556,-0.000360636, 0.000516192],
-                Temperature = [0.0478506, 0.0269479, 0.0209027],
-                Precipitation = [0.0259531, 0.00563454, 0.0203185])
+                total = [0.00980771, 0.00664862, 0.00315908],
+                correlation = [0.00015205 ,5.06232e-6, 0.000146988],
+                Temperature = [0.00388058, 0.00234902, 0.00153156],
+                Precipitation = [0.0057750, 0.00429454, 0.00148054])
     
     @test result_df.metric == expected_df.metric
     @test isapprox(result_df.total, expected_df.total, atol=1e-5)
