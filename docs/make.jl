@@ -18,7 +18,7 @@ makedocs(
                 "Variability Metrics Functions" => "VariabilityMetrics.md",
                 "Hypervolume Functions" => "Hypervolume.md",
                 "Validation" => "Validation.md",
-                "Benchmarking Julia vs R" => "Benchmarking.md",
+                "Benchmark Results" => "Benchmarking.md",
                 "Acknowledgment" => "Acknowledgment.md"]
 )
 

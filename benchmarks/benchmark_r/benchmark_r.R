@@ -127,15 +127,15 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full, 
-                                                       groups_full$Group, Nperm = 100, 
-                                                       symmetrize = FALSE, 
-                                                       plotSIMPER = FALSE,
-                                                      parallelComputing = FALSE)
-                               iterations = 100,
-                               check = FALSE,
-                            time_unit = "ms")
-saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_full_result.rds")
+# DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full, 
+#                                                        groups_full$Group, Nperm = 100, 
+#                                                        symmetrize = FALSE, 
+#                                                        plotSIMPER = FALSE,
+#                                                       parallelComputing = FALSE)
+#                                iterations = 100,
+#                                check = FALSE,
+#                             time_unit = "ms")
+# #saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_full_result.rds")
 DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_full_result.rds")
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
@@ -231,6 +231,33 @@ hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Pr
 hypervolume_dis_result <- mark(MVNH_dissimilarity(data_1, data_2, var.names = c("Temperature", "Precipitation")), iterations = 100,
                                 check = TRUE,
                                 time_unit = "ms")
+
+#Save all the results into a dataframe
+test_case_list = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
+                   "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
+                   "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
+                   "DNCI_multigroup_result",
+                   "prop_patches_result", "CV_meta_result", "hypervolume_det_result", "hypervolume_dis_result")
+
+# Initialize empty data frame
+all_time_full <- data.frame()
+
+for (testcase in test_case_list) {
+# Get the object with that name
+testcase_obj <- get(testcase)
+  
+# Get times from the object
+times <- as.numeric(testcase_obj$time[[1]]) * 1e+3
+  
+# Create data frame for this test case
+data <- data.frame(TestCase = rep(testcase, length(times)),Time = times)
+  
+  # Append to the full data frame - this is the key fix
+  all_time_full <- rbind(all_time_full, data)
+}
+
+write.csv(all_time_full, "../benchmarks/result/all_time_full_df_r.csv")
+
 
 benchmark_result_full_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                                 "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
@@ -429,15 +456,15 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium, 
-                                                          groups_medium$Group, Nperm = 100, 
-                                                          symmetrize = FALSE, 
-                                                          plotSIMPER = FALSE,
-                                                          parallelComputing = FALSE),
-                               iterations = 100,
-                               check = FALSE,
-                               time_unit = "ms")
-saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_medium_result.rds")
+# DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium, 
+#                                                           groups_medium$Group, Nperm = 100, 
+#                                                           symmetrize = FALSE, 
+#                                                           plotSIMPER = FALSE,
+#                                                           parallelComputing = FALSE),
+#                                iterations = 100,
+#                                check = FALSE,
+#                                time_unit = "ms")
+# saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_medium_result.rds")
 DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_medium_result.rds")
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
@@ -474,6 +501,32 @@ hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Pr
 hypervolume_dis_result <- mark(MVNH_dissimilarity(data_1, data_2, var.names = c("Temperature", "Precipitation")), iterations = 100,
                                check = TRUE,
                                time_unit = "ms")
+
+#Save all the results into a dataframe
+test_case_list = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
+                   "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
+                   "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
+                   "DNCI_multigroup_result",
+                   "prop_patches_result", "CV_meta_result", "hypervolume_det_result", "hypervolume_dis_result")
+
+# Initialize empty data frame
+all_time_medium <- data.frame()
+
+for (testcase in test_case_list) {
+  # Get the object with that name
+  testcase_obj <- get(testcase)
+  
+  # Get times from the object
+  times <- as.numeric(testcase_obj$time[[1]]) * 1e+3
+  
+  # Create data frame for this test case
+  data <- data.frame(TestCase = rep(testcase, length(times)),Time = times)
+  
+  # Append to the full data frame - this is the key fix
+  all_time_medium <- rbind(all_time_medium, data)
+}
+
+write.csv(all_time_medium, "../benchmarks/result/all_time_medium_df_r.csv")
 
 benchmark_result_medium_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                                   "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
@@ -674,15 +727,15 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small, 
-                                                          groups_small$Group, Nperm = 100, 
-                                                          symmetrize = FALSE, 
-                                                          plotSIMPER = FALSE,
-                                                          parallelComputing = FALSE),
-                               iterations = 100,
-                               check = FALSE,
-                               time_unit = "ms")
-saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_small_result.rds")
+# DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small, 
+#                                                           groups_small$Group, Nperm = 100, 
+#                                                           symmetrize = FALSE, 
+#                                                           plotSIMPER = FALSE,
+#                                                           parallelComputing = FALSE),
+#                                iterations = 100,
+#                                check = FALSE,
+#                                time_unit = "ms")
+# saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_small_result.rds")
 DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_small_result.rds")
 
 #### Benchmark the prop_patches function
@@ -720,6 +773,32 @@ hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Pr
 hypervolume_dis_result <- mark(MVNH_dissimilarity(data_1, data_2, var.names = c("Temperature", "Precipitation")), iterations = 100,
                                check = TRUE,
                                time_unit = "ms")
+
+#Save all the results into a dataframe
+test_case_list = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
+                   "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
+                   "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
+                   "DNCI_multigroup_result",
+                   "prop_patches_result", "CV_meta_result", "hypervolume_det_result", "hypervolume_dis_result")
+
+# Initialize empty data frame
+all_time_small <- data.frame()
+
+for (testcase in test_case_list) {
+  # Get the object with that name
+  testcase_obj <- get(testcase)
+  
+  # Get times from the object
+  times <- as.numeric(testcase_obj$time[[1]]) * 1e+3
+  
+  # Create data frame for this test case
+  data <- data.frame(TestCase = rep(testcase, length(times)),Time = times)
+  
+  # Append to the full data frame - this is the key fix
+  all_time_small <- rbind(all_time_small, data)
+}
+
+write.csv(all_time_small, "../benchmarks/result/all_time_small_df_r.csv")
 
 benchmark_result_small_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                                     "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
