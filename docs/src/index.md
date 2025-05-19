@@ -27,8 +27,6 @@ To install MetaCommunityMetrics, use the following command:
 using Pkg
 
 Pkg.add("MetaCommunityMetrics")
-
-using MetaCommunityMetrics
 ```
 
 ## Function Documentation
