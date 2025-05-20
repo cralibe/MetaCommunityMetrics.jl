@@ -642,6 +642,8 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; count::B
         DNCI_result = Internal.DNCI_ses(paired_x, group_pair, Nperm; count)
 
         append!(ddelta, DNCI_result, promote=true)
+
+        GC.gc()
     end
     return ddelta
 end

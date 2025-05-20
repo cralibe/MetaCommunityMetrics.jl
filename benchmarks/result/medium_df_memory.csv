@@ -2,14 +2,14 @@
 "1","Beta Diversity (Abundance, quant=true)",0.2491455078125,0.0357284545898438
 "2","Beta Diversity (Abundance, quant=false)",0.108596801757812,0.0797882080078125
 "3","Beta Diversity (Presence, quant=false)",0.108596801757812,0.0797882080078125
-"4","Spatial Beta Diversity (Abundance, quant=true)",2.38966369628906,2.27703857421875
-"5","Spatial Beta Diversity (Abundance, quant=false)",1.99102783203125,1.83403778076172
-"6","Spatial Beta Diversity (Presence, quant=false)",1.99102783203125,1.83403778076172
-"7","Temporal Beta Diversity (Abundance, quant=true)",15.2769165039062,16.2542724609375
-"8","Temporal Beta Diversity (Abundance, quant=false)",4.13235473632812,4.54316711425781
-"9","Temporal Beta Diversity (Presence, quant=false)",4.13235473632812,4.54316711425781
-"10","Dispersal-niche continuum index",143.743041992188,3573.2095489502
-"11","Occupied Patches Proportion",1.30194854736328,1.40280914306641
+"4","Spatial Beta Diversity (Abundance, quant=true)",2.38966369628906,2.28143310546875
+"5","Spatial Beta Diversity (Abundance, quant=false)",1.99102783203125,1.83843231201172
+"6","Spatial Beta Diversity (Presence, quant=false)",1.99102783203125,1.83843231201172
+"7","Temporal Beta Diversity (Abundance, quant=true)",15.2769165039062,16.2586669921875
+"8","Temporal Beta Diversity (Abundance, quant=false)",4.13235473632812,4.54756164550781
+"9","Temporal Beta Diversity (Presence, quant=false)",4.13235473632812,4.54756164550781
+"10","Dispersal-niche continuum index",143.743041992188,17.0661697387695
+"11","Occupied Patches Proportion",1.30194854736328,1.40720367431641
 "12","Variability Metrics",7.67462158203125,32.5536346435547
 "13","Hypervolume Estimation",0.0084991455078125,0.0011138916015625
 "14","Hypervolume Dissimilarity",0.011962890625,0.007720947265625
