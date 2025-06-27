@@ -301,7 +301,7 @@ function MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vec
 end
 
 """
-    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; 
+    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; 
                      var_names::Vector{String}=String[]) -> Float64
 
 Calculate the average niche hypervolume across multiple species in a community dataset.
@@ -309,7 +309,7 @@ Calculate the average niche hypervolume across multiple species in a community d
 Arguments
 - `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
 - `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
-- `species::Vector{String}`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
+- `species::AbstractVector`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
 
 Returns
@@ -367,11 +367,11 @@ julia> data = @pipe df |>
  53352 │               0.48949               -1.59416
                                         53342 rows omitted
 
-julia> result = average_MVNH_det(data, df.Presence, String.(df.Species); var_names=["Temperature", "Precipitation"])
+julia> result = average_MVNH_det(data, Vector{Int64}(df.Presence), df.Species; var_names=["Temperature", "Precipitation"])
 1.2103765096417536
 ```                                                                                                                     
 """
-function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
+function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; var_names::Vector{String}=String[])
     # Ensure the presence_absence and species vectors match the DataFrame size
     @assert length(presence_absence) == nrow(data) "Mismatch in data length"
     @assert length(species) == nrow(data) "Mismatch in species length"
@@ -410,7 +410,7 @@ function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, specie
 end
 
 """
-    average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Union{Integer, String, PooledArrays.PooledVector}; 
+    average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; 
                               var_names::Vector{String}=String[]) -> Float64
 
 Calculate the average niche dissimilarity between all unique pairs of species in a community dataset using Bhattacharyya distance.
@@ -418,7 +418,7 @@ Calculate the average niche dissimilarity between all unique pairs of species in
 Arguments
 - `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
 - `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
-- `species::Vector{String}`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
+- `species::AbstractVector`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
 
 Returns
@@ -476,11 +476,11 @@ julia> data = @pipe df |>
  53352 │               0.48949               -1.59416
                                         53342 rows omitted
 
-julia> result = average_MVNH_dissimilarity(data, df.Presence, String.(df.Species); var_names=["Temperature", "Precipitation"])     
+julia> result = average_MVNH_dissimilarity(data, Vector{Int64}(df.Presence), df.Species; var_names=["Temperature", "Precipitation"])     
 0.03059942936454443
 ```
 """
-function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::Vector{String}; var_names::Vector{String}=String[])
+function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; var_names::Vector{String}=String[])
     @assert length(presence_absence) == nrow(data) "Mismatch in data length"
     @assert length(species) == nrow(data) "Mismatch in species length"
 

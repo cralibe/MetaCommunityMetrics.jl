@@ -4,15 +4,15 @@
 using DataFrames, Pipe
 
 """
-    CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String}) -> DataFrame
+    CV_meta(abundance::AbstractVector, time::AbstractVector, site::AbstractVector, species::AbstractVector) -> DataFrame
 
 Calculates coefficients of variation (CV) for species and community biomass at both local and regional scales within a metacommunity.
 
 Arguments
-- `abundance::AbstractVector`: A vector representing the abundance of species.
-- `time::AbstractVector`: A vector representing the time points at which the abundance measurements were taken.
-- `patch::Union{AbstractVector, String}`: A vector or single value representing the patch or plot identifier.
-- `species::Union{AbstractVector, String}`: A vector or single value representing the species identifier.
+- `abundance::AbstractVector`: Vector representing the abundance of species.
+- `time::AbstractVector`: Vector representing sampling dates.
+- `site::AbstractVector`: Vector representing site names or IDs.
+- `species::AbstractVector`: Vector representing species names or IDs.
 
 Returns
 - `DataFrame`: A DataFrame containing the following columns:
@@ -51,13 +51,13 @@ julia> CV_summary_df = CV_meta(df.Abundance, df.Sampling_date_order, df.plot, df
    1 │ 1.48859  0.944937  0.718266  0.580183
 ```
 """
-function CV_meta(abundance::AbstractVector, time::AbstractVector, patch::Union{AbstractVector, String}, species::Union{AbstractVector, String})
+function CV_meta(abundance::AbstractVector, time::AbstractVector, site::AbstractVector, species::AbstractVector)
 
     ###Reorganize the data to only include the necessary columns
     df = DataFrames.DataFrame(
         Abundance=abundance,
         Time=time,
-        Patch=patch,
+        Patch=site,
         Species=species)
     
     # Get unique values for each column

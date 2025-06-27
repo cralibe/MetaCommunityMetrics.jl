@@ -1,16 +1,16 @@
 # src/OccupiedPatchesProportion.jl
 
 """
-    prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String}) -> DataFrame
+    prop_patches(presence::AbstractVector, species::AbstractVector, site::AbstractVector) -> DataFrame
 
 Calculate the proportion of patches occupied by each species and summarize the results.
 
 This function takes three vectors: `presence`, `species`, and `patch`, and performs the following steps:
 
 Arguments
-- `presence::AbstractVector`: A vector indicating the presence (1) or absence (0) of a species in a patch.
-- `species::Union{AbstractVector, String}`: A vector of species names.
-- `patch::Union{AbstractVector, String}`: A vector of patch identifiers.
+- `presence::AbstractVector`: Vector representing the occurence of species.
+- `species::AbstractVector`: Vector representing species names or IDs.
+- `site::AbstractVector`: Vector representing site names or IDs.
 
 Returns
 - `DataFrame`: A DataFrame containing the mean, minimum, and maximum proportion of patches 
@@ -47,28 +47,21 @@ julia> prop_patches(df.Presence, df.Species, df.plot)
    1 │          0.734649         0.0833333               1.0
 ```
 """
-function prop_patches(presence::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String})
+function prop_patches(presence::AbstractVector, species::AbstractVector, site::AbstractVector)
 
     df = DataFrames.DataFrame(
         Presence=presence,
         Species=species,
-        Patch=patch,
+        Patch=site,
        )
 
-    species_patches_df= 
-        @pipe df[:,[:Presence, :Species, :Patch]]|>#select column N, Species, Patch
-        groupby(_, [:Patch, :Species])|>
-    combine(_, :Presence => sum => :Total_N)|>
-    transform(_, :Total_N=> ByRow(x->ifelse(x> 0, 1.0, 0.0))=> :Presence)|>
-    groupby(_, [:Species])
-
-
-    patches_occupied_matrix=hcat(unique(df.Species), zeros(Float64, size(unique(df.Species), 1))) 
-    for group in 1:size(patches_occupied_matrix,1)
-        patches_occupied_matrix[group,2]= sum(species_patches_df[group].Presence)/nrow(species_patches_df[group])
-    end
-
-    prop_patches_df=DataFrames.DataFrame(mean_prop_patches = mean(patches_occupied_matrix[:,2]),
-        min_prop_patches = minimum(patches_occupied_matrix[:,2]),
-        max_prop_patches = maximum(patches_occupied_matrix[:,2]))   
+    prop_patches_df = @pipe df |>
+       groupby(_, [:Patch, :Species]) |> 
+       combine(_, :Presence => (x -> sum(x) > 0 ? 1 : 0) => :Occupied) |> 
+       groupby(_, :Species) |> 
+       combine(_, :Occupied => sum => :Total_patches_occupied) |> 
+       transform(_, :Total_patches_occupied => (x -> x ./ length(unique(df.Patch))) => :prop_patches) |>
+       combine(_, :prop_patches => mean => :mean_prop_patches,
+                   :prop_patches => minimum => :min_prop_patches,
+                   :prop_patches => maximum => :max_prop_patches)
 end

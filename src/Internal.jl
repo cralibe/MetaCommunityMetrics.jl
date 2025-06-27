@@ -9,6 +9,7 @@ using LinearAlgebra
 using Combinatorics
 using Statistics
 using StatsBase
+using Pipe
 
 ### Internal function
 ## These functions is for internal use and supports the public functions.
@@ -23,8 +24,16 @@ function assign_single_site_to_nearest_group(grouped_df, single_site, min_group)
     min_distance = Inf
     nearest_group_id = nothing
 
+    # Filter for other groups
+    other_group = grouped_df[grouped_df.Group .!= min_group, :]
+
+    
+    other_group_with_xy = @pipe other_group |>
+                            select(_, [:Site, :Latitude, :Longitude, :Group]) |>
+                            unique(_)
+
     # Iterate over other groups
-    for row in eachrow(grouped_df[grouped_df.Group .!= min_group, :])
+    for row in eachrow(other_group_with_xy)
         dist = sqrt((single_lat - row.Latitude)^2 + (single_lon - row.Longitude)^2)
         if dist < min_distance
             min_distance = dist
@@ -53,8 +62,8 @@ function find_nearest_site(grouped_df, min_group)
     end
 
     # Calculate centroid of the cluster
-    centroid_latitude = mean(sites_in_min_group.Latitude)
-    centroid_longitude = mean(sites_in_min_group.Longitude)
+    centroid_latitude = mean(unique(sites_in_min_group.Latitude))
+    centroid_longitude = mean(unique(sites_in_min_group.Longitude))
     
     # Initialize variables to keep track of the nearest site and distance
     min_distance = Inf
@@ -68,8 +77,13 @@ function find_nearest_site(grouped_df, min_group)
         error("No other groups are avaliable to compare.")
     end
 
+    other_group_with_xy = @pipe other_group |>
+    select(_, [:Site, :Latitude, :Longitude, :Group]) |>
+    unique(_)
+
+
     # Iterate over each site in other_group
-    for row in eachrow(other_group)
+    for row in eachrow(other_group_with_xy)
         # Calculate the Euclidean distance between the centroid and the current site
         dist = sqrt((centroid_latitude - row.Latitude)^2 + (centroid_longitude - row.Longitude)^2)
      
@@ -88,23 +102,46 @@ function find_nearest_site(grouped_df, min_group)
     return site_with_minimum_distance
 end
 # A function that checks the condition for the groupings only
-function check_conditions(subset_df::DataFrame)
-    unique_groups = unique(subset_df.Group)
-    sites_per_group = Dict(g => sum(subset_df.Group .== g) for g in unique_groups)
-    richness_per_group = Dict(g => sum(subset_df.Total_Richness[subset_df.Group .== g]) for g in unique_groups)
-    for i in unique_groups
-        for j in unique_groups
-            if i != j
-                site_diff_ratio = abs(sites_per_group[i] - sites_per_group[j]) / max(sites_per_group[i], sites_per_group[j])
-                species_diff_ratio = abs(richness_per_group[i] - richness_per_group[j]) / max(richness_per_group[i], richness_per_group[j])
-                if site_diff_ratio > 0.3 || species_diff_ratio > 0.4
-                    return false
-                end
-            end
-        end
-    end
+function check_conditions(grouped_df::DataFrame)
+    sites_per_group_df = @pipe grouped_df |>
+    groupby(_, :Group) |>
+    combine(_, :Site => (x -> length(unique(x))) => :sites_per_group)
 
-    if any(value < 5 for value in values(sites_per_group)) || length(unique_groups) <= 1
+    # Calculate total richness per group
+    total_richness_per_group = @pipe grouped_df |>
+                groupby(_, [:Species, :Group]) |>
+                combine(_,:Presence=>sum=>:Total_Presence)|>
+                transform(_, :Total_Presence => ByRow(x->ifelse.(x> 0, 1, 0)) => :Presence)|> 
+                groupby(_, :Group) |>
+                combine(_, :Presence => sum => :Total_Richness)
+
+    unique_groups = unique(grouped_df.Group)
+
+    # Create lookup dictionaries for consistent ordering
+    sites_dict = Dict(zip(sites_per_group_df.Group, sites_per_group_df.sites_per_group))
+    richness_dict = Dict(zip(total_richness_per_group.Group, total_richness_per_group.Total_Richness))
+
+    # Extract values as vectors in consistent order
+    sites_vals = [sites_dict[g] for g in unique_groups]
+    richness_vals = [richness_dict[g] for g in unique_groups]
+
+    # Create pairwise difference matrices
+    sites_diffs = abs.(sites_vals .- sites_vals')
+    richness_diffs = abs.(richness_vals .- richness_vals')
+
+    # Create max matrices for normalization
+    sites_maxes = max.(sites_vals, sites_vals')
+    richness_maxes = max.(richness_vals, richness_vals')
+
+    # Calculate ratio matrices
+    sites_ratios = sites_diffs ./ sites_maxes
+    richness_ratios = richness_diffs ./ richness_maxes
+
+    # Check condition (exclude diagonal since comparing group with itself gives 0)
+    mask = .!(I(length(unique_groups)))  # Boolean mask excluding diagonal
+    return (all((sites_ratios[mask] .<= 0.3) .& (richness_ratios[mask] .<= 0.4)))
+
+    if any(value < 5 for value in values(sites_dict)) || length(unique_groups) <= 1
         return false
     end
 
@@ -117,36 +154,48 @@ function check_condition_and_fix(grouped_df)
     iteration = 0
 
     while iteration < max_iterations
+
+        # Group by 'Group' and calculate the number of unique sites per group
+        sites_per_group_df = @pipe grouped_df |>
+        groupby(_, :Group) |>
+        combine(_, :Site => (x -> length(unique(x))) => :sites_per_group)
+
+        # Calculate total richness per group
+        total_richness_per_group = @pipe grouped_df |>
+                    groupby(_, [:Species, :Group]) |>
+                    combine(_,:Presence=>sum=>:Total_Presence)|>
+                    transform(_, :Total_Presence => ByRow(x->ifelse.(x> 0, 1, 0)) => :Presence)|> 
+                    groupby(_, :Group) |>
+                    combine(_, :Presence => sum => :Total_Richness)
+
         unique_groups = unique(grouped_df.Group)
-        sites_per_group = Dict(g => sum(grouped_df.Group .== g) for g in unique_groups)
-        richness_per_group = Dict(g => sum(grouped_df.Total_Richness[grouped_df.Group .== g]) for g in unique_groups)
 
-        condition_met = true
+        # Create lookup dictionaries for consistent ordering
+        sites_dict = Dict(zip(sites_per_group_df.Group, sites_per_group_df.sites_per_group))
+        richness_dict = Dict(zip(total_richness_per_group.Group, total_richness_per_group.Total_Richness))
 
-        # Checking conditions including group size constraints within main condition checks
-        for i in unique_groups
-            for j in unique_groups
-                if i != j
-                    site_diff_ratio = abs(sites_per_group[i] - sites_per_group[j]) / max(sites_per_group[i], sites_per_group[j])
-                    species_diff_ratio = abs(richness_per_group[i] - richness_per_group[j]) / max(richness_per_group[i], richness_per_group[j])                
-                
-                    if site_diff_ratio > 0.3 || species_diff_ratio > 0.4 
-                        condition_met = false
-                        break
-                    end
-                end
-                
-                if !condition_met
-                    break
-                end
-            end
-            
-            if !condition_met
-                break
-            end
-        end
+        # Extract values as vectors in consistent order
+        sites_vals = [sites_dict[g] for g in unique_groups]
+        richness_vals = [richness_dict[g] for g in unique_groups]
 
-        if any(value < 5 for value in values(sites_per_group)) || length(unique_groups) <= 1
+        # Create pairwise difference matrices
+        sites_diffs = abs.(sites_vals .- sites_vals')
+        richness_diffs = abs.(richness_vals .- richness_vals')
+
+        # Create max matrices for normalization
+        sites_maxes = max.(sites_vals, sites_vals')
+        richness_maxes = max.(richness_vals, richness_vals')
+
+        # Calculate ratio matrices
+        sites_ratios = sites_diffs ./ sites_maxes
+        richness_ratios = richness_diffs ./ richness_maxes
+
+        # Check condition (exclude diagonal since comparing group with itself gives 0)
+        mask = .!(I(length(unique_groups)))  # Boolean mask excluding diagonal
+        condition_met = all((sites_ratios[mask] .<= 0.3) .& (richness_ratios[mask] .<= 0.4))
+
+
+        if any(value < 5 for value in values(sites_dict)) || length(unique_groups) <= 1
             condition_met = false
         end
         
@@ -157,16 +206,16 @@ function check_condition_and_fix(grouped_df)
              
             #println("Condition not met, adjusting data...") 
 
-            min_group = first(argmin(sites_per_group))
+            min_group = first(argmin(sites_dict))
 
             # Check if there is only one site in the minimum group
             sites_in_min_group = grouped_df[grouped_df.Group .== min_group, :]
-            if nrow(sites_in_min_group) == 1
+            if length(unique(sites_in_min_group.Site)) == 1
             # Find the nearest group to this single site
             grouped_df.Group[grouped_df.Group .== min_group, :] .= assign_single_site_to_nearest_group(grouped_df, sites_in_min_group, min_group)
             else
             site_with_minimum_distance = find_nearest_site(grouped_df, min_group) #Find the nearest site to the group with the fewest sites
-            grouped_df.Group[grouped_df.Patch .== site_with_minimum_distance.Patch] .= min_group #assign the nearest site to the group with the fewest sites
+            grouped_df.Group[grouped_df.Site .== site_with_minimum_distance.Site] .= min_group #assign the nearest site to the group with the fewest sites
             end
         end
 
@@ -347,14 +396,25 @@ end
 function simper(comm::Matrix, groups::Vector)
     # Set EPS to square root of machine epsilon
     EPS = sqrt(eps(Float64))
+
+    # Here is different from the orginal simper() in R
+    # We use Zero-adjusted Bray-Curtis instead of the original Bray-Curtis
+    # We added pseudo-species with value 1 to all sites 
+    val = 1
+    
+    # Add pseudo-species column to every site
+    comm_with_pseudo_species = hcat(comm, fill(val, size(comm, 1)))
+
+
+
     # Create a lower triangular matrix indicating whether each element (i, j) satisfies i > j
-    tri = [i > j for i in 1:size(comm, 1), j in 1:size(comm, 1)]
+    tri = [i > j for i in 1:size(comm_with_pseudo_species, 1), j in 1:size(comm_with_pseudo_species, 1)]
     
     ## Species contributions of differences needed for every species,
     ## but denominator is constant. Bray-Curtis is actually
     ## manhattan/(mean(rowsums)) and this is the way we collect data
-    # Calculate row sums to obtain the total abundance of each species across samples
-    rs = sum(comm, dims=2)
+    # Calculate row sums to obtain the total abundance of the whole community at each site
+    rs = sum(comm_with_pseudo_species, dims=2)
     # Calculate pairwise sums and extract lower triangular part
     pairwise_sums = rs .+ transpose(rs)
     result = pairwise_sums[tri]
@@ -363,9 +423,9 @@ function simper(comm::Matrix, groups::Vector)
     spcontr = Matrix{Float64}(undef, 0, 0)
     
     # Iterate over each pair of sites in the community matrix
-    for col_index in 1:size(comm, 2)
+    for col_index in 1:size(comm_with_pseudo_species, 2)
         # Extract the ith column of the community matrix
-        column_i = comm[:, col_index:col_index]
+        column_i = comm_with_pseudo_species[:, col_index:col_index]
         ZAP = 1e-15 #a threshold for setting small distances to zero in the distance matrix
         n_rows = size(column_i, 1)
         d = zeros(n_rows, n_rows)  # Initialize distance matrix
@@ -389,6 +449,9 @@ function simper(comm::Matrix, groups::Vector)
     end
     # Divide every value in each column of spcontr by the corresponding element in result
     spcontr ./= result
+
+    #remove the last column of spcontr, which is the pseudo-species
+    spcontr = spcontr[:, 1:end-1]
 
     #Get all combinations of 2 elements from unique_group
     comp = collect(combinations(unique(groups), 2))

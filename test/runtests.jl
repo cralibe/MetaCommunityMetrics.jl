@@ -36,16 +36,14 @@ using .MetaCommunityMetrics.Internal
     _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
 
     #Preparing the data for the DNCI analysis
+    #Remove singletons 
     total_presence_df=@pipe df|>
     groupby(_,[:Species,:Sampling_date_order])|>
-    combine(_,:Presence=>sum=>:Total_Presence)
+    combine(_,:Presence=>sum=>:Total_Presence) |>
+    filter(row -> row[:Total_Presence] > 1, _)
 
-    #Remove singletons 
-    total_richness_df= @pipe df|>
-    leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-    filter(row -> row[:Total_Presence] > 1, _)|> 
-    groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-    combine(_,:Presence=>sum=>:Total_Richness)
+    without_singletons_df= @pipe df|>
+                  innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true)
     
 
     # Test the beta_diversity function
@@ -83,57 +81,47 @@ using .MetaCommunityMetrics.Internal
                                                         atol = 1e-8)
     
     # Test the create_clusters function
-    cluster_result=create_clusters(total_richness_df.Sampling_date_order, 
-        total_richness_df.Latitude, 
-        total_richness_df.Longitude, 
-        total_richness_df.plot,
-        total_richness_df.Total_Richness) 
+    clustering_result = create_clusters(without_singletons_df.Sampling_date_order, 
+                                            without_singletons_df.Latitude, 
+                                            without_singletons_df.Longitude, 
+                                            without_singletons_df.plot, 
+                                            without_singletons_df.Species, 
+                                            without_singletons_df.Presence)
 
-    @test cluster_result[1] == DataFrame(
-                                    Time = fill(1, 24),
-                                    Latitude = [35.0, 35.0, 35.0, 35.5, 35.5, 35.5, 35.5, 36.0, 36.0, 36.5, 35.0, 35.0, 36.0, 36.0, 36.0, 36.5, 36.5, 36.5, 35.0, 35.5, 35.5, 36.0, 36.5, 36.5],
-                                    Longitude = [-110.0, -109.5, -108.5, -109.5, -109.0, -108.0, -107.5, -109.5, -108.0, -108.5, -109.0, -107.5, -110.0, -109.0, -107.5, -110.0, -109.5, -109.0, -108.0, -110.0, -108.5, -108.5, -108.0, -107.5],
-                                    Patch = [1, 2, 4, 8, 9, 11, 12, 14, 17, 22, 3, 6, 13, 15, 18, 19, 20, 21, 5, 7, 10, 16, 23, 24],
-                                    Total_Richness = [1, 1, 0, 1, 1, 2, 0, 2, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0],
-                                    Group = [1, 1, 2, 1, 1, 2, 2, 4, 3, 3, 1, 2, 4, 1, 3, 4, 4, 4, 2, 1, 2, 3, 3, 3]
-                                    )
-    # Test the plot_clusters function
-    #p = plot_clusters(cluster_result[1].Latitude, cluster_result[1].Longitude, cluster_result[1].Group; output_file="clusters.svg")
+    @test size(clustering_result[1]) == (72, 7)
+    @test names(clustering_result[1]) == ["Time", "Latitude", "Longitude", "Site", "Species", "Presence", "Group"]
+    
+    # Test specific rows
+    @test clustering_result[1][1, :] == (Time=1, Latitude=35.0, Longitude=-110.0, Site=1, Species="DM", Presence=1, Group=1)
+    @test clustering_result[1][25, :] == (Time=1, Latitude=35.0, Longitude=-110.0, Site=1, Species="OT", Presence=0, Group=1)
+    @test clustering_result[1][54, :] == (Time=1, Latitude=35.5, Longitude=-108.0, Site=11, Species="PB", Presence=0, Group=2)
+    @test clustering_result[1][72, :] == (Time=1, Latitude=36.5, Longitude=-107.5, Site=24, Species="PB", Presence=0, Group=2)
+    
+    # Test column properties
+    @test all(clustering_result[1].Time .== 1)
+    @test length(unique(clustering_result[1].Species)) == 3
+    @test Set(unique(clustering_result[1].Group)) == Set([1, 2])
+    @test length(unique(clustering_result[1].Site)) == 24
+    
+    # Test species counts
+    @test count(==("BA"), clustering_result[1].Species) == 0
+    @test count(==("DM"), clustering_result[1].Species) == 24
+    @test count(==("SH"), clustering_result[1].Species) == 0
+    
+    # Test presence patterns
+    @test sum(clustering_result[1][clustering_result[1].Species .== "BA", :Presence]) == 0
+    @test sum(clustering_result[1][clustering_result[1].Species .== "DM", :Presence]) > 0
+    @test sum(clustering_result[1][clustering_result[1].Species .== "OT", :Presence]) == 5
 
-    # Test the DNCI_multigroup function
-    comm= @pipe df|>
-    filter(row -> row[:Sampling_date_order] == 50, _) |>
-    select(_, [:plot, :Species, :Presence]) |>
-    unstack(_, :Species, :Presence, fill=0) |>
-    select(_, Not(:plot)) |>
-    Matrix(_)
-    
-    presence_df = @pipe df|>
-    leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-    filter(row -> row[:Total_Presence] > 1, _) |>
-    filter(row -> row[:Sampling_date_order] == 50, _) |>
-    select(_, [:plot, :Species, :Presence]) |>
-    unstack(_, :Species, :Presence, fill=0) |>
-    leftjoin(_, cluster_result[50], on = [:plot => :Patch], makeunique = true) 
-    
-    #Random.seed!(1234)
-    #DNCI_result = DNCI_multigroup(comm, presence_df.Group, 1000; count = false)
-    #@test isapprox(DNCI_result, DataFrame(
-    #    group1 = [1, 1, 2],
-    #    group2 = [2, 3, 3],
-    #    DNCI = [ -2.96216, -2.93839, -1.45788],
-    #    CI_DNCI = [1.81732, 2.24484, 2.27338],
-    #    S_DNCI = [0.908661, 1.12242, 1.13669]),
-    #atol = 1e-4)
 
     # Test the niche_overlap function
     @test isapprox(niche_overlap(df.Abundance, 
                         df.Species, 
                         df.plot, 
-                        df.Sampling_date_order), DataFrame(mean_niche_overlap_index = 0.8277387279283689,
-                                                                        min_niche_overlap_index = 0.5918363543,
-                                                                        max_niche_overlap_index = 1.0),
-                                                                        atol = 1e-8)      
+                        df.Sampling_date_order), DataFrame(mean_niche_overlap_index = 0.0923816,
+                                                                        min_niche_overlap_index = 0.0,
+                                                                        max_niche_overlap_index =  0.406837),
+                                                                        atol = 1e-5)      
                                                                         
     # Test the prop_patches function
     @test isapprox(prop_patches(df.Presence, df.Species, df.plot), DataFrame(mean_prop_patches = 0.7346491228070174,
@@ -190,11 +178,11 @@ using .MetaCommunityMetrics.Internal
     data = @pipe df |> 
     select(_, [:normalized_temperature, :normalized_precipitation])
 
-    @test isapprox(average_MVNH_det(data, df.Presence, String.(df.Species); var_names = ["Temperature", "Precipitation"]), 
+    @test isapprox(average_MVNH_det(data, Vector{Int64}(df.Presence), df.Species; var_names = ["Temperature", "Precipitation"]), 
     1.2103765096417536, atol = 1e-5)
 
     # Test the average_MVNH_dissimilarity function
-    @test isapprox(average_MVNH_dissimilarity(data, df.Presence, String.(df.Species); var_names = ["Temperature", "Precipitation"]), 
+    @test isapprox(average_MVNH_dissimilarity(data, Vector{Int64}(df.Presence), df.Species; var_names = ["Temperature", "Precipitation"]), 
     0.03059942936454443, atol = 1e-5)
 
 end

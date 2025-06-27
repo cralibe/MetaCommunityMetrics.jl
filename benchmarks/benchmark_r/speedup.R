@@ -121,7 +121,44 @@ for (combo in 1:nrow(combinations)) {
   median_ci_all<-rbind(median_ci_all, result)
 }
 
-write.csv(median_ci_all, "result/median_ci_all.csv")
+test_case_order <- c(
+  "Beta Diversity (Abundance, quant=true)",
+  "Beta Diversity (Abundance, quant=false)",
+  "Beta Diversity (Presence, quant=false)",
+  "Spatial Beta Diversity (Abundance, quant=true)",
+  "Spatial Beta Diversity (Abundance, quant=false)",
+  "Spatial Beta Diversity (Presence, quant=false)",
+  "Temporal Beta Diversity (Abundance, quant=true)",
+  "Temporal Beta Diversity (Abundance, quant=false)",
+  "Temporal Beta Diversity (Presence, quant=false)",
+  "Dispersal-niche continuum index",
+  "Occupied Patches Proportion",
+  "Variability Metrics",
+  "Hypervolume Estimation",
+  "Hypervolume Dissimilarity"
+)
+median_ci_all_save <- median_ci_all %>%
+  mutate(TestCase = case_when(
+    TestCase == "beta_diversity_1" ~ "Beta Diversity (Abundance, quant=true)",
+    TestCase == "beta_diversity_2" ~ "Beta Diversity (Abundance, quant=false)",
+    TestCase == "beta_diversity_3" ~ "Beta Diversity (Presence, quant=false)",
+    TestCase == "spatial_beta_div_1" ~ "Spatial Beta Diversity (Abundance, quant=true)",
+    TestCase == "spatial_beta_div_2" ~ "Spatial Beta Diversity (Abundance, quant=false)",
+    TestCase == "spatial_beta_div_3" ~ "Spatial Beta Diversity (Presence, quant=false)",
+    TestCase == "temporal_beta_div_1" ~ "Temporal Beta Diversity (Abundance, quant=true)",
+    TestCase == "temporal_beta_div_2" ~ "Temporal Beta Diversity (Abundance, quant=false)",
+    TestCase == "temporal_beta_div_3" ~ "Temporal Beta Diversity (Presence, quant=false)",
+    TestCase == "DNCI_multigroup_result" ~ "Dispersal-niche continuum index",
+    TestCase == "prop_patches_result" ~ "Occupied Patches Proportion",
+    TestCase == "CV_meta_result" ~ "Variability Metrics",
+    TestCase == "hypervolume_det_result" ~ "Hypervolume Estimation",
+    TestCase == "hypervolume_dis_result" ~ "Hypervolume Dissimilarity",
+    TRUE ~ TestCase  # Keep original value if no match
+  ))%>%
+  mutate(TestCase = factor(TestCase, levels = test_case_order)) %>%
+  arrange(TestCase)
+
+write.csv(median_ci_all_save, "result/median_ci_all.csv")
 ##plot
 # First, extract the base test name (before the underscore and number)
 median_ci_df <- median_ci_all %>%
@@ -186,17 +223,7 @@ test_case_to_group <- c(
   "hypervolume_dis_result" = "Hypervolume Dissimilarity"
 )
 
-# Create the desired TestGroup order
-test_group_order <- c(
-  "Beta Diversity", 
-  "Spatial Beta Diversity", 
-  "Temporal Beta Diversity", 
-  "Dispersal-niche continuum index",
-  "Occupied Patches Proportion", 
-  "Variability Metrics", 
-  "Hypervolume Estimation",
-  "Hypervolume Dissimilarity"
-)
+
 
 # Create TestCase order based on the group order
 test_case_order <- c(
@@ -239,8 +266,8 @@ p <- ggplot(median_ci_df ,
             aes(x = DataSize, y = Speedup_median, 
                 group = TestCase, 
                 color = TestGroup)) +  
-  # Add horizontal line at y=0 first
-  geom_hline(yintercept = 0, linetype = "dashed", color = "darkgray", size = 0.5) +
+  # Add horizontal line at y=1 first
+  geom_hline(yintercept = 1, linetype = "dashed", color = "darkgray") +
   # All lines are now solid
   geom_line(size = 0.7) +
   # Only add points for beta diversity test cases with different shapes
@@ -276,7 +303,27 @@ full_result_memory<-full_result_julia%>%
   left_join(full_result_r)%>%
   select(TestCase, memory_julia, memory)%>%
   rename(memory_r=memory)%>%
-  filter(!is.na(memory_r))
+  filter(!is.na(memory_r))%>%
+  mutate(TestCase = case_when(
+    TestCase == "beta_diversity_1" ~ "Beta Diversity (Abundance, quant=true)",
+    TestCase == "beta_diversity_2" ~ "Beta Diversity (Abundance, quant=false)",
+    TestCase == "beta_diversity_3" ~ "Beta Diversity (Presence, quant=false)",
+    TestCase == "spatial_beta_div_1" ~ "Spatial Beta Diversity (Abundance, quant=true)",
+    TestCase == "spatial_beta_div_2" ~ "Spatial Beta Diversity (Abundance, quant=false)",
+    TestCase == "spatial_beta_div_3" ~ "Spatial Beta Diversity (Presence, quant=false)",
+    TestCase == "temporal_beta_div_1" ~ "Temporal Beta Diversity (Abundance, quant=true)",
+    TestCase == "temporal_beta_div_2" ~ "Temporal Beta Diversity (Abundance, quant=false)",
+    TestCase == "temporal_beta_div_3" ~ "Temporal Beta Diversity (Presence, quant=false)",
+    TestCase == "DNCI_multigroup_result" ~ "Dispersal-niche continuum index",
+    TestCase == "prop_patches_result" ~ "Occupied Patches Proportion",
+    TestCase == "CV_meta_result" ~ "Variability Metrics",
+    TestCase == "hypervolume_det_result" ~ "Hypervolume Estimation",
+    TestCase == "hypervolume_dis_result" ~ "Hypervolume Dissimilarity",
+    TRUE ~ TestCase  # Keep original value if no match
+  ))%>%
+  mutate(TestCase = factor(TestCase, levels = test_case_order)) %>%
+  arrange(TestCase)
+
 
 medium_result_memory<-medium_result_julia%>%
   select(TestCase, memory)%>%
@@ -284,7 +331,27 @@ medium_result_memory<-medium_result_julia%>%
   left_join(medium_result_r)%>%
   select(TestCase, memory_julia, memory)%>%
   rename(memory_r=memory)%>%
-  filter(!is.na(memory_r))
+  filter(!is.na(memory_r))%>%
+  mutate(TestCase = case_when(
+    TestCase == "beta_diversity_1" ~ "Beta Diversity (Abundance, quant=true)",
+    TestCase == "beta_diversity_2" ~ "Beta Diversity (Abundance, quant=false)",
+    TestCase == "beta_diversity_3" ~ "Beta Diversity (Presence, quant=false)",
+    TestCase == "spatial_beta_div_1" ~ "Spatial Beta Diversity (Abundance, quant=true)",
+    TestCase == "spatial_beta_div_2" ~ "Spatial Beta Diversity (Abundance, quant=false)",
+    TestCase == "spatial_beta_div_3" ~ "Spatial Beta Diversity (Presence, quant=false)",
+    TestCase == "temporal_beta_div_1" ~ "Temporal Beta Diversity (Abundance, quant=true)",
+    TestCase == "temporal_beta_div_2" ~ "Temporal Beta Diversity (Abundance, quant=false)",
+    TestCase == "temporal_beta_div_3" ~ "Temporal Beta Diversity (Presence, quant=false)",
+    TestCase == "DNCI_multigroup_result" ~ "Dispersal-niche continuum index",
+    TestCase == "prop_patches_result" ~ "Occupied Patches Proportion",
+    TestCase == "CV_meta_result" ~ "Variability Metrics",
+    TestCase == "hypervolume_det_result" ~ "Hypervolume Estimation",
+    TestCase == "hypervolume_dis_result" ~ "Hypervolume Dissimilarity",
+    TRUE ~ TestCase  # Keep original value if no match
+  ))%>%
+  mutate(TestCase = factor(TestCase, levels = test_case_order)) %>%
+  arrange(TestCase)
+
 
 small_result_memory<-small_result_julia%>%
   select(TestCase, memory)%>%
@@ -292,9 +359,58 @@ small_result_memory<-small_result_julia%>%
   left_join(small_result_r)%>%
   select(TestCase, memory_julia, memory)%>%
   rename(memory_r=memory)%>%
-  filter(!is.na(memory_r))
+  filter(!is.na(memory_r))%>%
+  mutate(TestCase = case_when(
+    TestCase == "beta_diversity_1" ~ "Beta Diversity (Abundance, quant=true)",
+    TestCase == "beta_diversity_2" ~ "Beta Diversity (Abundance, quant=false)",
+    TestCase == "beta_diversity_3" ~ "Beta Diversity (Presence, quant=false)",
+    TestCase == "spatial_beta_div_1" ~ "Spatial Beta Diversity (Abundance, quant=true)",
+    TestCase == "spatial_beta_div_2" ~ "Spatial Beta Diversity (Abundance, quant=false)",
+    TestCase == "spatial_beta_div_3" ~ "Spatial Beta Diversity (Presence, quant=false)",
+    TestCase == "temporal_beta_div_1" ~ "Temporal Beta Diversity (Abundance, quant=true)",
+    TestCase == "temporal_beta_div_2" ~ "Temporal Beta Diversity (Abundance, quant=false)",
+    TestCase == "temporal_beta_div_3" ~ "Temporal Beta Diversity (Presence, quant=false)",
+    TestCase == "DNCI_multigroup_result" ~ "Dispersal-niche continuum index",
+    TestCase == "prop_patches_result" ~ "Occupied Patches Proportion",
+    TestCase == "CV_meta_result" ~ "Variability Metrics",
+    TestCase == "hypervolume_det_result" ~ "Hypervolume Estimation",
+    TestCase == "hypervolume_dis_result" ~ "Hypervolume Dissimilarity",
+    TRUE ~ TestCase  # Keep original value if no match
+  ))%>%
+  mutate(TestCase = factor(TestCase, levels = test_case_order)) %>%
+  arrange(TestCase)
 
 write.csv(small_result_memory, "result/small_df_memory.csv")
 write.csv(medium_result_memory, "result/medium_df_memory.csv")
 write.csv(full_result_memory, "result/full_df_memory.csv")
+
+
+small_result_memory%>%
+  mutate(percentage_diff=(memory_julia-memory_r)/memory_r*100)%>%
+  arrange(percentage_diff)
+
+medium_result_memory%>%
+  mutate(percentage_diff=(memory_julia-memory_r)/memory_r)%>%
+  arrange(percentage_diff)
+
+full_result_memory%>%
+  mutate(percentage_diff=(memory_julia-memory_r)/memory_r*100)%>%
+  arrange(percentage_diff)
+
+
+##Speedup for the DNCI with parallelComputing in R using the full dataset
+DNCI_multigroup_result<-read.csv("../benchmarks/result/benchmark_result_full_df_julia.csv")%>%
+  filter(TestCase=="DNCI_multigroup_result")
+DNCI_multigroup_result_p<-readRDS("../benchmarks/result/DNCI_full_result_with_parallelComputing.rds")
+
+
+result_df<-data.frame(TestCase = "DNCI_multigroup_result",
+                      Speedup = as.numeric(mean(DNCI_multigroup_result_p$time[[1]])) * 1e+3/
+                        DNCI_multigroup_result$Time_median,
+                      julia_memory = DNCI_multigroup_result$memory,
+                      r_memory = as.numeric(DNCI_multigroup_result_p$mem_alloc) / 1024^2)
+                      
+write.csv(result_df, "result/benchmark_DNCI_with_parallelComputing_full_df.csv")
+
+
 

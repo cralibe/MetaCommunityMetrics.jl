@@ -2,17 +2,17 @@
 
 
 """
-    niche_overlap(abundance::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String}, time::AbstractVector) -> DataFrame
+    niche_overlap(abundance::AbstractVector, species::AbstractVector, site::AbstractVector, time::AbstractVector) -> DataFrame
 
 Calculates the overall mean, maximum, and minimum values of the niche overlap index from all species pairs in the provided data.
 # Arguments
 - `abundance::AbstractVector`: Vector representing the abundance of species.
-- `species::Union{AbstractVector, String}`: Vector or string representing species names or IDs.
-- `patch::Union{AbstractVector, String}`: Vector or string representing patch names or IDs.
-- `time::AbstractVector`: Vector representing the time points.
+- `species::AbstractVector`: Vector representing species names or IDs. 
+- `site::AbstractVector`: Vector representing site names or IDs. 
+- `time::AbstractVector`: Vector representing sampling dates. 
 
 # Description
-The niche overlap index is calculated based on the method suggested by Pianka (1973), with the assumption that the proportional use of a species at a specific site and time equals its relative abundance at that site and time. To determine relative abundance, the abundance of each species in a particular patch is divided by the total abundance of that species across all patches and times.
+The niche overlap index is calculated based on the method suggested by Pianka (1973), with the assumption that the proportional use of resources by a species at a specific site and time is equivalent to its relative abundance at that location and time period across all sampled sites and times
 
 # Returns
 - `DataFrame`: A DataFrame containing the overall mean, maximum, and minimum values of the niche overlap index from all species pairs.
@@ -44,73 +44,76 @@ julia> result = niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_dat
  Row │ mean_niche_overlap_index  min_niche_overlap_index  max_niche_overlap_index 
      │ Float64                   Float64                  Float64                 
 ─────┼────────────────────────────────────────────────────────────────────────────
-   1 │                 0.827739                 0.591836                      1.0
+   1 │                0.0923816                      0.0                 0.406837
 ```
 """
-function niche_overlap(abundance::AbstractVector, species::Union{AbstractVector, String}, patch::Union{AbstractVector, String}, time::AbstractVector)
+function niche_overlap(abundance::AbstractVector, species::AbstractVector, site::AbstractVector, time::AbstractVector)
+        
+    # Input validation
+    if !(length(abundance) == length(species) == length(site) == length(time))
+        throw(ArgumentError("All input vectors must have the same length"))
+    end
     
-    df = DataFrames.DataFrame(
-        N=abundance,
-        Species=species,
-        Time=time,
-        Patch=patch
+    if isempty(abundance)
+        throw(ArgumentError("Input vectors cannot be empty"))
+    end
+    
+    # Construct working dataframe
+    df = DataFrame(N = abundance, Species = species, Time = time, Patch = site)
+    
+    # Compute relative abundance per species across all patches/times
+    proportion_use_df = @pipe df[:, [:N, :Species, :Patch, :Time]] |>
+        groupby(_, :Species) |>
+        transform(_, :N => (x -> x ./ sum(x)) => :relative_N) |>
+        select(_, [:Species, :relative_N, :Patch, :Time]) |>
+        unstack(_, :Species, :relative_N, fill = 0) |>
+        select(_, Not([:Patch, :Time])) |>
+        permutedims(_)
+    
+    # If fewer than 2 species, return zeros (no pairwise comparisons possible)
+    if size(proportion_use_df, 1) < 2
+        return DataFrame(
+            mean_niche_overlap_index = 0.0,
+            min_niche_overlap_index  = 0.0,
+            max_niche_overlap_index  = 0.0
         )
+    end
     
-    proportion_use_df=
-    @pipe df[:,[:N, :Species, :Patch, :Time]] |>#select column N, Species, Patch, Time and env
-    groupby(_, [:Species]) |>
-    transform(_, :N => (x -> x ./ sum(x)) => :relativ_N) |> #relative abundance (proportion use) of species i in patch k at time t across all sites and times
-    groupby(_, [:Species]) |>
-    transform(_, :N => sum => :total_N)|> #total abundance of species i in all sites and times for cross checking
-    select(_, [:Species,:relativ_N, :Patch ,:Time]) |>#select columns Species, total_N, relativ_N, env
-    unstack(_, :Species,:relativ_N, fill = 0) |> #pivot wider
-    _[!, Not(:Patch, :Time)] |> # only retain the Proportional use values for each species
-    permutedims(_) #transpose the data frame 
-
-
-    combs=collect(combinations(1:size(proportion_use_df,1), 2)) # Generate all combinations of 2 elements (rows) from the indices 1 to n (the number of rows in the data frame)
-
-    pairwise_df=hcat(combs, zeros(Float64, size(combs, 1))) #Initialize an array with zeros to contain the niche overlpa index of each pair of species
-
-    for i in 1:size(pairwise_df,1)
-
-        first_sp=values(proportion_use_df[pairwise_df[i][1],:])
-        second_sp=values(proportion_use_df[pairwise_df[i][2],:])
-
-        final_numerator = 0.0
-        denominator_species_j = 0.0
-        denominator_species_k = 0.0
-
-        for j in 1:length(first_sp)
-            if first_sp[j] !=0.0 && second_sp[j] !=0.0
-                final_numerator += first_sp[j]*second_sp[j]
-                denominator_species_j += first_sp[j]^2
-                denominator_species_k += second_sp[j]^2
-            else
-                final_numerator += 0
-                denominator_species_j += 0
-                denominator_species_k += 0
-            end
+    # Generate all unique pairwise combinations
+    combs = collect(combinations(1:size(proportion_use_df, 1), 2))
+    pairwise_scores = Float64[]
+    
+    for (i, j) in combs
+        sp1 = values(proportion_use_df[i, :])
+        sp2 = values(proportion_use_df[j, :])
+        
+        # Calculate Pianka's overlap index - Standard approach
+        numerator = sum(sp1[k] * sp2[k] for k in 1:length(sp1))
+        denom1 = sum(sp1[k]^2 for k in 1:length(sp1))
+        denom2 = sum(sp2[k]^2 for k in 1:length(sp2))
+        denom = sqrt(denom1 * denom2)
+        
+        # Avoid division by zero
+        if denom > 0
+            push!(pairwise_scores, numerator / denom)
         end
-
-        final_denominator = sqrt(denominator_species_j * denominator_species_k)
-        pairwise_df[i, 2] = final_numerator / final_denominator
     end
-
-    #@save ("/home/jenny/phyto/niche_overlap_index_output/niche_overlap_matrix.jld2") pairwise_df
     
-    if isempty(pairwise_df) #check if pairwise_df is empty
-    
-        niche_overlap_index=DataFrames.DataFrame(mean_niche_overlap_index=0,
-            min_niche_overlap_index=0,
-            max_niche_overlap_index=0)
-        
-    else
-        niche_overlap_index=DataFrames.DataFrame(mean_niche_overlap_index=mean(filter(!isnan, round.(pairwise_df[:, 2], digits=10))),
-            min_niche_overlap_index=minimum(filter(!isnan, round.(pairwise_df[:, 2], digits=10))),
-            max_niche_overlap_index=maximum(filter(!isnan, round.(pairwise_df[:, 2], digits=10)))) #rounding to avoid floating-point precision errors
-        
+    # Handle case: all comparisons had zero overlap (→ empty pairwise_scores)
+    if isempty(pairwise_scores)
+        return DataFrame(
+            mean_niche_overlap_index = 0.0,
+            min_niche_overlap_index  = 0.0,
+            max_niche_overlap_index  = 0.0
+        )
     end
-    #histogram(pairwise_df[:,2], bins=20, xlabel="Value", ylabel="Frequency", title="Histogram")
-    #scatter(1:nrow(test_df), test_df[:,5], xlabel="Row ID", ylabel="Column Value", title="Scatter Plot")
+    
+    # Round to avoid floating point precision errors
+    rounded_scores = round.(pairwise_scores, digits = 10)
+    
+    return DataFrame(
+        mean_niche_overlap_index = mean(rounded_scores),
+        min_niche_overlap_index  = minimum(rounded_scores),
+        max_niche_overlap_index  = maximum(rounded_scores)
+    )
 end

@@ -127,15 +127,15 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-# DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full, 
-#                                                        groups_full$Group, Nperm = 100, 
-#                                                        symmetrize = FALSE, 
-#                                                        plotSIMPER = FALSE,
-#                                                       parallelComputing = FALSE)
-#                                iterations = 100,
-#                                check = FALSE,
-#                             time_unit = "ms")
-# #saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_full_result.rds")
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full,
+                                                       groups_full$Group, Nperm = 100,
+                                                       symmetrize = FALSE,
+                                                       plotSIMPER = FALSE,
+                                                      parallelComputing = TRUE),
+                               iterations = 100,
+                               check = FALSE,
+                            time_unit = "ms")
+saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_full_result.rds")
 DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_full_result.rds")
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
@@ -456,15 +456,15 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-# DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium, 
-#                                                           groups_medium$Group, Nperm = 100, 
-#                                                           symmetrize = FALSE, 
-#                                                           plotSIMPER = FALSE,
-#                                                           parallelComputing = FALSE),
-#                                iterations = 100,
-#                                check = FALSE,
-#                                time_unit = "ms")
-# saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_medium_result.rds")
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium,
+                                                          groups_medium$Group, Nperm = 100,
+                                                          symmetrize = FALSE,
+                                                          plotSIMPER = FALSE,
+                                                          parallelComputing = TRUE),
+                               iterations = 100,
+                               check = FALSE,
+                               time_unit = "ms")
+saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_medium_result.rds")
 DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_medium_result.rds")
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
@@ -727,15 +727,15 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-# DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small, 
-#                                                           groups_small$Group, Nperm = 100, 
-#                                                           symmetrize = FALSE, 
-#                                                           plotSIMPER = FALSE,
-#                                                           parallelComputing = FALSE),
-#                                iterations = 100,
-#                                check = FALSE,
-#                                time_unit = "ms")
-# saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_small_result.rds")
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small,
+                                                          groups_small$Group, Nperm = 100,
+                                                          symmetrize = FALSE,
+                                                          plotSIMPER = FALSE,
+                                                          parallelComputing = TRUE),
+                               iterations = 100,
+                               check = FALSE,
+                               time_unit = "ms")
+saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_small_result.rds")
 DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_small_result.rds")
 
 #### Benchmark the prop_patches function
@@ -892,3 +892,21 @@ benchmark_result_small_df<-data.frame(TestCase = c("beta_diversity_1", "beta_div
 
 
 write.csv(benchmark_result_small_df, "../benchmarks/result/benchmark_result_small_df_r.csv")
+
+
+####Additional benchmarking result
+DNCI_multigroup_result_p <- mark(DNCImper:::DNCI_multigroup(comm_full,
+                                                            groups_full$Group, 
+                                                            Nperm = 100,
+                                                            symmetrize = FALSE,
+                                                            plotSIMPER = FALSE,                                              
+                                                        parallelComputing = TRUE), iterations = 100,
+                                                                 check = FALSE,
+                                                               time_unit = "ms")
+
+saveRDS(DNCI_multigroup_result_p, "../benchmarks/result/DNCI_full_result_with_parallelComputing.rds")
+
+
+
+
+
