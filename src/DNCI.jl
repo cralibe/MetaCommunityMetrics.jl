@@ -172,7 +172,7 @@ function create_clusters(time::AbstractVector, latitude::Vector{Float64}, longit
             # Perform hierarchical clustering
             agglo_result = hclust(distances, linkage=:complete)
             assignments = cutree(agglo_result, k=num_clusters)
-            coordinates.Group = assignments
+            coordinates[!, :Group] = Vector{Union{Int, Missing}}(assignments)
 
             # Remove any existing Group columns first
             subset_df = select(subset_df, Not(contains.(names(subset_df), "Group")))
