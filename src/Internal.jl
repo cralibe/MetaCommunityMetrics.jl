@@ -400,21 +400,21 @@ function simper(comm::Matrix, groups::Vector)
     # Here is different from the orginal simper() in R
     # We use Zero-adjusted Bray-Curtis instead of the original Bray-Curtis
     # We added pseudo-species with value 1 to all sites 
-    val = 1
+    #val = 1
     
     # Add pseudo-species column to every site
-    comm_with_pseudo_species = hcat(comm, fill(val, size(comm, 1)))
+    #comm_with_pseudo_species = hcat(comm, fill(val, size(comm, 1)))
 
 
 
     # Create a lower triangular matrix indicating whether each element (i, j) satisfies i > j
-    tri = [i > j for i in 1:size(comm_with_pseudo_species, 1), j in 1:size(comm_with_pseudo_species, 1)]
+    tri = [i > j for i in 1:size(comm, 1), j in 1:size(comm, 1)]
     
     ## Species contributions of differences needed for every species,
     ## but denominator is constant. Bray-Curtis is actually
     ## manhattan/(mean(rowsums)) and this is the way we collect data
     # Calculate row sums to obtain the total abundance of the whole community at each site
-    rs = sum(comm_with_pseudo_species, dims=2)
+    rs = sum(comm, dims=2)
     # Calculate pairwise sums and extract lower triangular part
     pairwise_sums = rs .+ transpose(rs)
     result = pairwise_sums[tri]
@@ -423,9 +423,9 @@ function simper(comm::Matrix, groups::Vector)
     spcontr = Matrix{Float64}(undef, 0, 0)
     
     # Iterate over each pair of sites in the community matrix
-    for col_index in 1:size(comm_with_pseudo_species, 2)
+    for col_index in 1:size(comm, 2)
         # Extract the ith column of the community matrix
-        column_i = comm_with_pseudo_species[:, col_index:col_index]
+        column_i = comm[:, col_index:col_index]
         ZAP = 1e-15 #a threshold for setting small distances to zero in the distance matrix
         n_rows = size(column_i, 1)
         d = zeros(n_rows, n_rows)  # Initialize distance matrix
@@ -451,7 +451,7 @@ function simper(comm::Matrix, groups::Vector)
     spcontr ./= result
 
     #remove the last column of spcontr, which is the pseudo-species
-    spcontr = spcontr[:, 1:end-1]
+    #spcontr = spcontr[:, 1:end-1]
 
     #Get all combinations of 2 elements from unique_group
     comp = collect(combinations(unique(groups), 2))
@@ -625,8 +625,8 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
             println("There are NaNs in the SIMPER results of the permuted matrix when the column sum is maintained, $i")
         end
 
-
     end
+
     dn2=hcat([sort(df2[:, j]) for j in 1:size(df2, 2)]...)
     dn3=hcat([sort(df3[:, j]) for j in 1:size(df3, 2)]...)
     dn4=hcat([sort(df4[:, j]) for j in 1:size(df4, 2)]...)
