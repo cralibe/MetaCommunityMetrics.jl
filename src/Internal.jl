@@ -400,21 +400,19 @@ function simper(comm::Matrix, groups::Vector)
     # Here is different from the orginal simper() in R
     # We use Zero-adjusted Bray-Curtis instead of the original Bray-Curtis
     # We added pseudo-species with value 1 to all sites 
-    #val = 1
+    val = 1
     
     # Add pseudo-species column to every site
-    #comm_with_pseudo_species = hcat(comm, fill(val, size(comm, 1)))
-
-
+    comm_with_pseudo_species = hcat(comm, fill(val, size(comm, 1)))
 
     # Create a lower triangular matrix indicating whether each element (i, j) satisfies i > j
-    tri = [i > j for i in 1:size(comm, 1), j in 1:size(comm, 1)]
+    tri = [i > j for i in 1:size(comm_with_pseudo_species, 1), j in 1:size(comm_with_pseudo_species, 1)]
     
     ## Species contributions of differences needed for every species,
     ## but denominator is constant. Bray-Curtis is actually
     ## manhattan/(mean(rowsums)) and this is the way we collect data
     # Calculate row sums to obtain the total abundance of the whole community at each site
-    rs = sum(comm, dims=2)
+    rs = sum(comm_with_pseudo_species, dims=2)
     # Calculate pairwise sums and extract lower triangular part
     pairwise_sums = rs .+ transpose(rs)
     result = pairwise_sums[tri]
@@ -423,9 +421,9 @@ function simper(comm::Matrix, groups::Vector)
     spcontr = Matrix{Float64}(undef, 0, 0)
     
     # Iterate over each pair of sites in the community matrix
-    for col_index in 1:size(comm, 2)
+    for col_index in 1:size(comm_with_pseudo_species, 2)
         # Extract the ith column of the community matrix
-        column_i = comm[:, col_index:col_index]
+        column_i = comm_with_pseudo_species[:, col_index:col_index]
         ZAP = 1e-15 #a threshold for setting small distances to zero in the distance matrix
         n_rows = size(column_i, 1)
         d = zeros(n_rows, n_rows)  # Initialize distance matrix
@@ -451,7 +449,7 @@ function simper(comm::Matrix, groups::Vector)
     spcontr ./= result
 
     #remove the last column of spcontr, which is the pseudo-species
-    #spcontr = spcontr[:, 1:end-1]
+    spcontr = spcontr[:, 1:end-1]
 
     #Get all combinations of 2 elements from unique_group
     comp = collect(combinations(unique(groups), 2))
@@ -568,6 +566,7 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
     #Randomization of the original community matrix 
     dp2 = permatfull(comm, "both", Nperm)
     dp3 = permatfull(comm, "rows", Nperm)
+    dp4 = permatfull(comm, "columns", Nperm)
     
     #Generating matrices that will store the results (the ranked contribution of species to the OAD)
     #of the 1000 permutations of the original community matrix
@@ -581,8 +580,8 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
             println(i)
         end
         
-        local dp4_filtered, dp4_groups
-        while true
+        #local dp4_filtered, dp4_groups
+        #=while true
             dp4 = correct_permutation(comm)
             zero_sum_rows = vec(sum(dp4[1], dims=2) .== 0)
     
@@ -601,13 +600,14 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
             if length(unique(dp4_groups)) >= 2
                 break
             end
-        end
+        end=#
 
         #SIMPER analysis performed on each permutated matrix
         simp2 = simper(dp2[i], groups)
         simp3 = simper(dp3[i], groups)
-        simp4 = simper(dp4_filtered, dp4_groups)
-        
+        #simp4 = simper(dp4_filtered, dp4_groups)
+        simp4 = simper(dp4[i], groups)
+
         #Storage of SIMPER results (ranked contribution to OAD) and conversion to percentage of SIMPER results
         sorted2 = sort(vec(simp2[1]), rev=true)
         sorted3 = sort(vec(simp3[1]), rev=true)
@@ -621,15 +621,18 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
         df3[i,:] = (sorted3/sum3) * 100
         df4[i,:] = (sorted4/sum4) * 100
 
-        if isnan(sum(df4[i,:]))
-            println("There are NaNs in the SIMPER results of the permuted matrix when the column sum is maintained, $i")
-        end
+        
+        #if isnan(sum(df4[i,:]))
+        #    println("There are NaNs in the SIMPER results of the permuted matrix when the column sum is maintained, $i")
+        #    println("$sorted4, $sum4, $(df4[i,:])")
+        #end
 
     end
 
     dn2=hcat([sort(df2[:, j]) for j in 1:size(df2, 2)]...)
     dn3=hcat([sort(df3[:, j]) for j in 1:size(df3, 2)]...)
     dn4=hcat([sort(df4[:, j]) for j in 1:size(df4, 2)]...)
+    #println("$dn4")
 
     up = floor(Int,0.975*Nperm) # ex for 100 permutations it will used 97
     lo = floor(Int,0.025*Nperm) # ex for 100 permutations it will used 2
@@ -639,6 +642,7 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
 
     # Ranked % of contribution to OAD of empirical and simulated profiles
     obs = Pourcent_Contribution
+    #print("Empirical profile: $obs")
     Orange = dn4
     Blue = dn2
     Green = dn3
@@ -657,13 +661,13 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
         # Log conversion of the sum of square deviations
     
         sum_orange = sum(SommeEcartCarreOrange)
-        VectorEcartCarreOrangeLog[i] = log10(sum_orange + (sum_orange == 0 ? 1.0e-20 : 0))
+        VectorEcartCarreOrangeLog[i] = log10(sum_orange + 1.0e-20)
 
         sum_green = sum(SommeEcartCarreGreen)
-        VectorEcartCarreGreenLog[i] = log10(sum_green + (sum_green == 0 ? 1.0e-20 : 0))
+        VectorEcartCarreGreenLog[i] = log10(sum_green + 1.0e-20)
 
         sum_blue = sum(SommeEcartCarreBlue)
-        VectorEcartCarreBlueLog[i] = log10(sum_blue + (sum_blue == 0 ? 1.0e-20 : 0))
+        VectorEcartCarreBlueLog[i] = log10(sum_blue + 1.0e-20)
 
         if VectorEcartCarreOrangeLog[i]==-Inf
             println("-Inf in Orange, $i")
@@ -702,50 +706,60 @@ end
 #Original package and documentation available at: https://github.com/Corentin-Gibert-Paleontology/DNCImper
 function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=false) #for presence-absence data only
     group=sort(unique(groups))
-    if  all(comm .== comm[1]) #check to see if every element in the matrix is the same
-        metric = DataFrames.DataFrame(time = current_time,
-        group1= group[1], 
-        group2 = group[2], 
-        DNCI = 0, 
-        CI_DNCI = 0, 
-        S_DNCI = 0)
-    else 
     
-        # Check if the number of groups is equal to 2
-        if length(group) != 2
-            error("length(groups) must be 2")
-        end
-        results = PerSIMPER(comm, groups, Nperm; count)
-        E = results["EcartCarreLog"]
+    # Check if the number of groups is equal to 2
+    if length(group) != 2
+        error("length(groups) must be 2")
+    end
 
+    results = PerSIMPER(comm, groups, Nperm; count)
+    E = results["EcartCarreLog"]
 
-        # Precompute statistics
-        mean_blue = mean(E.Blue)
-        std_blue = std(E.Blue, corrected=true)
-    
-        # Handle special case when permuations from the dispersal and niche model are very similar
-        if mean_blue == -20.0 && std_blue == 0
-            SES_d = zeros(size(E.Orange,1))
-            SES_n = zeros(size(E.Green,1))
-        else
-            # Vectorized calculation of SES.d and SES.n based on E values from PERSIMPER function
-            SES_d = (E.Orange .- mean_blue) ./ std_blue
-            SES_n = (E.Green .- mean_blue) ./ std_blue
-        end
-    
-        #Calculate DNCI
-        DNCI = mean(SES_d)-mean(SES_n)
-        #sd related to DNCI
-        S_DNCI = sqrt(std(SES_d, corrected=true)^2+std(SES_n, corrected=true)^2)
-        #the confidence interval based on S.DNCI
-        CI_DNCI = 2*S_DNCI
-        #Final results
-        metric = DataFrames.DataFrame(group1= group[1], 
-                                    group2 = group[2], 
-                                    DNCI = DNCI, 
-                                    CI_DNCI = CI_DNCI, 
-                                    S_DNCI = S_DNCI)
+    #println("Blue has NaN: $(any(isnan.(E.Blue)))")
+    #println("Orange has NaN: $(any(isnan.(E.Orange)))")  
+    #println("Green has NaN: $(any(isnan.(E.Green)))")
+    #println("Mean Blue: $(mean(E.Blue))")
+    #println("std Blue: $(std(E.Blue, corrected=true))")
+
+    # Precompute statistics
+    mean_blue = mean(E.Blue)
+    std_blue = std(E.Blue, corrected=true)
+    cv = abs(std_blue / mean_blue)
+
+    # Handle cases when both dispersal and niche processes are so constraining that there's only one or very limited possible arrangement of species across sites when performing quasi-swap
+    if mean_blue ≈ -20 && std_blue == 0  # Case 1
+        DNCI = NaN
+        S_DNCI = NaN
+        CI_DNCI = NaN
+        status = "quasi_swap_permutation_not_possible"
+    elseif std_blue == 0  # Case 2
+        DNCI = NaN
+        S_DNCI = NaN
+        CI_DNCI = NaN
+        status = "one_way_to_quasi_swap"
+    elseif cv < 0.01  # Case 3
+        DNCI = NaN
+        S_DNCI = NaN
+        CI_DNCI = NaN
+        status = "inadequate_variation_quasi_swap"
+    else  # Normal case
+        # Regular DNCI calculation
+        SES_d = (E.Orange .- mean_blue) ./ std_blue
+        SES_n = (E.Green .- mean_blue) ./ std_blue
+
+        DNCI = mean(SES_d) - mean(SES_n)
+        S_DNCI = sqrt(std(SES_d, corrected=true)^2 + std(SES_n, corrected=true)^2)
+        CI_DNCI = 2 * S_DNCI
+        status = "normal"
     end                               
+    
+    metric = DataFrames.DataFrame(group1= group[1], 
+    group2 = group[2], 
+    DNCI = DNCI, 
+    CI_DNCI = CI_DNCI, 
+    S_DNCI = S_DNCI,
+    status = status)
+
     return metric
 end
 
