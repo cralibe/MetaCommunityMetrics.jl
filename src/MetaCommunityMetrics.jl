@@ -35,7 +35,8 @@ include("Hypervolume.jl")
 function load_sample_data()
     path = joinpath(pkgdir(MetaCommunityMetrics), "data", "metacomm_rodent_df.csv")
     sample_df = CSV.read(path, DataFrame)
-    return sample_df
+    df = select(sample_df, All())   #convert all columns back to regular vectors
+    return df
 end
 
 

@@ -53,13 +53,18 @@ function niche_overlap(abundance::AbstractVector, species::AbstractVector, site:
     if !(length(abundance) == length(species) == length(site) == length(time))
         throw(ArgumentError("All input vectors must have the same length"))
     end
-    
-    if isempty(abundance)
+
+    if isempty(abundance)  # Check before DataFrame creation
         throw(ArgumentError("Input vectors cannot be empty"))
     end
-    
+
     # Construct working dataframe
     df = DataFrame(N = abundance, Species = species, Time = time, Patch = site)
+    
+    # Remove species with zero total abundance
+    species_totals = combine(groupby(df, :Species), :N => sum => :total_N)
+    valid_species = species_totals[species_totals.total_N .> 0, :Species]
+    df = filter(row -> row.Species in valid_species, df)
     
     # Compute relative abundance per species across all patches/times
     proportion_use_df = @pipe df[:, [:N, :Species, :Patch, :Time]] |>
@@ -93,19 +98,8 @@ function niche_overlap(abundance::AbstractVector, species::AbstractVector, site:
         denom2 = sum(sp2[k]^2 for k in 1:length(sp2))
         denom = sqrt(denom1 * denom2)
         
-        # Avoid division by zero
-        if denom > 0
-            push!(pairwise_scores, numerator / denom)
-        end
-    end
-    
-    # Handle case: all comparisons had zero overlap (→ empty pairwise_scores)
-    if isempty(pairwise_scores)
-        return DataFrame(
-            mean_niche_overlap_index = 0.0,
-            min_niche_overlap_index  = 0.0,
-            max_niche_overlap_index  = 0.0
-        )
+        push!(pairwise_scores, numerator / denom)
+
     end
     
     # Round to avoid floating point precision errors

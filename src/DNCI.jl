@@ -17,14 +17,12 @@ Arguments
 - `presence::AbstractVector`: A vector indicating the presence (1) or absence (0) of species at each site.
 
 Returns
-- `Dict{Int, DataFrame}`: A dictionary where each key represents a unique time point from the input data, with the corresponding value being a `DataFrame` for that time step. Each `DataFrame` contains the following columns: `Time`, `Latitude`, `Longitude`, `Site`, `Total_Richness`, and `Group` (indicating the assigned cluster).
+- `Dict{Int, DataFrame}`: A dictionary where each key represents a unique time point from the input data, with the corresponding value being a `DataFrame` for that time step. Each `DataFrame` contains the following columns: `Time`, `Latitude`, `Longitude`, `Site`, `Species`, `Presence` and `Group` (indicating the assigned cluster).
 
 Details
-- This function performs hierarchical clustering on the geographical coordinates of sampling sites at each unique time step, assuming that organism dispersal occurs within the study region. 
+- This function performs hierarchical clustering on the geographical coordinates of sampling sites at each unique time step. 
 - This function incorporates checks and adjustments to ensure the following conditions are met: at least 2 clusters, a minimum of 5 sites per cluster, and that the variation in the number of taxa/species and sites per group does not exceed 40% and 30%, respectively. These conditions are critical for calculating an unbiased DNCI value, and the function will issue warnings and the groupings will be returned as "missing" if any are not fulfilled.
 - Empty sites are allowed.
-- Species that is absence or presnece at all sites need to be removed before clustering, as they do not contribute to composition differences across sites.
-
 Example
 ```jildoctest
 julia> using MetaCommunityMetrics, Pipe, DataFrames
@@ -47,152 +45,64 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
                                                                                           
-julia> total_presence_df = @pipe df|>
-                        groupby(_,[:Species,:Sampling_date_order])|>
-                        combine(_,:Presence=>sum=>:Total_Presence) |>
-                        filter(row -> row[:Total_Presence] > 0, _) |>
-                        select(_, [:Species, :Sampling_date_order])
-1038×2 DataFrame
-  Row │ Species  Sampling_date_order 
-      │ String3  Int64               
-──────┼──────────────────────────────
-    1 │ BA                        33
-    2 │ BA                        41
-    3 │ BA                        43
-    4 │ BA                        44
-    5 │ BA                        46
-  ⋮   │    ⋮              ⋮
- 1034 │ SH                        83
- 1035 │ SH                        93
- 1036 │ SH                       108
- 1037 │ SH                       112
- 1038 │ SH                       117
-                    1028 rows omitted
-
-julia> non_empty_site_df = @pipe df|>
-                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true)|>
-                    groupby(_, [:plot]) |>
-                    combine(_, :Presence=>sum=>:Total_N) |>
-                    filter(row -> row[:Total_N] > 0, _) |>
-                    select(_, [:plot])
-24×1 DataFrame
- Row │ plot  
-     │ Int64 
-─────┼───────
-   1 │     1
-   2 │     2
-   3 │     3
-   4 │     4
-   5 │     5
-  ⋮  │   ⋮
-  20 │    20
-  21 │    21
-  22 │    22
-  23 │    23
-  24 │    24
-14 rows omitted
-
-julia> ubiquitous_species_df = @pipe df |>
-                        groupby(_, [:Species, :Sampling_date_order]) |>
-                        combine(_, :Presence => sum => :Total_Presence) |>
-                        filter(row -> row[:Total_Presence] < length(unique(non_empty_site_df.plot)), _) |>
-                        select(_, [:Species, :Sampling_date_order])
-2204×2 DataFrame
-  Row │ Species  Sampling_date_order 
-      │ String3  Int64               
-──────┼──────────────────────────────
-    1 │ BA                         1
-    2 │ BA                         2
-    3 │ BA                         3
-    4 │ BA                         4
-    5 │ BA                         5
-  ⋮   │    ⋮              ⋮
- 2200 │ SH                       113
- 2201 │ SH                       114
- 2202 │ SH                       115
- 2203 │ SH                       116
- 2204 │ SH                       117
-                    2194 rows omitted
-
-julia> filtered_df = @pipe df|>
-                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-                    innerjoin(_,  non_empty_site_df, on = [:plot], makeunique = true) |>
-                    innerjoin(_, ubiquitous_species_df, on = [:Species, :Sampling_date_order], makeunique = true) 
-
-24456×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
-───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2013      4     13                   33      1  BA               0         0      35.0     -110.0                0.844714                -2.02803
-     2 │  2013      4     13                   33      2  BA               0         0      35.0     -109.5                0.477563                 0.272645
-     3 │  2013      4     13                   33      4  BA               0         0      35.0     -108.5                1.04654                 -0.907797
-     4 │  2013      4     13                   33      8  BA               0         0      35.5     -109.5                0.170556                -0.909651
-     5 │  2013      4     13                   33      9  BA               0         0      35.5     -109.0               -0.316261                -0.502008
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 24452 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565                -0.836345
- 24453 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729                 -0.398522
- 24454 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169                 1.03257
- 24455 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015                 0.95971
- 24456 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949                 -1.59416
-                                                                                                                                            24446 rows omitted
-julia> clustering_result = create_clusters(filtered_df.Sampling_date_order, filtered_df.Latitude, filtered_df.Longitude, filtered_df.plot, filtered_df.Species, filtered_df.Presence)
+julia> clustering_result = create_clusters(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
 Warning: Cluster count fell below 2 at time 10, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 14, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 76, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 89, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 99, which is not permissible for clustering. Groups assigned as missing.
-Dict{Int64, DataFrame} with 117 entries:
-  5   => 144×7 DataFrame…
-  56  => 336×7 DataFrame…
-  55  => 360×7 DataFrame…
-  35  => 144×7 DataFrame…
-  110 => 144×7 DataFrame…
-  114 => 192×7 DataFrame…
-  60  => 360×7 DataFrame…
-  30  => 192×7 DataFrame…
-  32  => 264×7 DataFrame…
-  6   => 168×7 DataFrame…
-  67  => 216×7 DataFrame…
-  45  => 240×7 DataFrame…
-  117 => 288×7 DataFrame…
-  73  => 336×7 DataFrame…
+Dict{Int64, DataFrames.DataFrame} with 117 entries:
+  5   => 456×7 DataFrame…
+  56  => 456×7 DataFrame…
+  35  => 456×7 DataFrame…
+  55  => 456×7 DataFrame…
+  110 => 456×7 DataFrame…
+  114 => 456×7 DataFrame…
+  60  => 456×7 DataFrame…
+  30  => 456×7 DataFrame…
+  32  => 456×7 DataFrame…
+  6   => 456×7 DataFrame…
+  67  => 456×7 DataFrame…
+  45  => 456×7 DataFrame…
+  117 => 456×7 DataFrame…
+  73  => 456×7 DataFrame…
   ⋮   => ⋮
 
 julia> clustering_result[3]
-144×7 DataFrame
+456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
 ─────┼──────────────────────────────────────────────────────────────
-   1 │     3      35.0     -110.0      1  DM              1       1
-   2 │     3      35.0     -109.5      2  DM              1       1
-   3 │     3      35.0     -108.5      4  DM              0       1
-   4 │     3      35.5     -109.5      8  DM              1       3
-   5 │     3      35.5     -109.0      9  DM              0       1
+   1 │     3      35.0     -110.0      1  BA              0       1
+   2 │     3      35.0     -109.5      2  BA              0       1
+   3 │     3      35.0     -108.5      4  BA              0       1
+   4 │     3      35.5     -109.5      8  BA              0       3
+   5 │     3      35.5     -109.0      9  BA              0       1
   ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮        ⋮
- 140 │     3      35.5     -110.0      7  PP              1       1
- 141 │     3      35.5     -108.5     10  PP              0       1
- 142 │     3      36.0     -108.5     16  PP              0       2
- 143 │     3      36.5     -108.0     23  PP              0       2
- 144 │     3      36.5     -107.5     24  PP              0       2
-                                                    134 rows omitted
+ 452 │     3      35.5     -110.0      7  SH              0       1
+ 453 │     3      35.5     -108.5     10  SH              0       1
+ 454 │     3      36.0     -108.5     16  SH              0       2
+ 455 │     3      36.5     -108.0     23  SH              0       2
+ 456 │     3      36.5     -107.5     24  SH              0       2
+                                                    446 rows omitted
 
 julia> clustering_result[10]      
-96×7 DataFrame
+456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group   
      │ Int64  Float64   Float64    Int64  String3  Int64     Missing 
 ─────┼───────────────────────────────────────────────────────────────
-   1 │    10      35.0     -110.0      1  DM              1  missing 
-   2 │    10      35.0     -109.5      2  DM              1  missing 
-   3 │    10      35.0     -108.5      4  DM              1  missing 
-   4 │    10      35.5     -109.5      8  DM              0  missing 
-   5 │    10      35.5     -109.0      9  DM              1  missing 
+   1 │    10      35.0     -110.0      1  BA              0  missing 
+   2 │    10      35.0     -109.5      2  BA              0  missing 
+   3 │    10      35.0     -108.5      4  BA              0  missing 
+   4 │    10      35.5     -109.5      8  BA              0  missing 
+   5 │    10      35.5     -109.0      9  BA              0  missing 
   ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮         ⋮
-  92 │    10      35.5     -110.0      7  OT              0  missing 
-  93 │    10      35.5     -108.5     10  OT              0  missing 
-  94 │    10      36.0     -108.5     16  OT              1  missing 
-  95 │    10      36.5     -108.0     23  OT              0  missing 
-  96 │    10      36.5     -107.5     24  OT              0  missing 
-                                                      86 rows omitted                                              
+ 452 │    10      35.5     -110.0      7  SH              0  missing 
+ 453 │    10      35.5     -108.5     10  SH              0  missing 
+ 454 │    10      36.0     -108.5     16  SH              0  missing 
+ 455 │    10      36.5     -108.0     23  SH              0  missing 
+ 456 │    10      36.5     -107.5     24  SH              0  missing 
+                                                     446 rows omitted                                            
 ```
 """
 function create_clusters(time::AbstractVector, latitude::Vector{Float64}, longitude::Vector{Float64}, site::AbstractVector, species::AbstractVector, presence::AbstractVector)
@@ -310,137 +220,48 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
                                                                                           
-julia> total_presence_df = @pipe df|>
-                        groupby(_,[:Species,:Sampling_date_order])|>
-                        combine(_,:Presence=>sum=>:Total_Presence) |>
-                        filter(row -> row[:Total_Presence] > 0, _) |>
-                        select(_, [:Species, :Sampling_date_order])
-1038×2 DataFrame
-  Row │ Species  Sampling_date_order 
-      │ String3  Int64               
-──────┼──────────────────────────────
-    1 │ BA                        33
-    2 │ BA                        41
-    3 │ BA                        43
-    4 │ BA                        44
-    5 │ BA                        46
-  ⋮   │    ⋮              ⋮
- 1034 │ SH                        83
- 1035 │ SH                        93
- 1036 │ SH                       108
- 1037 │ SH                       112
- 1038 │ SH                       117
-                    1028 rows omitted
-
-julia> non_empty_site_df = @pipe df|>
-                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true)|>
-                    groupby(_, [:plot]) |>
-                    combine(_, :Presence=>sum=>:Total_N) |>
-                    filter(row -> row[:Total_N] > 0, _) |>
-                    select(_, [:plot])
-24×1 DataFrame
- Row │ plot  
-     │ Int64 
-─────┼───────
-   1 │     1
-   2 │     2
-   3 │     3
-   4 │     4
-   5 │     5
-  ⋮  │   ⋮
-  20 │    20
-  21 │    21
-  22 │    22
-  23 │    23
-  24 │    24
-14 rows omitted
-
-julia> ubiquitous_species_df = @pipe df |>
-                        groupby(_, [:Species, :Sampling_date_order]) |>
-                        combine(_, :Presence => sum => :Total_Presence) |>
-                        filter(row -> row[:Total_Presence] < length(unique(non_empty_site_df.plot)), _) |>
-                        select(_, [:Species, :Sampling_date_order])
-2204×2 DataFrame
-  Row │ Species  Sampling_date_order 
-      │ String3  Int64               
-──────┼──────────────────────────────
-    1 │ BA                         1
-    2 │ BA                         2
-    3 │ BA                         3
-    4 │ BA                         4
-    5 │ BA                         5
-  ⋮   │    ⋮              ⋮
- 2200 │ SH                       113
- 2201 │ SH                       114
- 2202 │ SH                       115
- 2203 │ SH                       116
- 2204 │ SH                       117
-                    2194 rows omitted
-
-julia> filtered_df = @pipe df|>
-                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-                    innerjoin(_,  non_empty_site_df, on = [:plot], makeunique = true) |>
-                    innerjoin(_, ubiquitous_species_df, on = [:Species, :Sampling_date_order], makeunique = true) 
-
-24456×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
-───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2013      4     13                   33      1  BA               0         0      35.0     -110.0                0.844714                -2.02803
-     2 │  2013      4     13                   33      2  BA               0         0      35.0     -109.5                0.477563                 0.272645
-     3 │  2013      4     13                   33      4  BA               0         0      35.0     -108.5                1.04654                 -0.907797
-     4 │  2013      4     13                   33      8  BA               0         0      35.5     -109.5                0.170556                -0.909651
-     5 │  2013      4     13                   33      9  BA               0         0      35.5     -109.0               -0.316261                -0.502008
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 24452 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565                -0.836345
- 24453 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729                 -0.398522
- 24454 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169                 1.03257
- 24455 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015                 0.95971
- 24456 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949                 -1.59416
-                                                                                                                                            24446 rows omitted
-julia> clustering_result = create_clusters(filtered_df.Sampling_date_order, filtered_df.Latitude, filtered_df.Longitude, filtered_df.plot, filtered_df.Species, filtered_df.Presence)
+julia> clustering_result = create_clusters(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
 Warning: Cluster count fell below 2 at time 10, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 14, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 76, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 89, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 99, which is not permissible for clustering. Groups assigned as missing.
-Dict{Int64, DataFrame} with 117 entries:
-  5   => 144×7 DataFrame…
-  56  => 336×7 DataFrame…
-  55  => 360×7 DataFrame…
-  35  => 144×7 DataFrame…
-  110 => 144×7 DataFrame…
-  114 => 192×7 DataFrame…
-  60  => 360×7 DataFrame…
-  30  => 192×7 DataFrame…
-  32  => 264×7 DataFrame…
-  6   => 168×7 DataFrame…
-  67  => 216×7 DataFrame…
-  45  => 240×7 DataFrame…
-  117 => 288×7 DataFrame…
-  73  => 336×7 DataFrame…
+Dict{Int64, DataFrames.DataFrame} with 117 entries:
+  5   => 456×7 DataFrame…
+  56  => 456×7 DataFrame…
+  35  => 456×7 DataFrame…
+  55  => 456×7 DataFrame…
+  110 => 456×7 DataFrame…
+  114 => 456×7 DataFrame…
+  60  => 456×7 DataFrame…
+  30  => 456×7 DataFrame…
+  32  => 456×7 DataFrame…
+  6   => 456×7 DataFrame…
+  67  => 456×7 DataFrame…
+  45  => 456×7 DataFrame…
+  117 => 456×7 DataFrame…
+  73  => 456×7 DataFrame…
   ⋮   => ⋮
 
 julia> clustering_result[3]
-144×7 DataFrame
+456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
 ─────┼──────────────────────────────────────────────────────────────
-   1 │     3      35.0     -110.0      1  DM              1       1
-   2 │     3      35.0     -109.5      2  DM              1       1
-   3 │     3      35.0     -108.5      4  DM              0       1
-   4 │     3      35.5     -109.5      8  DM              1       3
-   5 │     3      35.5     -109.0      9  DM              0       1
+   1 │     3      35.0     -110.0      1  BA              0       1
+   2 │     3      35.0     -109.5      2  BA              0       1
+   3 │     3      35.0     -108.5      4  BA              0       1
+   4 │     3      35.5     -109.5      8  BA              0       3
+   5 │     3      35.5     -109.0      9  BA              0       1
   ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮        ⋮
- 140 │     3      35.5     -110.0      7  PP              1       1
- 141 │     3      35.5     -108.5     10  PP              0       1
- 142 │     3      36.0     -108.5     16  PP              0       2
- 143 │     3      36.5     -108.0     23  PP              0       2
- 144 │     3      36.5     -107.5     24  PP              0       2
-                                                    134 rows omitted
+ 452 │     3      35.5     -110.0      7  SH              0       1
+ 453 │     3      35.5     -108.5     10  SH              0       1
+ 454 │     3      36.0     -108.5     16  SH              0       2
+ 455 │     3      36.5     -108.0     23  SH              0       2
+ 456 │     3      36.5     -107.5     24  SH              0       2
+                                                    446 rows omitted
 
-
-julia> plot_clusters(clustering_result[3].Latitude, clustering_result[3].Longitude, clustering_result[3].Group; output_file="/Users/yc2864/Documents/research/MetaCommunityMetrics.jl/docs/src/assets/clusters.svg")
+julia> plot_clusters(clustering_result[3].Latitude, clustering_result[3].Longitude, clustering_result[3].Group; output_file="clusters.svg")
 
 ```
 """
@@ -570,20 +391,20 @@ Returns
   - `Group2`: The second group in the pair.
   - `DNCI`: The calculated DNCI value.
   - `CI_DNCI`: The confidence interval for the DNCI value.
-  - `S_DNCI`: The variance of the DNCI value.
-  - `Status`: A string indicating whether how the DNCI is calculated. It is mainly used to flag edge cases.
-    - `normal` indicates that the DNCI is calculated as normal.
-    - `empty_community` indicates no species existed in any sites in a given group pair, `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
-    - `only_one_species_exists` indicates that only one species existed in a given group pair, which is not possible to calculate relative species contribution to overall dissimilarity. `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
-    - `quasi_swap_permutation_not_possible` indicates that the quasi-swap permutation (a matrix permutation algorithms that preserves row and column sums) is not possible due to extreme matrix constraints that prevent any rearrangement of species across sites. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
-    - `one_way_to_quasi_swap` indicates that only one arrangement is possible under quasi-swap constraints, preventing generation of a null distribution. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
-    - `inadequate_variation_quasi_swap` indicates that quasi-swap permutations generated insufficient variation (coefficient of variation <1%) for reliable statistical inference. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
+  - `S_DNCI`: The standard deviation of the DNCI value.
+  - `Status`: A string indicating how the DNCI is calculated. It is mainly used to flag edge cases as follows:
+        - `normal` indicates that the DNCI is calculated as normal.
+        - `empty_community` indicates no species existed in any sites in a given group pair, `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
+        - `only_one_species_exists` indicates that only one species existed in a given group pair, which is not possible to calculate relative species contribution to overall dissimilarity. `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
+        - `quasi_swap_permutation_not_possible` indicates that the quasi-swap permutation (a matrix permutation algorithms that preserves row and column sums) is not possible due to extreme matrix constraints that prevent any rearrangement of species across sites. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
+        - `one_way_to_quasi_swap` indicates that only one arrangement is possible under quasi-swap constraints, preventing generation of a null distribution. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
+        - `inadequate_variation_quasi_swap` indicates that quasi-swap permutations generated insufficient variation (coefficient of variation <1%) for reliable statistical inference. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
 Details
 - The function calculates the DNCI for each pair of groups in the input data.
 - When the DNCI value is significantly below zero, dispersal processes are likely the dominant drivers of community composition. 
 - In contrast, a DNCI value significantly above zero suggests that niche processes play a primary role in shaping community composition. 
 - If the DNCI value is not significantly different from zero, it indicates that dispersal and niche processes contribute equally to spatial variations in community composition at a given time point.
-- Different from the original implementation, empty sites are allowed. However, species that is absence or presnece at all sites need to be removed before clustering, as they do not contribute to composition differences across sites.
+- Different from the original implementation, empty sites and singletons (species that only occupy one site at a given time) are allowed.
 - This function is a adaptation of the function `DNCI_multigroup()` from the R package `DNCImper`, licensed under GPL-3.
 - Original package and documentation available at: https://github.com/Corentin-Gibert-Paleontology/DNCImper
 
@@ -610,178 +431,89 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
                                                                                           
-julia> total_presence_df = @pipe df|>
-                        groupby(_,[:Species,:Sampling_date_order])|>
-                        combine(_,:Presence=>sum=>:Total_Presence) |>
-                        filter(row -> row[:Total_Presence] > 0, _) |>
-                        select(_, [:Species, :Sampling_date_order])
-1038×2 DataFrame
-  Row │ Species  Sampling_date_order 
-      │ String3  Int64               
-──────┼──────────────────────────────
-    1 │ BA                        33
-    2 │ BA                        41
-    3 │ BA                        43
-    4 │ BA                        44
-    5 │ BA                        46
-  ⋮   │    ⋮              ⋮
- 1034 │ SH                        83
- 1035 │ SH                        93
- 1036 │ SH                       108
- 1037 │ SH                       112
- 1038 │ SH                       117
-                    1028 rows omitted
-
-julia> non_empty_site_df = @pipe df|>
-                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true)|>
-                    groupby(_, [:plot]) |>
-                    combine(_, :Presence=>sum=>:Total_N) |>
-                    filter(row -> row[:Total_N] > 0, _) |>
-                    select(_, [:plot])
-24×1 DataFrame
- Row │ plot  
-     │ Int64 
-─────┼───────
-   1 │     1
-   2 │     2
-   3 │     3
-   4 │     4
-   5 │     5
-  ⋮  │   ⋮
-  20 │    20
-  21 │    21
-  22 │    22
-  23 │    23
-  24 │    24
-14 rows omitted
-
-julia> ubiquitous_species_df = @pipe df |>
-                        groupby(_, [:Species, :Sampling_date_order]) |>
-                        combine(_, :Presence => sum => :Total_Presence) |>
-                        filter(row -> row[:Total_Presence] < length(unique(non_empty_site_df.plot)), _) |>
-                        select(_, [:Species, :Sampling_date_order])
-2204×2 DataFrame
-  Row │ Species  Sampling_date_order 
-      │ String3  Int64               
-──────┼──────────────────────────────
-    1 │ BA                         1
-    2 │ BA                         2
-    3 │ BA                         3
-    4 │ BA                         4
-    5 │ BA                         5
-  ⋮   │    ⋮              ⋮
- 2200 │ SH                       113
- 2201 │ SH                       114
- 2202 │ SH                       115
- 2203 │ SH                       116
- 2204 │ SH                       117
-                    2194 rows omitted
-
-julia> filtered_df = @pipe df|>
-                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-                    innerjoin(_,  non_empty_site_df, on = [:plot], makeunique = true) |>
-                    innerjoin(_, ubiquitous_species_df, on = [:Species, :Sampling_date_order], makeunique = true) 
-
-24456×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
-───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2013      4     13                   33      1  BA               0         0      35.0     -110.0                0.844714                -2.02803
-     2 │  2013      4     13                   33      2  BA               0         0      35.0     -109.5                0.477563                 0.272645
-     3 │  2013      4     13                   33      4  BA               0         0      35.0     -108.5                1.04654                 -0.907797
-     4 │  2013      4     13                   33      8  BA               0         0      35.5     -109.5                0.170556                -0.909651
-     5 │  2013      4     13                   33      9  BA               0         0      35.5     -109.0               -0.316261                -0.502008
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 24452 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565                -0.836345
- 24453 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729                 -0.398522
- 24454 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169                 1.03257
- 24455 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015                 0.95971
- 24456 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949                 -1.59416
-                                                                                                                                            24446 rows omitted
-julia> clustering_result = create_clusters(filtered_df.Sampling_date_order, filtered_df.Latitude, filtered_df.Longitude, filtered_df.plot, filtered_df.Species, filtered_df.Presence)
+julia> clustering_result = create_clusters(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
 Warning: Cluster count fell below 2 at time 10, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 14, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 76, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 89, which is not permissible for clustering. Groups assigned as missing.
 Warning: Cluster count fell below 2 at time 99, which is not permissible for clustering. Groups assigned as missing.
-Dict{Int64, DataFrame} with 117 entries:
-  5   => 144×7 DataFrame…
-  56  => 336×7 DataFrame…
-  55  => 360×7 DataFrame…
-  35  => 144×7 DataFrame…
-  110 => 144×7 DataFrame…
-  114 => 192×7 DataFrame…
-  60  => 360×7 DataFrame…
-  30  => 192×7 DataFrame…
-  32  => 264×7 DataFrame…
-  6   => 168×7 DataFrame…
-  67  => 216×7 DataFrame…
-  45  => 240×7 DataFrame…
-  117 => 288×7 DataFrame…
-  73  => 336×7 DataFrame…
+Dict{Int64, DataFrames.DataFrame} with 117 entries:
+  5   => 456×7 DataFrame…
+  56  => 456×7 DataFrame…
+  35  => 456×7 DataFrame…
+  55  => 456×7 DataFrame…
+  110 => 456×7 DataFrame…
+  114 => 456×7 DataFrame…
+  60  => 456×7 DataFrame…
+  30  => 456×7 DataFrame…
+  32  => 456×7 DataFrame…
+  6   => 456×7 DataFrame…
+  67  => 456×7 DataFrame…
+  45  => 456×7 DataFrame…
+  117 => 456×7 DataFrame…
+  73  => 456×7 DataFrame…
   ⋮   => ⋮
 
 julia> clustering_result[3]
-144×7 DataFrame
+456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
 ─────┼──────────────────────────────────────────────────────────────
-   1 │     3      35.0     -110.0      1  DM              1       1
-   2 │     3      35.0     -109.5      2  DM              1       1
-   3 │     3      35.0     -108.5      4  DM              0       1
-   4 │     3      35.5     -109.5      8  DM              1       3
-   5 │     3      35.5     -109.0      9  DM              0       1
+   1 │     3      35.0     -110.0      1  BA              0       1
+   2 │     3      35.0     -109.5      2  BA              0       1
+   3 │     3      35.0     -108.5      4  BA              0       1
+   4 │     3      35.5     -109.5      8  BA              0       3
+   5 │     3      35.5     -109.0      9  BA              0       1
   ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮        ⋮
- 140 │     3      35.5     -110.0      7  PP              1       1
- 141 │     3      35.5     -108.5     10  PP              0       1
- 142 │     3      36.0     -108.5     16  PP              0       2
- 143 │     3      36.5     -108.0     23  PP              0       2
- 144 │     3      36.5     -107.5     24  PP              0       2
-                                                    134 rows omitted
+ 452 │     3      35.5     -110.0      7  SH              0       1
+ 453 │     3      35.5     -108.5     10  SH              0       1
+ 454 │     3      36.0     -108.5     16  SH              0       2
+ 455 │     3      36.5     -108.0     23  SH              0       2
+ 456 │     3      36.5     -107.5     24  SH              0       2
+                                                    446 rows omitted
 
-julia> group_df = @pipe filtered_df |>
+julia> group_df = @pipe df |>
                   filter(row -> row[:Sampling_date_order] == 3, _) |>
                   select(_, [:plot, :Species, :Presence]) |>
                   innerjoin(_, clustering_result[3], on = [:plot => :Site, :Species], makeunique = true)|>
                   select(_, [:plot, :Species, :Presence, :Group]) |>
                   unstack(_, :Species, :Presence, fill=0)
-24×8 DataFrame
- Row │ plot   Group   DM     DO     OL     OT     PB     PP    
-     │ Int64  Int64?  Int64  Int64  Int64  Int64  Int64  Int64 
-─────┼─────────────────────────────────────────────────────────
-   1 │     1       1      1      0      0      0      0      0
-   2 │     2       1      1      0      0      0      1      0
-   3 │     4       1      0      0      0      0      0      1
-   4 │     8       3      1      1      0      0      0      0
-   5 │     9       1      0      0      0      0      0      0
-  ⋮  │   ⋮      ⋮       ⋮      ⋮      ⋮      ⋮      ⋮      ⋮
-  20 │     7       1      0      0      0      1      0      1
-  21 │    10       1      0      0      0      0      0      0
-  22 │    16       2      0      0      0      0      0      0
-  23 │    23       2      0      0      0      1      0      0
-  24 │    24       2      0      0      0      0      0      0
-                                                14 rows omitted
-                                                                                                                                           5 rows omitted
-
+24×21 DataFrame
+ Row │ plot   Group   BA     DM     DO     DS     NA     OL     OT     PB     PE     PF     PH     PL     PM     PP     RF     RM     RO     SF     SH    
+     │ Int64  Int64?  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64 
+─────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+   1 │     1       1      0      1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+   2 │     2       1      0      1      0      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0
+   3 │     4       1      0      0      0      0      0      0      0      0      0      0      0      0      0      1      0      0      0      0      0
+   4 │     8       3      0      1      1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+   5 │     9       1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+  ⋮  │   ⋮      ⋮       ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮
+  20 │     7       1      0      0      0      0      0      0      1      0      0      0      0      0      0      1      0      0      0      0      0
+  21 │    10       1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+  22 │    16       2      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+  23 │    23       2      0      0      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0      0
+  24 │    24       2      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+                                                                                                                                           14 rows omitted
+                                                                                                                                          
 julia> comm= @pipe group_df |>
                   select(_, Not([:plot,:Group])) |>
                   Matrix(_)
-24×6 Matrix{Int64}:
- 1  0  0  0  0  0
- 1  0  0  0  1  0
- 0  0  0  0  0  1
- 1  1  0  0  0  0
- 0  0  0  0  0  0
- 1  0  0  0  0  0
- 0  0  0  0  0  0
- ⋮              ⋮
- 0  0  0  0  1  0
- 0  0  0  0  0  0
- 0  0  0  1  0  1
- 0  0  0  0  0  0
- 0  0  0  0  0  0
- 0  0  0  1  0  0
- 0  0  0  0  0  0
+24×19 Matrix{Int64}:
+ 0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  1  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0
+ 0  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ ⋮              ⋮              ⋮              ⋮        
+ 0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  1  0  0  0  0  0  0  1  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
 
 julia> Random.seed!(1234) 
 
@@ -805,7 +537,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_co
         # Create an empty dictionary to hold the split data
         splitx = Dict()
 
-        # Assume comm is a matrix and groups is a vector indicating the group for each row in comm
+        # comm is a matrix and groups is a vector indicating the group for each row in comm
         for row in 1:size(comm, 1)  # Iterate over the rows of the matrix
             group = groups[row]  # Identify the group of the current row
             current_row = comm[row, :]   # Extract the entire row as a vector, make it a 1-row matrix
@@ -821,7 +553,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_co
             end
         end
 
-        # Safely access and concatenate matrices from two groups
+        # access and concatenate matrices from two groups
         if haskey(splitx, group_combinations[i][1]) && haskey(splitx, group_combinations[i][2])
             paired_x = vcat(splitx[group_combinations[i][1]], splitx[group_combinations[i][2]])
         else
@@ -832,7 +564,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_co
         non_zero_sum_columns = sum(paired_x, dims=1) .!= 0
         non_ubiquitous_columns = sum(paired_x, dims=1) .!= size(paired_x, 1)  # Not present everywhere
 
-        # Combine both conditions: non-zero AND not ubiquitous
+        # Combine both conditions: non-zero and not ubiquitous
         valid_columns = non_zero_sum_columns .& non_ubiquitous_columns
 
         # Convert logical index to actual column indices
@@ -864,6 +596,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_co
             fill(group_combinations[i][1], size(splitx[group_combinations[i][1]], 1)),
             fill(group_combinations[i][2], size(splitx[group_combinations[i][2]], 1)))
 
+        #Calculate DNCI for the group pair
         DNCI_result = Internal.DNCI_ses(paired_x, group_pair, Nperm; count=Nperm_count)
             
         append!(ddelta, DNCI_result, promote=true)

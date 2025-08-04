@@ -17,8 +17,7 @@ df = load_sample_data()
 
 ###Data Wrangling for running functions in this package and the equivalent function in R 
 ##Preparing the matrices for calculating beta diveristy
-df = CSV.read("data/metacomm_rodent_df.csv", DataFrame)
-
+#df = CSV.read("data/metacomm_rodent_df.csv", DataFrame)
 
 #matrix with the species abundance
 sample_matrix_abundance = @pipe df |> 
@@ -42,41 +41,25 @@ _[:, sum(_, dims=1)[1, :] .!= 0] |> # Remove columns with sum of zero
 _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
 
 #Data for the DNCI analysis
-total_presence_df=@pipe df|>
-filter(row -> row[:Sampling_date_order] == 50, _) |># filter rows where Sampling_date_order == 50
-groupby(_,[:Species,:Sampling_date_order])|>
-combine(_,:Presence=>sum=>:Total_Presence)
 
-#Remove singletons 
-total_richness_df= @pipe df|>
-filter(row -> row[:Sampling_date_order] == 50, _) |># filter rows where Sampling_date_order == 50
-leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-filter(row -> row[:Total_Presence] > 1, _)|> 
-groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-combine(_,:Presence=>sum=>:Total_Richness)
+# The groupings at t=60
+clustering_result = create_clusters(df.Sampling_date_order, 
+                                            df.Latitude, 
+                                            df.Longitude,                                      
+                                            df.plot, 
+                                            df.Species, 
+                                            df.Presence)
 
-# The groupings at t=50
-cluster_result=create_clusters(total_richness_df.Sampling_date_order, 
-total_richness_df.Latitude, 
-total_richness_df.Longitude, 
-total_richness_df.plot,
-total_richness_df.Total_Richness) 
+group_df = @pipe df |>
+                filter(row -> row[:Sampling_date_order] == 60, _) |>
+                select(_, [:plot, :Species, :Presence]) |>
+                innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
+                select(_, [:plot, :Species, :Presence, :Group]) |>
+                unstack(_, :Species, :Presence, fill=0)
 
 #The community presence matrix at t=50 with singletons removed
-comm= @pipe df|>
-filter(row -> row[:Sampling_date_order] == 50, _) |>
-leftjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-filter(row -> row[:Total_Presence] > 1, _)|> 
-select(_, [:plot, :Species, :Presence]) |>
-unstack(_, :Species, :Presence, fill=0) |>
-sort(_, :plot) |>
-select(_, Not(:plot)) 
-
-#The grouping result at t=50
-group = @pipe cluster_result[50] |>
-    select(_, [:Time, :Patch, :Group]) |>
-    rename(_, :Patch => :plot) |>
-    sort(_, :plot)
+comm= @pipe group_df |>
+                  select(_, Not([:plot,:Group]))
 
 
 #Environmental Data for hypervolume calculations
@@ -95,7 +78,7 @@ R"df <- $df"
 R"sample_matrix_abundance <- $sample_matrix_abundance" 
 R"sample_matrix_presence <- $sample_matrix_presence"
 R"comm <- $comm"
-R"groups <- as.factor($group[,'Group'])"
+R"groups <- $group_df[,'Group']"
 R"sp1_data <- $sp1_data"
 R"sp2_data <- $sp2_data"
 
@@ -196,9 +179,10 @@ for (i in 1:n_reps) {
   result <- DNCImper:::DNCI_multigroup(comm, 
                                        groups, Nperm = 1000, 
                                        symmetrize = FALSE, 
-                                       plotSIMPER = FALSE)
+                                       plotSIMPER = FALSE,
+                                       parallelComputing = TRUE)
   # Save the DNCI values for all group pairs
-  dnci_values_df<-rbind(dnci_values_df, result[,2:4] )
+  dnci_values_df<-rbind(dnci_values_df, result[,2:6] )
 }
 """
 
@@ -311,7 +295,7 @@ temporal_beta_div_3_r = rcopy(temporal_beta_div_3_r)
 dnci_values_r = R"dnci_values_df"
 dnci_values_r = rcopy(dnci_values_r)
 save_object("validation/validation_output/dnci_values_r.jld2", dnci_values_r)
-load_object("validation/validation_output/dnci_values_r.jld2")
+dnci_values_r = load_object("validation/validation_output/dnci_values_r.jld2")
 
 # Occupied Patches Proportion
 prop_patches_result_r = R"prop_patches_result"
@@ -345,11 +329,11 @@ temporal_beta_div_3_julia = temporal_beta_div(df.Presence, df.Sampling_date_orde
 ##DNCI
 comm_mat=Matrix(comm)
 n_rep=100
-dnci_values_julia=DataFrame( group1= Int[], group2=Int[], DNCI=Float64[])
+dnci_values_julia=DataFrame()
 Random.seed!(123) 
 for i in 1:n_rep
-    result = DNCI_multigroup(comm_mat, group.Group, 1000; count = false)
-    append!(dnci_values_julia, result[:,1:3])
+    result = DNCI_multigroup(comm_mat, group_df.Group, 1000; Nperm_count = false)
+    append!(dnci_values_julia, result)
 end
 
 save_object("validation/validation_output/dnci_values_julia.jld2", dnci_values_julia)
@@ -387,14 +371,17 @@ beta_diversity_summary_df = DataFrame(
 dnci_values_r.programming_language .= "R"
 dnci_values_julia.programming_language .= "Julia"
 
-DNCI_combined_df = vcat(dnci_values_r, dnci_values_julia)
+DNCI_combined_df = vcat(dnci_values_r, dnci_values_julia[:,(vcat(1:5, 7))])
 
 dnci_values_r_1_2 = @pipe dnci_values_r |>
-    filter(row -> row[:group1] == "1" && row[:group2] == "2", _)
+    filter(row -> row[:group1] == 1 && row[:group2] == 2, _) |> 
+    filter(row -> !isnan(row[:DNCI]) && !isinf(row[:DNCI]), _) #remove all NaN and Inf values
 dnci_values_r_1_3 = @pipe dnci_values_r |>
-    filter(row -> row[:group1] == "1" && row[:group2] == "3", _)
+    filter(row -> row[:group1] == 1 && row[:group2] == 3, _) |> 
+    filter(row -> !isnan(row[:DNCI]) && !isinf(row[:DNCI]), _) #remove all NaN and Inf values
 dnci_values_r_2_3 = @pipe dnci_values_r |>
-    filter(row -> row[:group1] == "2" && row[:group2] == "3", _)
+    filter(row -> row[:group1] == 2 && row[:group2] == 3, _) |> 
+    filter(row -> !isnan(row[:DNCI]) && !isinf(row[:DNCI]), _) #remove all NaN and Inf values
 
 dnci_values_julia_1_2 = @pipe dnci_values_julia |>
     filter(row -> row[:group1] == 1 && row[:group2] == 2, _)

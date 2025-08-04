@@ -49,19 +49,29 @@ julia> prop_patches(df.Presence, df.Species, df.plot)
 """
 function prop_patches(presence::AbstractVector, species::AbstractVector, site::AbstractVector)
 
+    # Input validation
+    if !(length(presence) == length(species) == length(site))
+        throw(ArgumentError("All input vectors must have the same length"))
+    end
+
     df = DataFrames.DataFrame(
         Presence=presence,
         Species=species,
         Patch=site,
        )
 
+    total_patches = length(unique(df.Patch))
+
     prop_patches_df = @pipe df |>
        groupby(_, [:Patch, :Species]) |> 
        combine(_, :Presence => (x -> sum(x) > 0 ? 1 : 0) => :Occupied) |> 
        groupby(_, :Species) |> 
        combine(_, :Occupied => sum => :Total_patches_occupied) |> 
-       transform(_, :Total_patches_occupied => (x -> x ./ length(unique(df.Patch))) => :prop_patches) |>
+       transform(_, :Total_patches_occupied => (x -> x ./ total_patches) => :prop_patches) |>
        combine(_, :prop_patches => mean => :mean_prop_patches,
                    :prop_patches => minimum => :min_prop_patches,
                    :prop_patches => maximum => :max_prop_patches)
+    
+    return prop_patches_df
+
 end

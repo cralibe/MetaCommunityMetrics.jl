@@ -25,7 +25,7 @@ Example
 ```@jildoctest
 julia> using MetaCommunityMetrics, Pipe
 
-julia> df = @pipe load_sample_data()
+julia> df = load_sample_data()
 53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
@@ -64,6 +64,7 @@ function CV_meta(abundance::AbstractVector, time::AbstractVector, site::Abstract
     species_ids = unique(df.Species)
     patches = unique(df.Patch)
     times = unique(df.Time)
+
     #Initialize matrices
     num_species = length(unique(df.Species))
     num_patches = length(unique(df.Patch))
@@ -96,6 +97,7 @@ function CV_meta(abundance::AbstractVector, time::AbstractVector, site::Abstract
     # total abundance of all species in the same patch at the same time point
         # Initialize a vector to store the total abundance of all species in the same patch at the same time point
         ts_patch = zeros(Float64,num_times,num_patches)
+        
         # Calculate the total abundance
         for t in 1:num_times
             for k in 1:num_patches
@@ -106,6 +108,7 @@ function CV_meta(abundance::AbstractVector, time::AbstractVector, site::Abstract
     # total abundance of species i at the same time point 
         # Initialize a vector to store the total abundance of total abundance of species i at the same time point 
         ts_species = zeros(Float64,num_species,num_times)
+
         # Calculate the total abundance
         for i in 1:num_species
             for t in 1:num_times
@@ -120,6 +123,7 @@ function CV_meta(abundance::AbstractVector, time::AbstractVector, site::Abstract
     # sd of species i across time for every patch
         #Initialize a vector to store the sd of total abundance of species i at the same time point  
         sd_species_patch_ik = zeros(Float64,num_species,num_patches)
+        
         #Calculate the sd
         for i in 1:num_species
             for k in 1:num_patches

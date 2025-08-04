@@ -674,10 +674,6 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
         end
     end
 
-    meanCarreOrangeLog = mean(VectorEcartCarreOrangeLog)
-    meanCarreGreenLog = mean(VectorEcartCarreGreenLog)
-    meanCarreBlueLog = mean(VectorEcartCarreBlueLog)
-
     DataMeanCarreLog = DataFrames.DataFrame(
                         Orange = VectorEcartCarreOrangeLog,
                         Blue = VectorEcartCarreBlueLog,
@@ -715,19 +711,13 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fal
     results = PerSIMPER(comm, groups, Nperm; count)
     E = results["EcartCarreLog"]
 
-    #println("Blue has NaN: $(any(isnan.(E.Blue)))")
-    #println("Orange has NaN: $(any(isnan.(E.Orange)))")  
-    #println("Green has NaN: $(any(isnan.(E.Green)))")
-    #println("Mean Blue: $(mean(E.Blue))")
-    #println("std Blue: $(std(E.Blue, corrected=true))")
-
     # Precompute statistics
     mean_blue = mean(E.Blue)
     std_blue = std(E.Blue, corrected=true)
     cv = abs(std_blue / mean_blue)
 
     # Handle cases when both dispersal and niche processes are so constraining that there's only one or very limited possible arrangement of species across sites when performing quasi-swap
-    if mean_blue ≈ -20 && std_blue == 0  # Case 1
+    if mean_blue == -20 && std_blue == 0  # Case 1
         DNCI = NaN
         S_DNCI = NaN
         CI_DNCI = NaN

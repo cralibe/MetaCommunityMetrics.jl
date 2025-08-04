@@ -38,18 +38,28 @@ using .MetaCommunityMetrics.Internal
     #Preparing the data for the DNCI analysis
     #Remove singletons and empty sites
     total_presence_df=@pipe df|>
-    groupby(_,[:Species,:Sampling_date_order])|>
-    combine(_,:Presence=>sum=>:Total_Presence) |>
-    filter(row -> row[:Total_Presence] > 1, _)
+                    groupby(_,[:Species,:Sampling_date_order])|>
+                    combine(_,:Presence=>sum=>:Total_Presence) |>
+                    filter(row -> row[:Total_Presence] > 0, _) |>
+                    select(_, [:Species, :Sampling_date_order])
 
     non_empty_site_df = @pipe df|>
-                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true)|>
-                    groupby(_, [:Sampling_date_order, :plot]) |>
+                    innerjoin(_,  total_presence_df, on = [:Species], makeunique = true)|>
+                    groupby(_, [:plot]) |>
                     combine(_, :Presence=>sum=>:Total_N) |>
-                    filter(row -> row[:Total_N] > 0, _)
+                    filter(row -> row[:Total_N] > 0, _) |>
+                    select(_, [:plot])
+
+    ubiquitous_species_df = @pipe df |>
+                    groupby(_, [:Species, :Sampling_date_order]) |>
+                    combine(_, :Presence => sum => :Total_Presence) |>
+                    filter(row -> row[:Total_Presence] < length(unique(non_empty_site_df.plot)), _) |>
+                    select(_, [:Species, :Sampling_date_order])
 
     filtered_df = @pipe df|>
-                innerjoin(_,  non_empty_site_df, on = [:plot, :Sampling_date_order], makeunique = true)
+                    innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
+                    innerjoin(_,  non_empty_site_df, on = [:plot], makeunique = true) |>
+                    innerjoin(_, ubiquitous_species_df, on = [:Species, :Sampling_date_order], makeunique = true) 
     
 
     # Test the beta_diversity function
@@ -94,25 +104,25 @@ using .MetaCommunityMetrics.Internal
                                             filtered_df.Species, 
                                             filtered_df.Presence)
 
-    @test size(clustering_result[3]) == (285, 7)
+    @test size(clustering_result[3]) == (144, 7)
     @test names(clustering_result[3]) == ["Time", "Latitude", "Longitude", "Site", "Species", "Presence", "Group"]
     
     # Test specific rows
-    @test clustering_result[3][1, :] == (Time=3, Latitude=35.0, Longitude=-110.0, Site=1, Species="BA", Presence=0, Group=1)
-    @test clustering_result[3][25, :] == (Time=3, Latitude=36.0, Longitude=-109.0, Site=15, Species="DM", Presence=1, Group=3)
-    @test clustering_result[3][54, :] == (Time=3, Latitude=36.0, Longitude=-110.0, Site=13, Species="DS", Presence=0, Group=1)
-    @test clustering_result[3][72, :] == (Time=3, Latitude=36.5, Longitude=-109.5, Site=20, Species="NA", Presence=0, Group=3)
+    @test clustering_result[3][1, :] == (Time=3, Latitude=35.0, Longitude=-110.0, Site=1, Species="DM", Presence=1, Group=1)
+    @test clustering_result[3][25, :] == (Time=3, Latitude=35.0, Longitude=-110.0, Site=1, Species="DO", Presence=0, Group=1)
+    @test clustering_result[3][54, :] == (Time=3, Latitude=35.5, Longitude=-108.0, Site=11, Species="OL", Presence=0, Group=2)
+    @test clustering_result[3][72, :] == (Time=3, Latitude=36.5, Longitude=-107.5, Site=24, Species="OL", Presence=0, Group=2)
     
     # Test column properties
     @test all(clustering_result[3].Time .== 3)
-    @test length(unique(clustering_result[3].Species)) == 19
+    @test length(unique(clustering_result[3].Species)) == 6
     @test Set(unique(clustering_result[3].Group)) == Set([1, 2, 3])
-    @test length(unique(clustering_result[3].Site)) == 15
+    @test length(unique(clustering_result[3].Site)) == 24
     
     # Test species counts
-    @test count(==("BA"), clustering_result[3].Species) == 15
-    @test count(==("DM"), clustering_result[3].Species) == 15
-    @test count(==("SH"), clustering_result[3].Species) == 15
+    @test count(==("BA"), clustering_result[3].Species) == 0
+    @test count(==("DM"), clustering_result[3].Species) == 24
+    @test count(==("SH"), clustering_result[3].Species) == 0
     
     # Test presence patterns
     @test sum(clustering_result[3][clustering_result[3].Species .== "BA", :Presence]) == 0

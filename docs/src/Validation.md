@@ -22,7 +22,7 @@ We validate all the calcuations in `MetaCommunityMetrics` that have equvilant fu
 | Temporal Beta Diversity (Presence, quant=false)  | 0.0000  | 0.0000 | 0.0000  |
 
 ### Dispersal-niche continuum index
-*A plot showing the distribution of the DNCI values of diffent group pairs from different programming language, each pair are runned for 100 times.
+*A plot showing the distribution of the DNCI values of diffent group pairs from R and Julia, each pair are ran for 100 times, with 1000 permutations each time.
 ![Julia vs. R](assets/dnci_plot.png)
 
 ### Occupied Patches Proportion

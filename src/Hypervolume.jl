@@ -367,7 +367,7 @@ julia> data = @pipe df |>
  53352 │               0.48949               -1.59416
                                         53342 rows omitted
 
-julia> result = average_MVNH_det(data, Vector{Int64}(df.Presence), df.Species; var_names=["Temperature", "Precipitation"])
+julia> result = average_MVNH_det(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
 1.2103765096417536
 ```                                                                                                                     
 """
@@ -476,7 +476,7 @@ julia> data = @pipe df |>
  53352 │               0.48949               -1.59416
                                         53342 rows omitted
 
-julia> result = average_MVNH_dissimilarity(data, Vector{Int64}(df.Presence), df.Species; var_names=["Temperature", "Precipitation"])     
+julia> result = average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])     
 0.03059942936454443
 ```
 """

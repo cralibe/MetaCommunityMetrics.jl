@@ -3,23 +3,21 @@
 """
     beta_diversity(mat::Matrix; quant::Bool) -> DataFrame
 
-Calculate beta diversity for a given biodiversity data. This function supports both binary (presence/absence) and quantitative data.
+Calculate beta diversity for a given biodiversity data. This function supports both binary (presence/absence) and quantitative (abundance) data.
 
 Arguments
 - `mat::Matrix`: A matrix where each row represents a site and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.
-- `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
+- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as quantitative abundance data and applies Ruzicka-based indices.
 
 Returns
 - `DataFrame`: A DataFrame with the following columns:
     - `BDtotal`: Total beta diversity, which captures the overall dissimilarity between local communities.
-    - `Repl`: Replacement component of diversity, which reflects how many species are different in one site compared to another, ignoring the species that are mere additions or subtractions.
-    - `RichDif`: Richness difference component of diversity, which captures the disparity in biodiversity in terms of the count of species present, without taking into account the specific identities or distributions of those species.
+    - `Repl`: Replacement component of diversity, which reflects species turnover between sites: how much communities differ due to having different species compositions rather than different species counts.
+    - `RichDif`: Richness difference component of diversity, which captures differences in the number of species between communities.
 
 Details
-- Empty sites have to be removed before calculation.
-- Species that were not recorded at the given time step have to be removed before calculation.
-- For binary data, the function calculates Podani family, Jaccard-based indices. 
-- For quantitative data, the function calculates Podani family, Ruzicka-based indices.
+- Empty sites (empty rows in the matrix) have to be removed before calculation.
+- Species that did not occupy any sites in the data (empty columns in the matrix) have to be removed before calculation.
 - This function is a translation/adaptation of the beta.dov.comp function from the R package `adespatial`,licensed under GPL-3.
 - Original package and documentation available at: https://cran.r-project.org/web/packages/adespatial/index.html
 
@@ -216,7 +214,7 @@ Arguments
 - `time::AbstractVector`: Vector representing sampling dates.
 - `site::AbstractVector`: Vector representing site names or IDs.
 - `species::AbstractVector`: Vector representing species names or IDs.
-- `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
+- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as quantitative abundance data and applies Ruzicka-based indices.
 
 Returns
 - `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in space. Columns are `spatial_BDtotal`, `spatial_Repl`, and `spatial_RichDif`.
@@ -310,7 +308,7 @@ Arguments
 - `time::AbstractVector`: Vector representing sampling dates.
 - `site::AbstractVector`: Vector representing site names or IDs.
 - `species::AbstractVector`: Vector representing species names or IDs.
-- `quant::Bool`: A boolean flag that specifies whether the data is quantitative. By default, it is set to `false`, which means the data will be treated as binary. In this case, any quantitative data will be converted to binary, and beta diversity is calculated using the Podani family’s Jaccard-based indices. If `true`, the data is treated as quantitative, and beta diversity is calculated using the Podani family’s Ruzicka-based indices. For binary data, `quant` must remain set to `false`.
+- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as quantitative abundance data and applies Ruzicka-based indices.
 
 Returns
 - `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in time. Columns are `temporal_BDtotal`, `temporal_Repl`, and `temporal_RichDif`.
