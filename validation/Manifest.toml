@@ -323,9 +323,9 @@ version = "0.9.4"
 
 [[deps.Documenter]]
 deps = ["ANSIColoredPrinters", "AbstractTrees", "Base64", "CodecZlib", "Dates", "DocStringExtensions", "Downloads", "Git", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "MarkdownAST", "Pkg", "PrecompileTools", "REPL", "RegistryInstances", "SHA", "TOML", "Test", "Unicode"]
-git-tree-sha1 = "6f8730fd1bdf974009ef296bd81afb2728854fc0"
+git-tree-sha1 = "47ffb8f27ffc01e2e57e7ae5365ae5ceef87b03d"
 uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
-version = "1.11.3"
+version = "1.14.1"
 
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
@@ -506,9 +506,9 @@ version = "5.9.0"
 
 [[deps.Git_jll]]
 deps = ["Artifacts", "Expat_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Libiconv_jll", "OpenSSL_jll", "PCRE2_jll", "Zlib_jll"]
-git-tree-sha1 = "2f6d6f7e6d6de361865d4394b802c02fc944fc7c"
+git-tree-sha1 = "cb151153e40ad40a6dbf984fcd767e1d266fcc9c"
 uuid = "f8c6e375-362e-5223-8a59-34ff63f689eb"
-version = "2.49.0+0"
+version = "2.50.1+0"
 
 [[deps.Glib_jll]]
 deps = ["Artifacts", "Gettext_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
@@ -856,9 +856,7 @@ version = "0.3.2"
 
 [[deps.MetaCommunityMetrics]]
 deps = ["CSV", "Clustering", "Combinatorics", "DataFrames", "DataStructures", "Distances", "Distributions", "Documenter", "GaussianRandomFields", "JLD2", "LinearAlgebra", "Pipe", "Pkg", "ProgressMeter", "RCall", "Random", "SortingAlgorithms", "Statistics", "StatsBase"]
-git-tree-sha1 = "21f316bb41fc1977b11f914fcedd412858d249a1"
-repo-rev = "main"
-repo-url = "https://github.com/cralibe/MetaCommunityMetrics.jl"
+path = "/Users/yc2864/Documents/research/MetaCommunityMetrics.jl"
 uuid = "3ccb93f7-bd98-4150-a201-b30c241572df"
 version = "0.5.0"
 

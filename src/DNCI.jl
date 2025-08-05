@@ -68,24 +68,6 @@ Dict{Int64, DataFrames.DataFrame} with 117 entries:
   73  => 456×7 DataFrame…
   ⋮   => ⋮
 
-julia> clustering_result[3]
-456×7 DataFrame
- Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
-     │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
-─────┼──────────────────────────────────────────────────────────────
-   1 │     3      35.0     -110.0      1  BA              0       1
-   2 │     3      35.0     -109.5      2  BA              0       1
-   3 │     3      35.0     -108.5      4  BA              0       1
-   4 │     3      35.5     -109.5      8  BA              0       3
-   5 │     3      35.5     -109.0      9  BA              0       1
-  ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮        ⋮
- 452 │     3      35.5     -110.0      7  SH              0       1
- 453 │     3      35.5     -108.5     10  SH              0       1
- 454 │     3      36.0     -108.5     16  SH              0       2
- 455 │     3      36.5     -108.0     23  SH              0       2
- 456 │     3      36.5     -107.5     24  SH              0       2
-                                                    446 rows omitted
-
 julia> clustering_result[10]      
 456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group   
@@ -102,7 +84,25 @@ julia> clustering_result[10]
  454 │    10      36.0     -108.5     16  SH              0  missing 
  455 │    10      36.5     -108.0     23  SH              0  missing 
  456 │    10      36.5     -107.5     24  SH              0  missing 
-                                                     446 rows omitted                                            
+                                                     446 rows omitted      
+ 
+julia> clustering_result[60]                                                      
+456×7 DataFrame
+ Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
+     │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
+─────┼──────────────────────────────────────────────────────────────
+   1 │    60      35.0     -108.5      4  BA              0       1
+   2 │    60      35.0     -108.0      5  BA              1       1
+   3 │    60      35.0     -107.5      6  BA              0       1
+   4 │    60      35.5     -110.0      7  BA              0       2
+   5 │    60      35.5     -108.0     11  BA              0       1
+  ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮        ⋮
+ 452 │    60      35.5     -109.0      9  SH              0       2
+ 453 │    60      35.5     -108.5     10  SH              0       1
+ 454 │    60      35.5     -107.5     12  SH              1       1
+ 455 │    60      36.0     -108.5     16  SH              0       4
+ 456 │    60      36.5     -108.0     23  SH              0       4
+                                                    446 rows omitted
 ```
 """
 function create_clusters(time::AbstractVector, latitude::Vector{Float64}, longitude::Vector{Float64}, site::AbstractVector, species::AbstractVector, presence::AbstractVector)
@@ -243,25 +243,25 @@ Dict{Int64, DataFrames.DataFrame} with 117 entries:
   73  => 456×7 DataFrame…
   ⋮   => ⋮
 
-julia> clustering_result[3]
+julia> clustering_result[60]                                                      
 456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
 ─────┼──────────────────────────────────────────────────────────────
-   1 │     3      35.0     -110.0      1  BA              0       1
-   2 │     3      35.0     -109.5      2  BA              0       1
-   3 │     3      35.0     -108.5      4  BA              0       1
-   4 │     3      35.5     -109.5      8  BA              0       3
-   5 │     3      35.5     -109.0      9  BA              0       1
+   1 │    60      35.0     -108.5      4  BA              0       1
+   2 │    60      35.0     -108.0      5  BA              1       1
+   3 │    60      35.0     -107.5      6  BA              0       1
+   4 │    60      35.5     -110.0      7  BA              0       2
+   5 │    60      35.5     -108.0     11  BA              0       1
   ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮        ⋮
- 452 │     3      35.5     -110.0      7  SH              0       1
- 453 │     3      35.5     -108.5     10  SH              0       1
- 454 │     3      36.0     -108.5     16  SH              0       2
- 455 │     3      36.5     -108.0     23  SH              0       2
- 456 │     3      36.5     -107.5     24  SH              0       2
+ 452 │    60      35.5     -109.0      9  SH              0       2
+ 453 │    60      35.5     -108.5     10  SH              0       1
+ 454 │    60      35.5     -107.5     12  SH              1       1
+ 455 │    60      36.0     -108.5     16  SH              0       4
+ 456 │    60      36.5     -108.0     23  SH              0       4
                                                     446 rows omitted
 
-julia> plot_clusters(clustering_result[3].Latitude, clustering_result[3].Longitude, clustering_result[3].Group; output_file="clusters.svg")
+julia> plot_clusters(clustering_result[60].Latitude, clustering_result[60].Longitude, clustering_result[60].Group; output_file="clusters.svg")
 
 ```
 """
@@ -454,77 +454,80 @@ Dict{Int64, DataFrames.DataFrame} with 117 entries:
   73  => 456×7 DataFrame…
   ⋮   => ⋮
 
-julia> clustering_result[3]
+julia> clustering_result[60]
 456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
 ─────┼──────────────────────────────────────────────────────────────
-   1 │     3      35.0     -110.0      1  BA              0       1
-   2 │     3      35.0     -109.5      2  BA              0       1
-   3 │     3      35.0     -108.5      4  BA              0       1
-   4 │     3      35.5     -109.5      8  BA              0       3
-   5 │     3      35.5     -109.0      9  BA              0       1
+   1 │    60      35.0     -108.5      4  BA              0       1
+   2 │    60      35.0     -108.0      5  BA              1       1
+   3 │    60      35.0     -107.5      6  BA              0       1
+   4 │    60      35.5     -110.0      7  BA              0       2
+   5 │    60      35.5     -108.0     11  BA              0       1
   ⋮  │   ⋮       ⋮          ⋮        ⋮       ⋮        ⋮        ⋮
- 452 │     3      35.5     -110.0      7  SH              0       1
- 453 │     3      35.5     -108.5     10  SH              0       1
- 454 │     3      36.0     -108.5     16  SH              0       2
- 455 │     3      36.5     -108.0     23  SH              0       2
- 456 │     3      36.5     -107.5     24  SH              0       2
+ 452 │    60      35.5     -109.0      9  SH              0       2
+ 453 │    60      35.5     -108.5     10  SH              0       1
+ 454 │    60      35.5     -107.5     12  SH              1       1
+ 455 │    60      36.0     -108.5     16  SH              0       4
+ 456 │    60      36.5     -108.0     23  SH              0       4
                                                     446 rows omitted
 
 julia> group_df = @pipe df |>
-                  filter(row -> row[:Sampling_date_order] == 3, _) |>
-                  select(_, [:plot, :Species, :Presence]) |>
-                  innerjoin(_, clustering_result[3], on = [:plot => :Site, :Species], makeunique = true)|>
-                  select(_, [:plot, :Species, :Presence, :Group]) |>
-                  unstack(_, :Species, :Presence, fill=0)
+                filter(row -> row[:Sampling_date_order] == 60, _) |>
+                select(_, [:plot, :Species, :Presence]) |>
+                innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
+                select(_, [:plot, :Species, :Presence, :Group]) |>
+                unstack(_, :Species, :Presence, fill=0)
 24×21 DataFrame
  Row │ plot   Group   BA     DM     DO     DS     NA     OL     OT     PB     PE     PF     PH     PL     PM     PP     RF     RM     RO     SF     SH    
      │ Int64  Int64?  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64  Int64 
 ─────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-   1 │     1       1      0      1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-   2 │     2       1      0      1      0      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0
-   3 │     4       1      0      0      0      0      0      0      0      0      0      0      0      0      0      1      0      0      0      0      0
-   4 │     8       3      0      1      1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-   5 │     9       1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+   1 │     4       1      0      1      1      0      0      1      1      0      0      0      0      0      0      0      0      1      0      1      0
+   2 │     5       1      1      1      1      0      0      0      1      0      1      0      0      0      0      1      0      1      0      0      0
+   3 │     6       1      0      1      1      0      0      0      0      0      1      0      0      0      0      1      0      1      0      0      0
+   4 │     7       2      0      1      1      0      0      1      1      0      0      0      0      0      0      1      0      0      0      0      1
+   5 │    11       1      0      1      1      0      0      0      1      0      0      0      0      0      0      1      0      0      0      0      0
   ⋮  │   ⋮      ⋮       ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮      ⋮
-  20 │     7       1      0      0      0      0      0      0      1      0      0      0      0      0      0      1      0      0      0      0      0
-  21 │    10       1      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-  22 │    16       2      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
-  23 │    23       2      0      0      0      0      0      0      1      0      0      0      0      0      0      0      0      0      0      0      0
-  24 │    24       2      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0      0
+  20 │     9       2      0      1      0      0      0      1      1      0      1      0      0      0      0      0      0      0      0      0      0
+  21 │    10       1      0      0      0      0      0      0      0      0      1      0      0      0      0      1      0      0      0      0      0
+  22 │    12       1      0      0      0      0      1      0      1      0      1      0      0      0      1      0      0      1      0      0      1
+  23 │    16       4      0      0      1      0      0      0      1      0      1      0      0      0      0      0      0      1      0      0      0
+  24 │    23       4      0      1      0      0      0      0      0      1      0      0      0      0      1      0      0      0      0      0      0
                                                                                                                                            14 rows omitted
                                                                                                                                           
 julia> comm= @pipe group_df |>
                   select(_, Not([:plot,:Group])) |>
                   Matrix(_)
 24×19 Matrix{Int64}:
- 0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
- 0  1  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  0  0  0  1  0  0  0  0  0
- 0  1  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
- 0  1  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  1  1  0  0  1  1  0  0  0  0  0  0  0  0  1  0  1  0
+ 1  1  1  0  0  0  1  0  1  0  0  0  0  1  0  1  0  0  0
+ 0  1  1  0  0  0  0  0  1  0  0  0  0  1  0  1  0  0  0
+ 0  1  1  0  0  1  1  0  0  0  0  0  0  1  0  0  0  0  1
+ 0  1  1  0  0  0  1  0  0  0  0  0  0  1  0  0  0  0  0
+ 0  1  1  0  0  0  0  1  1  0  0  0  0  0  0  1  0  0  0
+ 1  1  1  0  0  0  0  0  0  0  0  0  0  1  0  1  0  0  0
  ⋮              ⋮              ⋮              ⋮        
- 0  0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  1  0  0  0  0  0  0  1  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  1  0  0  0  0  0  0  0  0  0  0  0  0
- 0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  1  0  1  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  1  0  1  0  0  1  1  0  0  0  0  0  0
+ 0  1  0  0  0  1  1  0  1  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  1  0  0  0  0  1  0  0  0  0  0
+ 0  0  0  0  1  0  1  0  1  0  0  0  1  0  0  1  0  0  1
+ 0  0  1  0  0  0  1  0  1  0  0  0  0  0  0  1  0  0  0
+ 0  1  0  0  0  0  0  1  0  0  0  0  1  0  0  0  0  0  0
 
 julia> Random.seed!(1234) 
 
 julia> DNCI_result = DNCI_multigroup(comm, group_df.Group, 1000; Nperm_count = false)
-3×6 DataFrame
- Row │ group1  group2  DNCI      CI_DNCI  S_DNCI   status 
-     │ Int64   Int64   Float64   Float64  Float64  String 
-─────┼────────────────────────────────────────────────────
-   1 │      1       2  -1.84521  3.22534  1.61267  normal
-   2 │      1       3  -3.47866  2.33283  1.16642  normal
-   3 │      2       3  -2.85858  2.28596  1.14298  normal
+6×6 DataFrame
+ Row │ group1  group2  DNCI      CI_DNCI  S_DNCI    status 
+     │ Int64   Int64   Float64   Float64  Float64   String 
+─────┼─────────────────────────────────────────────────────
+   1 │      1       2  -3.41127  2.17348  1.08674   normal
+   2 │      1       3  -2.44866  2.05951  1.02976   normal
+   3 │      1       4  -2.3671   2.45697  1.22848   normal
+   4 │      2       3  -2.65022  2.28931  1.14466   normal
+   5 │      2       4  -3.0168   2.43496  1.21748   normal
+   6 │      3       4  -1.83521  1.9589   0.979449  normal
 ```
 """
 function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_count::Bool=true) #for presence-absence data only
