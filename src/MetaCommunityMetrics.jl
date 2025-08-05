@@ -13,7 +13,6 @@ using LinearAlgebra
 using GaussianRandomFields
 using StatsBase
 using DataStructures
-using ProgressMeter
 using Combinatorics
 using Random
 

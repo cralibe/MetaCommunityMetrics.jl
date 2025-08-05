@@ -143,7 +143,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 ### Large Dataset
 ```@jildoctest
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
      1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
@@ -162,7 +162,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 ### Medium Dataset
 ```@jildoctest
 26676×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
      1 │  2015      7     18                   56     12  PM               0         0      35.5     -107.5              -1.30965                  0.967859
@@ -179,7 +179,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 ### Small Dataset
 ```@jildoctest
 5335×12 DataFrame
-  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+  Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ──────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
     1 │  2015      7     18                   56     12  PM               0         0      35.5     -107.5               -1.30965                 0.967859

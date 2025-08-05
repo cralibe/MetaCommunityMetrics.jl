@@ -18,7 +18,7 @@ Returns
 
 Details
 - Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
-- Variables should be normalized before using this function to avoid bias from different scales
+- Variables should be standardized before using this function to avoid bias from different scales
 - The function computes the covariance matrix of the input data, extracts variances, and calculates the determinant
 - This function is a Julia implementation of the `MVNH_det` function from the R package `MVNH` (GPL-3)
 - Original package and documentation: https://github.com/lvmuyang/MVNH
@@ -29,7 +29,7 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics, UnicodePlots
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
      1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
@@ -48,9 +48,9 @@ julia> df = load_sample_data()
 julia> data = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 143×2 DataFrame
- Row │ normalized_temperature  normalized_precipitation 
+ Row │ standardized_temperature  standardized_precipitation 
      │ Float64                 Float64                  
 ─────┼──────────────────────────────────────────────────
    1 │            -0.37813                    0.13009
@@ -134,7 +134,7 @@ Returns
   2. Determinant ratio component: (1/2) × log(det((S₁+S₂)/2) / sqrt(det(S₁) × det(S₂)))
 - Each component is further decomposed into individual variable contributions and correlation effects
 - Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
-- Variables should be normalized before using this function to avoid bias from different scales
+- Variables should be standardized_ before using this function to avoid bias from different scales
 - This function is a Julia implementation inspired by the `MVNH` R package (GPL-3)
 - Original package and documentation: https://github.com/lvmuyang/MVNH
 
@@ -144,7 +144,7 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
      1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
@@ -164,10 +164,10 @@ julia> df = load_sample_data()
 julia> data_1 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
 143×2 DataFrame
- Row │ normalized_temperature  normalized_precipitation 
+ Row │ standardized_temperature  standardized_precipitation 
      │ Float64                 Float64                  
 ─────┼──────────────────────────────────────────────────
    1 │            -0.37813                    0.13009
@@ -186,9 +186,9 @@ julia> data_1 = @pipe df |>
 julia> data_2 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 58×2 DataFrame
- Row │ normalized_temperature  normalized_precipitation 
+ Row │ standardized_temperature  standardized_precipitation 
      │ Float64                 Float64                  
 ─────┼──────────────────────────────────────────────────
    1 │              -0.229864                  1.84371
@@ -323,7 +323,7 @@ Details
 - The function then computes the mean of all individual species hypervolumes
 - Species with no presence data are skipped in the calculation
 - Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
-- Variables should be normalized before using this function to avoid bias from different scales
+- Variables should be standardized before using this function to avoid bias from different scales
 
 Example
 ```jildoctest
@@ -331,7 +331,7 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
      1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
@@ -348,10 +348,10 @@ julia> df = load_sample_data()
                                                                                                                                             53342 rows omitted
 
 julia> data = @pipe df |> 
-           select(_, [:normalized_temperature, :normalized_precipitation])
+           select(_, [:standardized_temperature, :standardized_precipitation])
            
 53352×2 DataFrame
-   Row │ normalized_temperature  normalized_precipitation 
+   Row │ standardized_temperature  standardized_precipitation 
        │ Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────
      1 │               0.829467              -1.4024
@@ -433,7 +433,7 @@ Details
 - Species pairs where either species has no presence data are skipped
 - Each species pair is processed only once (i.e., sp1-sp2 is calculated, but sp2-sp1 is skipped)
 - Environmental variables are assumed to follow a multivariate normal distribution
-- Variables should be normalized before using this function to avoid bias from different scales
+- Variables should be standardized before using this function to avoid bias from different scales
 
 Example
 ```jildoctest
@@ -441,7 +441,7 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
      1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
@@ -458,9 +458,9 @@ julia> df = load_sample_data()
                                                                                                                                             53342 rows omitted
 
 julia> data = @pipe df |> 
-           select(_, [:normalized_temperature, :normalized_precipitation])    
+           select(_, [:standardized_temperature, :standardized_precipitation])    
 53352×2 DataFrame
-   Row │ normalized_temperature  normalized_precipitation 
+   Row │ standardized_temperature  standardized_precipitation 
        │ Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────
      1 │               0.829467              -1.4024

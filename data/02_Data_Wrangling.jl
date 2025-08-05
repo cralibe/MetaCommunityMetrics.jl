@@ -67,7 +67,7 @@ end
 #Generating environmental data
 env_df = @pipe metacomm_df |>
 groupby(_, [:Sampling_date_order, :plot]) |>
-combine(x -> DataFrame(normalized_temperature = 0.0, normalized_precipitation = 0.0), _)
+combine(x -> DataFrame(standardized_temperature = 0.0, standardized_precipitation = 0.0), _)
 
 
 #Generate random environmental data
@@ -79,20 +79,20 @@ precip = rand(LogNormal(log(50.0) - 0.5*log(1 + (30.0/50.0)^2), sqrt(log(1 + (30
 log_precip = log.(precip)
 
 #Standardize both variables (z-score: subtract mean, divide by standard deviation)
-temp_normalized = (temp .- mean(temp)) ./ std(temp)
-precip_normalized = (log_precip .- mean(log_precip)) ./ std(log_precip)
+temp_standardized = (temp .- mean(temp)) ./ std(temp)
+precip_standardized  = (log_precip .- mean(log_precip)) ./ std(log_precip)
 
-env_df.normalized_temperature .= temp_normalized
-env_df.normalized_precipitation .= precip_normalized
+env_df.standardized_temperature .= temp_standardized
+env_df.standardized_precipitation .= precip_standardized
 
 #Checking the distribution of the environmental data
-UnicodePlots.histogram(env_df.normalized_temperature, 
+UnicodePlots.histogram(env_df.standardized_temperature, 
                          nbins = 10, 
                          title = "Temperature Histogram",  
                          width=20,  
                          height=5)
 
-UnicodePlots.histogram(env_df.normalized_precipitation,
+UnicodePlots.histogram(env_df.standardized_precipitation,
                          nbins = 10, 
                          title = "Precipitation Histogram",  
                          width=20,  

@@ -1,4 +1,4 @@
-Year,Month,Day,Sampling_date_order,plot,Species,Abundance,Presence,Latitude,Longitude,normalized_temperature,normalized_precipitation
+Year,Month,Day,Sampling_date_order,plot,Species,Abundance,Presence,Latitude,Longitude,standardized_temperature,standardized_precipitation
 2015,7,18,56,12,PM,0,0,35.5,-107.5,-1.3096531875637965,0.9678594844333492
 2016,8,6,66,13,SF,0,0,36.0,-110.0,1.4569186033776127,1.7725323906282318
 2017,2,25,71,21,SF,0,0,36.5,-109.0,-1.5008590202529808,0.993310731887276

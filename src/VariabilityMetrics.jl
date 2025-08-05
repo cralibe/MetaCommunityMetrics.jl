@@ -27,7 +27,7 @@ julia> using MetaCommunityMetrics, Pipe
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
 ───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
      1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024

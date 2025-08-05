@@ -27,24 +27,24 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String   Int64      Int64     Float64   Float64    Float64?                Float64?                 
-───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
-     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
-     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
-     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
- 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
- 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
- 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
- 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
-                                                                                                                                            53342 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                   Float64                    
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                  0.829467                -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5                 -1.12294                 -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5                 -0.409808                -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5                 -1.35913                 -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                  0.0822                   1.09485
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                 ⋮                          ⋮
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0                 -0.571565                -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5                 -2.33729                 -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                  0.547169                 1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5                 -0.815015                 0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                  0.48949                 -1.59416
+                                                                                                                                                53342 rows omitted
 
 julia> matrix_with_abundance = @pipe df |> 
-           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Presence)) |> 
            filter(row -> row[:Sampling_date_order] == 1, _) |> 
            unstack(_, :Species, :Abundance, fill=0) |>  
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -68,7 +68,7 @@ julia> matrix_with_abundance = @pipe df |>
  0  0  0  0  1
 
 julia> matrix_with_presence =  @pipe df |> 
-           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Abundance)) |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Abundance)) |> 
            filter(row -> row[:Sampling_date_order] == 1, _) |>
            unstack(_, :Species, :Presence, fill=0) |> 
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -231,21 +231,21 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
-───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
-     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
-     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
-     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
- 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
- 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
- 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
- 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
-                                                                                                                                            53342 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                   Float64                    
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                  0.829467                -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5                 -1.12294                 -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5                 -0.409808                -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5                 -1.35913                 -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                  0.0822                   1.09485
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                 ⋮                          ⋮
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0                 -0.571565                -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5                 -2.33729                 -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                  0.547169                 1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5                 -0.815015                 0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                  0.48949                 -1.59416
+                                                                                                                                                53342 rows omitted
 
 julia> result_using_abanduce_data_1 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
@@ -325,21 +325,21 @@ julia> using MetaCommunityMetrics, Pipe, DataFrames
 
 julia> df = load_sample_data()
 53352×12 DataFrame
-   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  normalized_temperature  normalized_precipitation 
-       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
-───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                0.829467              -1.4024
-     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5               -1.12294               -0.0519895
-     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5               -0.409808              -0.803663
-     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5               -1.35913               -0.646369
-     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                0.0822                 1.09485
-   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                ⋮                        ⋮
- 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0               -0.571565              -0.836345
- 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5               -2.33729               -0.398522
- 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                0.547169               1.03257
- 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5               -0.815015               0.95971
- 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
-                                                                                                                                            53342 rows omitted
+   Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
+       │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                   Float64                    
+───────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+     1 │  2010      1     16                    1      1  BA               0         0      35.0     -110.0                  0.829467                -1.4024
+     2 │  2010      1     16                    1      2  BA               0         0      35.0     -109.5                 -1.12294                 -0.0519895
+     3 │  2010      1     16                    1      4  BA               0         0      35.0     -108.5                 -0.409808                -0.803663
+     4 │  2010      1     16                    1      8  BA               0         0      35.5     -109.5                 -1.35913                 -0.646369
+     5 │  2010      1     16                    1      9  BA               0         0      35.5     -109.0                  0.0822                   1.09485
+   ⋮   │   ⋮      ⋮      ⋮             ⋮             ⋮       ⋮         ⋮         ⋮         ⋮          ⋮                 ⋮                          ⋮
+ 53348 │  2023      3     21                  117      9  SH               0         0      35.5     -109.0                 -0.571565                -0.836345
+ 53349 │  2023      3     21                  117     10  SH               0         0      35.5     -108.5                 -2.33729                 -0.398522
+ 53350 │  2023      3     21                  117     12  SH               1         1      35.5     -107.5                  0.547169                 1.03257
+ 53351 │  2023      3     21                  117     16  SH               0         0      36.0     -108.5                 -0.815015                 0.95971
+ 53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                  0.48949                 -1.59416
+                                                                                                                                                53342 rows omitted
 
 julia> result_using_abanduce_data_1 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame

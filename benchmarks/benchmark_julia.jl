@@ -1,6 +1,6 @@
 # benchmarks/benchmark_julia_vs_r.jl
 using Pkg
-Pkg.activate(".")
+Pkg.activate("benchmarks")
 using BenchmarkTools
 using CSV
 using MetaCommunityMetrics
@@ -9,9 +9,14 @@ using Pipe
 
 #Read in the sample data (small, medium and full sizes)
 full_df = load_sample_data()
+
 medium_df = CSV.read("data/data_for_testing/medium_dataset.csv",  DataFrame)
+medium_df = select(medium_df, All())   #convert all columns back to regular vectors
+
 small_df = CSV.read("data/data_for_testing/small_dataset.csv",  DataFrame)
-    
+small_df = select(small_df, All())   #convert all columns back to regular vectors
+
+
 # Data wrangling 
 ##Full dataset
 df=full_df
@@ -49,71 +54,33 @@ temporal_beta_div_1 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_dat
 temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
-## Preparing the data to benchmark the DNCI functions
-total_presence_df=@pipe df|>
-                        groupby(_,[:Species,:Sampling_date_order])|>
-                        combine(_,:Presence=>sum=>:Total_Presence) |>
-                        filter(row -> row[:Total_Presence] > 1, _)
-
-total_richness_df= @pipe df|>
-innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-combine(_,:Presence=>sum=>:Total_Richness)|>
-filter(row -> row[:Total_Richness] > 0, _) 
-
-
-comm= @pipe df|>
-            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 50, _) |>
-            select(_, [:plot, :Species, :Presence]) |>
-            unstack(_, :Species, :Presence, fill=0) |>
-            select(_, Not(:plot)) |>
-            Matrix(_)
-
-# Benchmark  the create_clusters function
-#=cluster_result = @benchmark create_clusters(total_richness_df.Sampling_date_order, 
-                        total_richness_df.Latitude, 
-                        total_richness_df.Longitude, 
-                        total_richness_df.plot, 
-                        total_richness_df.Total_Richness) samples=100 evals=1 seconds=1800 =#
-
-# Benchmark the plot_clusters function
-cluster_list = create_clusters(total_richness_df.Sampling_date_order, 
-        total_richness_df.Latitude, 
-        total_richness_df.Longitude, 
-        total_richness_df.plot,
-        total_richness_df.Total_Richness)
-
-#plot_clusters_result = @benchmark plot_clusters(cluster_list[50].Latitude, cluster_list[50].Longitude, cluster_list[50].Group) samples=100 evals=1
+## Benchmark the DNCI functions
+clustering_result = create_clusters(df.Sampling_date_order, 
+                                            df.Latitude, 
+                                            df.Longitude,                                      
+                                            df.plot, 
+                                            df.Species, 
+                                            df.Presence)
 
 # Save the wrangled data to CSV files for the R benchmarks
-comm_full_df= @pipe full_df|>
-            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 50, _) |>
-            select(_, [:plot, :Species, :Presence]) |>
-            unstack(_, :Species, :Presence, fill=0) |>
-            select(_, Not(:plot)) 
+group_df = @pipe df |>
+                filter(row -> row[:Sampling_date_order] == 60, _) |>
+                select(_, [:plot, :Species, :Presence]) |>
+                innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
+                select(_, [:plot, :Species, :Presence, :Group]) |>
+                unstack(_, :Species, :Presence, fill=0)
+
 #Save the data to CSV files for the R benchmarks
-CSV.write("data/data_for_testing/comm_full_df.csv", comm_full_df)
-CSV.write("data/data_for_testing/groups_full_df.csv", cluster_list[50])
+CSV.write("data/data_for_testing/comm_full_df.csv", group_df)
+
+# Prepare the community matrix for the DNCI_multigroup function
+comm= @pipe group_df |>
+            select(_, Not([:plot,:Group]))|>
+               Matrix(_)  #convert the dataframe to a matrix
 
 # Benchmark the DNCI_multigroup function
-DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[50].Group, 100; count = false) samples=100 evals=1 seconds=1800
+DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, group_df.Group, 100; Nperm_count = false) samples=100 evals=1 seconds=1800
 save_object("benchmarks/result/DNCI_multigroup_full_df_result.jld2", DNCI_multigroup_result)
-
-
-
-## Benchmark the niche_overlap function
-#= niche_overlap_result = @benchmark niche_overlap(df.Abundance, 
-                                df.Species, 
-                                df.plot, 
-                                df.Sampling_date_order) samples=100 evals=1 seconds=1800 =#
-
-#save_object("benchmarks/result/niche_overlap_full_df_result.jld2", niche_overlap_result)
-
-#niche_overlap_result= @load_object("benchmarks/result/niche_overlap_full_df_result.jld2")
                                                                         
 ## Benchmark the prop_patches function
 prop_patches_result = @benchmark prop_patches(df.Presence, df.Species, df.plot) samples=100 evals=1
@@ -269,69 +236,34 @@ temporal_beta_div_1 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_dat
 temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
-## Preparing the data to benchmark the DNCI functions
-total_presence_df=@pipe df|>
-                        groupby(_,[:Species,:Sampling_date_order])|>
-                        combine(_,:Presence=>sum=>:Total_Presence) |>
-                        filter(row -> row[:Total_Presence] > 1, _)
-
-total_richness_df= @pipe df|>
-innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-combine(_,:Presence=>sum=>:Total_Richness)|>
-filter(row -> row[:Total_Richness] > 0, _) 
-
-comm= @pipe df|>
-            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 50, _) |>
-            select(_, [:plot, :Species, :Presence]) |>
-            unstack(_, :Species, :Presence, fill=0) |>
-            select(_, Not(:plot)) |>
-            Matrix(_)
-
-# Benchmark  the create_clusters function
-#=cluster_result = @benchmark create_clusters(total_richness_df.Sampling_date_order, 
-                        total_richness_df.Latitude, 
-                        total_richness_df.Longitude, 
-                        total_richness_df.plot, 
-                        total_richness_df.Total_Richness) samples=100 evals=1 seconds=1800 =#
-
-# Benchmark the plot_clusters function
-cluster_list = create_clusters(total_richness_df.Sampling_date_order, 
-        total_richness_df.Latitude, 
-        total_richness_df.Longitude, 
-        total_richness_df.plot,
-        total_richness_df.Total_Richness)
-
-#plot_clusters_result = @benchmark plot_clusters(cluster_list[50].Latitude, cluster_list[50].Longitude, cluster_list[50].Group) samples=100 evals=1
+## Benchmark the DNCI functions
+clustering_result = create_clusters(df.Sampling_date_order, 
+                                            df.Latitude, 
+                                            df.Longitude,                                      
+                                            df.plot, 
+                                            df.Species, 
+                                            df.Presence)
 
 # Save the wrangled data to CSV files for the R benchmarks
-comm_medium_df= @pipe df|>
-            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 50, _) |>
-            select(_, [:plot, :Species, :Presence]) |>
-            unstack(_, :Species, :Presence, fill=0) |>
-            select(_, Not(:plot)) 
-CSV.write("data/data_for_testing/comm_medium_df.csv", comm_medium_df)
-CSV.write("data/data_for_testing/groups_medium_df.csv", cluster_list[50])
+group_df = @pipe df |>
+                filter(row -> row[:Sampling_date_order] == 60, _) |>
+                select(_, [:plot, :Species, :Presence]) |>
+                innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
+                select(_, [:plot, :Species, :Presence, :Group]) |>
+                unstack(_, :Species, :Presence, fill=0)
+
+#Save the data to CSV files for the R benchmarks
+CSV.write("data/data_for_testing/comm_medium_df.csv", group_df)
+
+# Prepare the community matrix for the DNCI_multigroup function
+comm= @pipe group_df |>
+            select(_, Not([:plot,:Group]))|>
+               Matrix(_)  #convert the dataframe to a matrix
 
 # Benchmark the DNCI_multigroup function
-DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[50].Group, 100; count = false) samples=100 evals=1 seconds=1800
+DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, group_df.Group, 100; Nperm_count = false) samples=100 evals=1 seconds=1800
 save_object("benchmarks/result/DNCI_multigroup_medium_df_result.jld2", DNCI_multigroup_result)
 
-
-## Benchmark the niche_overlap function
-#=niche_overlap_result = @benchmark niche_overlap(df.Abundance, 
-                                df.Species, 
-                                df.plot, 
-                                df.Sampling_date_order) samples=100 evals=1 seconds=1800 =#
-
-#save_object("benchmarks/result/niche_overlap_medium_df_result.jld2", niche_overlap_result)
-
-#niche_overlap_result= @load_object("benchmarks/result/niche_overlap_medium_df_result.jld2")
-                
 ## Benchmark the prop_patches function
 prop_patches_result = @benchmark prop_patches(df.Presence, df.Species, df.plot) samples=100 evals=1
 
@@ -487,70 +419,33 @@ temporal_beta_div_1 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_dat
 temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
-## Preparing the data to benchmark the DNCI functions
-total_presence_df=@pipe df|>
-                        groupby(_,[:Species,:Sampling_date_order])|>
-                        combine(_,:Presence=>sum=>:Total_Presence) |>
-                        filter(row -> row[:Total_Presence] > 1, _)
-
-total_richness_df= @pipe df|>
-innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-groupby(_,[:plot,:Sampling_date_order,:Longitude, :Latitude])|>
-combine(_,:Presence=>sum=>:Total_Richness)|>
-filter(row -> row[:Total_Richness] > 0, _) 
-
-
-comm= @pipe df|>
-            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 55, _) |>
-            select(_, [:plot, :Species, :Presence]) |>
-            unstack(_, :Species, :Presence, fill=0) |>
-            select(_, Not(:plot)) |>
-            Matrix(_)
-
-# Benchmark  the create_clusters function
-#=cluster_result = @benchmark create_clusters(total_richness_df.Sampling_date_order, 
-                        total_richness_df.Latitude, 
-                        total_richness_df.Longitude, 
-                        total_richness_df.plot, 
-                        total_richness_df.Total_Richness) samples=100 evals=1 seconds=1800 =#
-
-# Benchmark the plot_clusters function
-cluster_list = create_clusters(total_richness_df.Sampling_date_order, 
-        total_richness_df.Latitude, 
-        total_richness_df.Longitude, 
-        total_richness_df.plot,
-        total_richness_df.Total_Richness)
-
-#plot_clusters_result = @benchmark plot_clusters(cluster_list[55].Latitude, cluster_list[55].Longitude, cluster_list[55].Group) samples=100 evals=1
+## Benchmark the DNCI functions
+clustering_result = create_clusters(df.Sampling_date_order, 
+                                            df.Latitude, 
+                                            df.Longitude,                                      
+                                            df.plot, 
+                                            df.Species, 
+                                            df.Presence)
 
 # Save the wrangled data to CSV files for the R benchmarks
-comm_small_df= @pipe full_df|>
-            innerjoin(_,  total_presence_df, on = [:Species, :Sampling_date_order], makeunique = true) |>
-            innerjoin(_,  total_richness_df, on = [:plot, :Sampling_date_order], makeunique = true) |>
-            filter(row -> row[:Sampling_date_order] == 55, _) |>
-            select(_, [:plot, :Species, :Presence]) |>
-            unstack(_, :Species, :Presence, fill=0) |>
-            select(_, Not(:plot)) 
+group_df = @pipe df |>
+                filter(row -> row[:Sampling_date_order] == 60, _) |>
+                select(_, [:plot, :Species, :Presence]) |>
+                innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
+                select(_, [:plot, :Species, :Presence, :Group]) |>
+                unstack(_, :Species, :Presence, fill=0)
+
 #Save the data to CSV files for the R benchmarks
-CSV.write("data/data_for_testing/comm_small_df.csv", comm_small_df)
-CSV.write("data/data_for_testing/groups_small_df.csv", cluster_list[55])
+CSV.write("data/data_for_testing/comm_small_df.csv", group_df)
+
+# Prepare the community matrix for the DNCI_multigroup function
+comm= @pipe group_df |>
+            select(_, Not([:plot,:Group]))|>
+               Matrix(_)  #convert the dataframe to a matrix
 
 # Benchmark the DNCI_multigroup function
-DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, cluster_list[55].Group, 100; count = false) samples=100 evals=1 seconds=1800 
+DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, group_df.Group, 100; Nperm_count = false) samples=100 evals=1 seconds=1800 
 save_object("benchmarks/result/DNCI_multigroup_small_df_result.jld2", DNCI_multigroup_result)
-
-
-## Benchmark the niche_overlap function
-#=niche_overlap_result = @benchmark niche_overlap(df.Abundance, 
-                                df.Species, 
-                                df.plot, 
-                                df.Sampling_date_order) samples=100 evals=1 seconds=1800 =#
-
-#save_object("benchmarks/result/niche_overlap_small_df_result.jld2", niche_overlap_result)
-
-#niche_overlap_result= @load_object("benchmarks/result/niche_overlap_small_df_result.jld2")
                                                                        
 ## Benchmark the prop_patches function
 prop_patches_result = @benchmark prop_patches(df.Presence, df.Species, df.plot) samples=100 evals=1
