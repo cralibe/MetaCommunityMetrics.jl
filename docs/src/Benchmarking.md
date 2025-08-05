@@ -38,6 +38,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 
 ### Median Execution time and Speedup Values
 *95% confidence interval is reported.*
+
 | TestCase                                         | DataSize | `Julia`      | `R`        | Speedup        | Lower CI | Upper CI |
 |--------------------------------------------------|----------|--------------|------------|----------------|----------|----------|
 | Beta Diversity (Abundance, quant=true)           | Large    | 0.1244       | 2.1471     | 17.2602        | 16.6071  | 17.7147  |
