@@ -20,7 +20,7 @@ There are four hypervolume functions in this package:
 
 ### Practical Considerations
 - Statistical assumptions: This framework relies on multivariate normal distribution of environmental data.
-    - When encountering skewed variables, apply appropriate transformations to normalize distributions.
+    - When encountering skewed variables, apply appropriate transformations to achieve approximately normal distributions
     - Be aware that as you increase the number of variables, you face greater challenges with:
         - Variable interdependence (collinearity) which can drive determinant values toward zero
         - Potential violations of the multivariate normality assumption

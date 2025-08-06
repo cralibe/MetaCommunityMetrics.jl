@@ -18,7 +18,7 @@ Returns
 Details
 - Empty sites (empty rows in the matrix) have to be removed before calculation.
 - Species that did not occupy any sites in the data (empty columns in the matrix) have to be removed before calculation.
-- This function is a translation/adaptation of the beta.dov.comp function from the R package `adespatial`,licensed under GPL-3.
+- This function is a translation/adaptation of the `beta.div.comp`` function from the R package `adespatial`, licensed under GPL-3.
 - Original package and documentation available at: https://cran.r-project.org/web/packages/adespatial/index.html
 
 Example

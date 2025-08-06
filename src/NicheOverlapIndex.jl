@@ -12,7 +12,7 @@ Calculates the overall mean, maximum, and minimum values of the niche overlap in
 - `time::AbstractVector`: Vector representing sampling dates. 
 
 # Description
-The niche overlap index is calculated based on the method suggested by Pianka (1973), with the assumption that the proportional use of resources by a species at a specific site and time is equivalent to its relative abundance at that location and time period across all sampled sites and times
+The niche overlap index is calculated based on the method suggested by Pianka (1973), with the assumption that the proportional use of resources by a species at a specific site and time is equivalent to its relative abundance at that location and time period across all sampled sites and times.
 
 # Returns
 - `DataFrame`: A DataFrame containing the overall mean, maximum, and minimum values of the niche overlap index from all species pairs.
