@@ -16,7 +16,7 @@ using .MetaCommunityMetrics.Internal
     #Preparing the matric for calculating beta diveristy
     #matrix with the species abundance
     sample_matrix_abundance = @pipe df |> 
-    select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> # remove the unused four columns
+    select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Presence)) |> # remove the unused four columns
     filter(row -> row[:Sampling_date_order] == 1, _) |> # filter rows where Sampling_date_order == 1
     unstack(_, :Species, :Abundance) |> #convert it back to the wide format 
     select(_, Not(:Sampling_date_order, :plot)) |> # remove the unused columns
@@ -27,7 +27,7 @@ using .MetaCommunityMetrics.Internal
 
     #matrix with the species presence-absence data
     sample_matrix_presence = @pipe df |> 
-    select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Abundance)) |> # remove the unused four columns
+    select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Abundance)) |> # remove the unused four columns
     filter(row -> row[:Sampling_date_order] == 1, _) |># filter rows where Sampling_date_order == 1
     unstack(_, :Species, :Presence, fill=0) |> #convert it back to the wide format 
     select(_, Not(:Sampling_date_order, :plot)) |> # remove the unused columns
@@ -162,7 +162,7 @@ using .MetaCommunityMetrics.Internal
     data = @pipe df |> 
     filter(row -> row[:Presence] > 0, _) |>
     filter(row -> row[:Species] == "BA", _) |>
-    select(_, [:normalized_temperature, :normalized_precipitation])
+    select(_, [:standardized_temperature, :standardized_precipitation])
 
     @test isapprox(MVNH_det(data; var_names=["Temperature", "Precipitation"]), DataFrame(total = 1.15268,
                                             correlation = 0.999732,
@@ -174,7 +174,7 @@ using .MetaCommunityMetrics.Internal
     data_2 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
     result_df = MVNH_dissimilarity(data, data_2; var_names = ["Temperature", "Precipitation"])
     expected_df = DataFrame(
@@ -192,7 +192,7 @@ using .MetaCommunityMetrics.Internal
     
     # Test the average_MVNH_det function    
     data = @pipe df |> 
-    select(_, [:normalized_temperature, :normalized_precipitation])
+    select(_, [:standardized_temperature, :standardized_precipitation])
 
     @test isapprox(average_MVNH_det(data, Vector{Int64}(df.Presence), df.Species; var_names = ["Temperature", "Precipitation"]), 
     1.2103765096417536, atol = 1e-5)
