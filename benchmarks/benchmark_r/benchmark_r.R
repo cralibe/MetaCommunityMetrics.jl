@@ -8,18 +8,17 @@ library(adespatial)
 library(DNCImper)
 library(MVNH)
 
+setwd()
+
 #Read in the sample data
 full_df <- read.csv("metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE) #There is a species called "NA", need to handle NAs with caution
 comm_full<- read.csv("data_for_testing/comm_full_df.csv")
-groups_full<- read.csv("data_for_testing/groups_full_df.csv")
 
 medium_df <- read.csv("data_for_testing/medium_dataset.csv")
 comm_medium <- read.csv("data_for_testing/comm_medium_df.csv")
-groups_medium <- read.csv("data_for_testing/groups_medium_df.csv")
 
 small_df <- read.csv("data_for_testing/small_dataset.csv")
 comm_small <- read.csv("data_for_testing/comm_small_df.csv")
-groups_small <-read.csv("data_for_testing/groups_small_df.csv")
 
 #Data Wrangling
 #Full Dataset####
@@ -127,8 +126,8 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full,
-                                                       groups_full$Group, Nperm = 100,
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full[,-c(1,2)],
+                                                          comm_full$Group, Nperm = 100,
                                                        symmetrize = FALSE,
                                                        plotSIMPER = FALSE,
                                                       parallelComputing = TRUE),
@@ -456,8 +455,12 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium,
-                                                          groups_medium$Group, Nperm = 100,
+row_sums <- rowSums(comm_medium[, -c(1, 2)])
+comm_medium_filtered <- comm_medium[row_sums != 0, ]
+
+
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium_filtered[, -c(1, 2)],
+                                                          comm_medium_filtered$Group, Nperm = 100,
                                                           symmetrize = FALSE,
                                                           plotSIMPER = FALSE,
                                                           parallelComputing = TRUE),
@@ -727,8 +730,10 @@ temporal_beta_div_3 <- mark(df %>%
                             time_unit = "ms")
 
 #### Benchmark the DNCI function
-DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small,
-                                                          groups_small$Group, Nperm = 100,
+row_sums <- rowSums(comm_small[, -c(1, 2)])
+comm_small_filtered <- comm_small[row_sums != 0, ]
+DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small_filtered[, -c(1, 2)],
+                                                          comm_small_filtered$Group, Nperm = 100,
                                                           symmetrize = FALSE,
                                                           plotSIMPER = FALSE,
                                                           parallelComputing = TRUE),

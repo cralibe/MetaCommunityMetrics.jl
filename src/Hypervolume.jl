@@ -324,12 +324,16 @@ Details
 - Species with no presence data are skipped in the calculation
 - Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
 - Variables should be standardized before using this function to avoid bias from different scales
+- Singletons should be removed before using this function to avoid NaN values in the hypervolume calculation
 
 Example
 ```jildoctest
 julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
-julia> df = load_sample_data()
+julia> df = @pipe load_sample_data() |>
+                      groupby(_, :Species) |>
+                      filter(row -> sum(row.Presence) > 1, _)|>
+                      DataFrame(_)
 53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  
@@ -348,8 +352,7 @@ julia> df = load_sample_data()
                                                                                                                                             53342 rows omitted
 
 julia> data = @pipe df |> 
-           select(_, [:standardized_temperature, :standardized_precipitation])
-           
+           select(_, [:standardized_temperature, :standardized_precipitation]) 
 53352×2 DataFrame
    Row │ standardized_temperature  standardized_precipitation 
        │ Float64                 Float64                  
@@ -439,7 +442,10 @@ Example
 ```jildoctest
 julia> using MetaCommunityMetrics, Pipe, DataFrames, Statistics
 
-julia> df = load_sample_data()
+julia> df = @pipe load_sample_data() |>
+                      groupby(_, :Species) |>
+                      filter(row -> sum(row.Presence) > 1, _)|>
+                      DataFrame(_)
 53352×12 DataFrame
    Row │ Year   Month  Day    Sampling_date_order  plot   Species  Abundance  Presence  Latitude  Longitude  standardized_temperature  standardized_precipitation 
        │ Int64  Int64  Int64  Int64                Int64  String3  Int64      Int64     Float64   Float64    Float64                 Float64                  

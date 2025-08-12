@@ -295,7 +295,7 @@ p <- ggplot(median_ci_df ,
   labs(y = "Speedup", x = "Data Size")
 
 #save te plot
-ggsave("result/speedup.png", dpi=300, width = 10, height = 5, bg="white")
+ggsave("result/speedup.pdf", dpi=300, width = 10, height = 5, bg="white")
 #Memory
 full_result_memory<-full_result_julia%>%
   select(TestCase, memory)%>%
@@ -386,16 +386,16 @@ write.csv(full_result_memory, "result/full_df_memory.csv")
 
 
 small_result_memory%>%
-  mutate(percentage_diff=(memory_julia-memory_r)/memory_r*100)%>%
-  arrange(percentage_diff)
+  mutate(diff=memory_julia-memory_r)%>%
+  arrange(diff)
 
 medium_result_memory%>%
-  mutate(percentage_diff=(memory_julia-memory_r)/memory_r)%>%
-  arrange(percentage_diff)
+  mutate(diff=memory_julia-memory_r)%>%
+  arrange(diff)
 
 full_result_memory%>%
-  mutate(percentage_diff=(memory_julia-memory_r)/memory_r*100)%>%
-  arrange(percentage_diff)
+  mutate(diff=memory_julia-memory_r)%>%
+  arrange(diff)
 
 
 ##Speedup for the DNCI with parallelComputing in R using the full dataset
