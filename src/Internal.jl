@@ -411,7 +411,7 @@ function simper(comm::Matrix, groups::Vector)
     ## Species contributions of differences needed for every species,
     ## but denominator is constant. Bray-Curtis is actually
     ## manhattan/(mean(rowsums)) and this is the way we collect data
-    # Calculate row sums to obtain the total abundance of the whole community at each site
+    # Calculate row sums to obtain the total diversity of the whole community at each site
     rs = sum(comm_with_pseudo_species, dims=2)
     # Calculate pairwise sums and extract lower triangular part
     pairwise_sums = rs .+ transpose(rs)

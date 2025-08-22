@@ -2,12 +2,12 @@
 
 
 """
-    MVNH_det(data::DataFrame; var_names::Vector{String}=String[]) -> DataFrame
+    MVNH_det(env_data::DataFrame; var_names::Vector{String}=String[]) -> DataFrame
 
 Calculate the niche hypervolume of a species based on environmental variables.
 
 Arguments
-- `data::DataFrame`: DataFrame where each row represents an observation of a species (presence only, need to filter out absences) and columns represent environmental variables.
+- `env_data::DataFrame`: DataFrame where each row represents an observation of a species (presence only, need to filter out absences) and columns represent environmental variables.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
@@ -45,7 +45,7 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
 
-julia> data = @pipe df |> 
+julia> env_data = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
             select(_, [:standardized_temperature, :standardized_precipitation])
@@ -66,7 +66,7 @@ julia> data = @pipe df |>
  143 │            -0.817817                   0.418038
                                         133 rows omitted
 
-julia> result = MVNH_det(data; var_names=["Temperature", "Precipitation"])
+julia> result = MVNH_det(env_data; var_names=["Temperature", "Precipitation"])
 1×4 DataFrame
  Row │ total    correlation  Temperature  Precipitation 
      │ Float64  Float64      Float64      Float64       
@@ -74,14 +74,14 @@ julia> result = MVNH_det(data; var_names=["Temperature", "Precipitation"])
    1 │ 1.15268     0.999732     0.962495        1.19792
 ```
 """
-function MVNH_det(data::DataFrame; var_names::Vector{String}=String[]) 
+function MVNH_det(env_data::DataFrame; var_names::Vector{String}=String[]) 
     # If variable names are not provided, generate default names
     if isempty(var_names)
-        var_names = ["variable" * string(i) for i in 1:size(data, 2)]
+        var_names = ["variable" * string(i) for i in 1:size(env_data, 2)]
     end
 
     # Convert DataFrame to Matrix (drop non-numeric columns if any)
-    data_matrix = Matrix(data[:, :])
+    data_matrix = Matrix(env_data[:, :])
 
     # Compute the covariance matrix from the data
     COV = cov(data_matrix)
@@ -108,13 +108,13 @@ function MVNH_det(data::DataFrame; var_names::Vector{String}=String[])
 end
 
 """
-    MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) -> DataFrame
+    MVNH_dissimilarity(env_data_1::DataFrame, env_data_2::DataFrame; var_names::Vector{String}=String[]) -> DataFrame
 
 Calculate niche dissimilarity between two species based on their environmental variables, using the Bhattacharyya distance and its components.
 
 Arguments
-- `data_1::DataFrame`: DataFrame for the first species, where each row represents an observation (presence only, need to filter out absences) and columns represent environmental variables.
-- `data_2::DataFrame`: DataFrame for the second species, with the same structure as `data_1`.
+- `env_data_1::DataFrame`: DataFrame for the first species, where each row represents an observation (presence only, need to filter out absences) and columns represent environmental variables.
+- `env_data_2::DataFrame`: DataFrame for the second species, with the same structure as `data_1`.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
@@ -161,7 +161,7 @@ julia> df = load_sample_data()
                                                                                                                                             53342 rows omitted
 
 
-julia> data_1 = @pipe df |> 
+julia> env_data_1 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
             select(_, [:standardized_temperature, :standardized_precipitation])
@@ -183,7 +183,7 @@ julia> data_1 = @pipe df |>
  143 │            -0.817817                   0.418038
                                         133 rows omitted
 
-julia> data_2 = @pipe df |> 
+julia> env_data_2 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
             select(_, [:standardized_temperature, :standardized_precipitation])
@@ -204,7 +204,7 @@ julia> data_2 = @pipe df |>
   58 │               0.547169                  1.03257
                                          48 rows omitted
                    
-julia> result = MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Precipitation"])
+julia> result = MVNH_dissimilarity(env_data_1, env_data_2; var_names=["Temperature", "Precipitation"])
 3×5 DataFrame
  Row │ metric                  total       correlation  Temperature  Precipitation 
      │ String                  Float64     Float64      Float64      Float64       
@@ -214,15 +214,15 @@ julia> result = MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Pr
    3 │ Determinant_ratio       0.00315908  0.000146988   0.00153156     0.00148054
 ```
 """
-function MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vector{String}=String[]) 
+function MVNH_dissimilarity(env_data_1::DataFrame, env_data_2::DataFrame; var_names::Vector{String}=String[]) 
     # If variable names are not provided, generate default names
     if isempty(var_names)
-        var_names = ["variable" * string(i) for i in 1:size(data_1, 2)]
+        var_names = ["variable" * string(i) for i in 1:size(env_data_1, 2)]
     end
 
     # Compute covariance matrices for both datasets
-    db1 = Matrix(data_1)
-    db2 = Matrix(data_2)
+    db1 = Matrix(env_data_1)
+    db2 = Matrix(env_data_2)
 
     # Get dimensions
     n1, p = size(db1)
@@ -301,13 +301,13 @@ function MVNH_dissimilarity(data_1::DataFrame, data_2::DataFrame; var_names::Vec
 end
 
 """
-    average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; 
+    average_MVNH_det(env_data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; 
                      var_names::Vector{String}=String[]) -> Float64
 
 Calculate the average niche hypervolume across multiple species in a community dataset.
 
 Arguments
-- `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
+- `env_data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
 - `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
 - `species::AbstractVector`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
@@ -351,7 +351,7 @@ julia> df = @pipe load_sample_data() |>
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
 
-julia> data = @pipe df |> 
+julia> env_data = @pipe df |> 
            select(_, [:standardized_temperature, :standardized_precipitation]) 
 53352×2 DataFrame
    Row │ standardized_temperature  standardized_precipitation 
@@ -370,17 +370,17 @@ julia> data = @pipe df |>
  53352 │               0.48949               -1.59416
                                         53342 rows omitted
 
-julia> result = average_MVNH_det(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
+julia> result = average_MVNH_det(env_ata, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
 1.2103765096417536
 ```                                                                                                                     
 """
-function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; var_names::Vector{String}=String[])
+function average_MVNH_det(env_data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; var_names::Vector{String}=String[])
     # Ensure the presence_absence and species vectors match the DataFrame size
-    @assert length(presence_absence) == nrow(data) "Mismatch in data length"
-    @assert length(species) == nrow(data) "Mismatch in species length"
+    @assert length(presence_absence) == nrow(env_data) "Mismatch in data length"
+    @assert length(species) == nrow(env_data) "Mismatch in species length"
 
     # Add presence_absence and species as columns to the DataFrame
-    data = hcat(data, DataFrame(presence_absence=presence_absence, species=species))
+    data = hcat(env_data, DataFrame(presence_absence=presence_absence, species=species))
 
     # Initialize final result DataFrame
     final_result = DataFrame(species=String[], hypervolume=Float64[])
@@ -413,13 +413,13 @@ function average_MVNH_det(data::DataFrame, presence_absence::Vector{Int}, specie
 end
 
 """
-    average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; 
+    average_MVNH_dissimilarity(env_data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; 
                               var_names::Vector{String}=String[]) -> Float64
 
 Calculate the average niche dissimilarity between all unique pairs of species in a community dataset using Bhattacharyya distance.
 
 Arguments
-- `data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
+- `env_data::DataFrame`: DataFrame containing environmental variables where each row represents an observation.
 - `presence_absence::Vector{Int}`: Vector indicating presence (1) or absence (0) for each observation in `data`.
 - `species::AbstractVector`: Vector containing species identifiers corresponding to each observation in `data`, which must be a vector of strings.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names will be used.
@@ -463,7 +463,7 @@ julia> df = @pipe load_sample_data() |>
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
 
-julia> data = @pipe df |> 
+julia> env_data = @pipe df |> 
            select(_, [:standardized_temperature, :standardized_precipitation])    
 53352×2 DataFrame
    Row │ standardized_temperature  standardized_precipitation 
@@ -482,19 +482,19 @@ julia> data = @pipe df |>
  53352 │               0.48949               -1.59416
                                         53342 rows omitted
 
-julia> result = average_MVNH_dissimilarity(data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])     
+julia> result = average_MVNH_dissimilarity(env_data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])     
 0.03059942936454443
 ```
 """
-function average_MVNH_dissimilarity(data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; var_names::Vector{String}=String[])
-    @assert length(presence_absence) == nrow(data) "Mismatch in data length"
-    @assert length(species) == nrow(data) "Mismatch in species length"
+function average_MVNH_dissimilarity(env_data::DataFrame, presence_absence::Vector{Int}, species::AbstractVector; var_names::Vector{String}=String[])
+    @assert length(presence_absence) == nrow(env_data) "Mismatch in data length"
+    @assert length(species) == nrow(env_data) "Mismatch in species length"
 
     # Pre-compute unique species list once
     unique_species = unique(species)
     
     # Convert DataFrame to matrix once (this is much more efficient)
-    data_matrix = Matrix(data)
+    data_matrix = Matrix(env_data)
     
     # Pre-calculate indices for each species with presence > 0
     species_indices = Dict{String, Vector{Int}}()

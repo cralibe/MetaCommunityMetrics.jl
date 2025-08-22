@@ -42,7 +42,7 @@ end
 export 
     load_sample_data,
     beta_diversity, spatial_beta_div, temporal_beta_div, 
-    create_clusters, plot_clusters, DNCI_multigroup, 
+    create_groups, plot_groups, DNCI_multigroup, 
     niche_overlap, 
     prop_patches, 
     CV_meta,

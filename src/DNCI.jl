@@ -4,9 +4,9 @@ using ..Internal
 
 
 """
-    create_clusters(time::AbstractVector, latitude::Vector{Float64}, longitude::Vector{Float64}, site::AbstractVector, species::AbstractVector, presence::AbstractVector) -> Dict{Int, DataFrame}
+    create_groups(time::AbstractVector, latitude::Vector{Float64}, longitude::Vector{Float64}, site::AbstractVector, species::AbstractVector, presence::AbstractVector) -> Dict{Int, DataFrame}
 
-This function creates clusters (groupings of sites) for each unique time step in a dataset which can then used for calculating DNCI. Only presnece-absence data can be used.
+This function creates groupings of sites for each unique time step in a dataset which can then used for calculating DNCI. Only presnece-absence data can be used.
 
 Arguments
 - `time::AbstractVector`: Vector or single value representing sampling dates. Can be strings, integers, or any other type.
@@ -17,11 +17,11 @@ Arguments
 - `presence::AbstractVector`: A vector indicating the presence (1) or absence (0) of species at each site.
 
 Returns
-- `Dict{Int, DataFrame}`: A dictionary where each key represents a unique time point from the input data, with the corresponding value being a `DataFrame` for that time step. Each `DataFrame` contains the following columns: `Time`, `Latitude`, `Longitude`, `Site`, `Species`, `Presence` and `Group` (indicating the assigned cluster).
+- `Dict{Int, DataFrame}`: A dictionary where each key represents a unique time point from the input data, with the corresponding value being a `DataFrame` for that time step. Each `DataFrame` contains the following columns: `Time`, `Latitude`, `Longitude`, `Site`, `Species`, `Presence` and `Group` (indicating the assigned groups).
 
 Details
 - This function performs hierarchical clustering on the geographical coordinates of sampling sites at each unique time step. 
-- This function incorporates checks and adjustments to ensure the following conditions are met: at least 2 clusters, a minimum of 5 sites per cluster, and that the variation in the number of taxa/species and sites per group does not exceed 40% and 30%, respectively. These conditions are critical for calculating an unbiased DNCI value, and the function will issue warnings and the groupings will be returned as "missing" if any are not fulfilled.
+- This function incorporates checks and adjustments to ensure the following conditions are met: having at least 2 groups, a minimum of 5 sites per group, and that the variation in the number of taxa/species and sites per group does not exceed 40% and 30%, respectively. These conditions are critical for calculating an unbiased DNCI value, and the function will issue warnings and the groupings will be returned as "missing" if any are not fulfilled.
 - Empty sites are allowed.
 Example
 ```jildoctest
@@ -45,12 +45,12 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
                                                                                           
-julia> clustering_result = create_clusters(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
-Warning: Cluster count fell below 2 at time 10, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 14, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 76, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 89, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 99, which is not permissible for clustering. Groups assigned as missing.
+julia> grouping_result = create_groups(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
+Warning: Group count fell below 2 at time 10, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 14, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 76, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 89, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 99, which is not permissible for DNCI analysis. Groups assigned as missing.
 Dict{Int64, DataFrames.DataFrame} with 117 entries:
   5   => 456×7 DataFrame…
   56  => 456×7 DataFrame…
@@ -68,7 +68,7 @@ Dict{Int64, DataFrames.DataFrame} with 117 entries:
   73  => 456×7 DataFrame…
   ⋮   => ⋮
 
-julia> clustering_result[10]      
+julia> grouping_result[10]      
 456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group   
      │ Int64  Float64   Float64    Int64  String3  Int64     Missing 
@@ -86,7 +86,7 @@ julia> clustering_result[10]
  456 │    10      36.5     -107.5     24  SH              0  missing 
                                                      446 rows omitted      
  
-julia> clustering_result[60]                                                      
+julia> grouping_result[60]                                                      
 456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
@@ -105,7 +105,7 @@ julia> clustering_result[60]
                                                     446 rows omitted
 ```
 """
-function create_clusters(time::AbstractVector, latitude::Vector{Float64}, longitude::Vector{Float64}, site::AbstractVector, species::AbstractVector, presence::AbstractVector)
+function create_groups(time::AbstractVector, latitude::Vector{Float64}, longitude::Vector{Float64}, site::AbstractVector, species::AbstractVector, presence::AbstractVector)
     grouping_dict = Dict{Int, DataFrame}()
 
     #Create a DataFrame
@@ -118,7 +118,7 @@ function create_clusters(time::AbstractVector, latitude::Vector{Float64}, longit
 
         # If fewer than 5 sites, clustering cannot proceed, groups assigned as missing
         if num_sites < 10
-            println("Too few sites ($num_sites) for clustering at time step $t. Groups assigned as missing.")
+            println("Too few sites ($num_sites) for grouping at time step $t. Groups assigned as missing.")
             subset_df.Group = fill(missing, nrow(subset_df))
             grouping_dict[t] = subset_df
             continue  # Skip to the next time step
@@ -162,7 +162,7 @@ function create_clusters(time::AbstractVector, latitude::Vector{Float64}, longit
             if !condition_met
                 num_clusters -= 1
                 if num_clusters < 2
-                    println("Warning: Cluster count fell below 2 at time $t, which is not permissible for clustering. Groups assigned as missing.")
+                    println("Warning: Group count fell below 2 at time $t, which is not permissible for DNCI analysis. Groups assigned as missing.")
                     subset_df.Group .= missing
                     # Exit the loop
                     condition_met = true
@@ -179,23 +179,23 @@ function create_clusters(time::AbstractVector, latitude::Vector{Float64}, longit
 end
 
 """
-    plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::AbstractVector, output_file="clusters.svg") -> String
+    plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, group::AbstractVector, output_file="groups.svg") -> String
 
-Visualizes clustering results by generating an SVG image displaying the geographic coordinates and cluster assignments of sampling sites.
+Visualizes grouping results by generating an SVG image displaying the geographic coordinates and cluster assignments of sampling sites.
 
 # Arguments
 - `latitude::Vector{Float64}`: A vector of latitude coordinates of the sampling sites.
 - `longitude::Vector{Float64}`: A vector of longitude coordinates of the sampling sites.
 - `group::AbstractVector`: A vector indicating the group assignments for each data point.
-- `output_file::String="clusters.svg"`: The filename for the output SVG visualization. Default is "clusters.svg".
+- `output_file::String="clusters.svg"`: The filename for the output SVG visualization. Default is "groups.svg".
 
 # Returns
 - `String`: The path to the created SVG file.
 
 # Details
 - The function generates a standalone SVG file that can be viewed in any web browser or image viewer.
-- Each cluster is assigned a unique color, and sampling sites are plotted based on their geographic coordinates.
-- The visualization includes a legend identifying each cluster.
+- Each group is assigned a unique color, and sampling sites are plotted based on their geographic coordinates.
+- The visualization includes a legend identifying each group.
 
 
 Example
@@ -220,12 +220,12 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
                                                                                           
-julia> clustering_result = create_clusters(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
-Warning: Cluster count fell below 2 at time 10, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 14, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 76, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 89, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 99, which is not permissible for clustering. Groups assigned as missing.
+julia> grouping_result = create_groups(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
+Warning: Group count fell below 2 at time 10, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 14, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 76, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 89, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 99, which is not permissible for DNCI analysis. Groups assigned as missing.
 Dict{Int64, DataFrames.DataFrame} with 117 entries:
   5   => 456×7 DataFrame…
   56  => 456×7 DataFrame…
@@ -243,7 +243,7 @@ Dict{Int64, DataFrames.DataFrame} with 117 entries:
   73  => 456×7 DataFrame…
   ⋮   => ⋮
 
-julia> clustering_result[60]                                                      
+julia> grouping_result[60]                                                      
 456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
@@ -261,11 +261,11 @@ julia> clustering_result[60]
  456 │    60      36.5     -108.0     23  SH              0       4
                                                     446 rows omitted
 
-julia> plot_clusters(clustering_result[60].Latitude, clustering_result[60].Longitude, clustering_result[60].Group; output_file="clusters.svg")
+julia> plot_groups(grouping_result[60].Latitude, grouping_result[60].Longitude, grouping_result[60].Group; output_file="groups.svg")
 
 ```
 """
-function plot_clusters(latitude::Vector{Float64}, longitude::Vector{Float64}, group::AbstractVector; output_file="clusters.svg")
+function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, group::AbstractVector; output_file="groups.svg")
     # Get unique cluster IDs and assign numeric identifiers
     unique_clusters = unique(group)
     cluster_map = Dict(cluster => i for (i, cluster) in enumerate(unique_clusters))
@@ -431,12 +431,12 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                0.48949               -1.59416
                                                                                                                                             53342 rows omitted
                                                                                           
-julia> clustering_result = create_clusters(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
-Warning: Cluster count fell below 2 at time 10, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 14, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 76, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 89, which is not permissible for clustering. Groups assigned as missing.
-Warning: Cluster count fell below 2 at time 99, which is not permissible for clustering. Groups assigned as missing.
+julia> grouping_result = create_groups(df.Sampling_date_order, df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
+Warning: Group count fell below 2 at time 10, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 14, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 76, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 89, which is not permissible for DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 99, which is not permissible for DNCI analysis. Groups assigned as missing.
 Dict{Int64, DataFrames.DataFrame} with 117 entries:
   5   => 456×7 DataFrame…
   56  => 456×7 DataFrame…
@@ -454,7 +454,7 @@ Dict{Int64, DataFrames.DataFrame} with 117 entries:
   73  => 456×7 DataFrame…
   ⋮   => ⋮
 
-julia> clustering_result[60]
+julia> grouping_result[60]
 456×7 DataFrame
  Row │ Time   Latitude  Longitude  Site   Species  Presence  Group  
      │ Int64  Float64   Float64    Int64  String3  Int64     Int64? 
@@ -475,7 +475,7 @@ julia> clustering_result[60]
 julia> group_df = @pipe df |>
                 filter(row -> row[:Sampling_date_order] == 60, _) |>
                 select(_, [:plot, :Species, :Presence]) |>
-                innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
+                innerjoin(_, grouping_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
                 select(_, [:plot, :Species, :Presence, :Group]) |>
                 unstack(_, :Species, :Presence, fill=0)
 24×21 DataFrame
