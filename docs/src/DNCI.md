@@ -14,11 +14,11 @@ The DNCI functions in `MetaCommunityMetrics` allow you to analyze the processes 
 
 ## The Functions 
 ```@docs
-create_clusters
-plot_clusters
+create_groups
+plot_groups
 ```
 This plot shows the clustering result for time step 1 based on geographic coordinates:
-![Cluster Plot](assets/clusters.svg)
+![Cluster Plot](assets/groups.svg)
 
 ```@docs
 DNCI_multigroup

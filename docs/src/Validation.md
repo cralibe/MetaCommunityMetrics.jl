@@ -6,6 +6,7 @@ We validate all the calcuations in `MetaCommunityMetrics` that have equvilant fu
 
 ## Validation Result
 *Below is a comparison of the results between `MetaCommunityMetrics` and functions/equivalent implementation in R.*
+
 ### Beta Diversity
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here. All values *
 
@@ -23,7 +24,7 @@ We validate all the calcuations in `MetaCommunityMetrics` that have equvilant fu
 
 ### Dispersal-niche continuum index
 *A plot showing the distribution of the DNCI values of diffent group pairs from R and Julia, each pair are ran for 100 times, with 1000 permutations each time.
-![Julia vs. R](assets/dnci_plot.pdf)
+![Julia vs. R](assets/dnci_plot.png)
 
 ### Occupied Patches Proportion
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here.*

@@ -1,4 +1,4 @@
-# Benchmark Results
+# Benchmarking Results
 ```@meta
 CurrentModule = MetaCommunityMetrics
 ```
@@ -30,10 +30,10 @@ According to documentation, the `Julia` metric measures total memory allocation 
 
 ## Speedup Summary
 *Below is a plot showing the speedup of all benchmarked functions across the three datasets (small, medium and large). Speedup is calculated as the `R` median execution time divided by the `Julia` median execution time.*
-![Speedup Plot](assets/speedup.pdf)
+![Speedup Plot](assets/speedup.png)
 
 
-## Benchmark Results in Details
+## Benchmarking Results in Details
 All times are in millisecond (ms), and memory is in mebibytes (MiB). All values are rounded up to 4 decimal places.
 
 ### Median Execution time and Speedup Values

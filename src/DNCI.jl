@@ -318,15 +318,15 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
     <rect width="100%" height="100%" fill="white"/>
     
     <!-- Title -->
-    <text x="$(width/2)" y="25" font-family="Arial" font-size="18" text-anchor="middle" font-weight="bold">Cluster Visualization</text>
+    <text x="$(width/2)" y="25" font-family="Arial" font-size="20" text-anchor="middle" font-weight="bold">Grouping Result</text>
     
     <!-- Axes -->
     <line x1="$(margin)" y1="$(height-margin)" x2="$(width-margin)" y2="$(height-margin)" stroke="black" stroke-width="1.5"/>
     <line x1="$(margin)" y1="$(margin)" x2="$(margin)" y2="$(height-margin)" stroke="black" stroke-width="1.5"/>
     
     <!-- Axis labels -->
-    <text x="$(width/2)" y="$(height-10)" font-family="Arial" font-size="14" text-anchor="middle">Longitude</text>
-    <text x="15" y="$(height/2)" font-family="Arial" font-size="14" text-anchor="middle" transform="rotate(-90, 15, $(height/2))">Latitude</text>
+    <text x="$(width/2)" y="$(height-10)" font-family="Arial" font-size="18" text-anchor="middle">Longitude</text>
+    <text x="15" y="$(height/2)" font-family="Arial" font-size="16" text-anchor="middle" transform="rotate(-90, 15, $(height/2))">Latitude</text>
     
     <!-- Data points -->
     """
@@ -348,14 +348,14 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
     
     svg *= """
     <!-- Legend -->
-    <text x="$(legend_x)" y="$(legend_y - 15)" font-family="Arial" font-size="12" font-weight="bold">Clusters</text>
+    <text x="$(legend_x)" y="$(legend_y - 15)" font-family="Arial" font-size="18" font-weight="bold">Groups</text>
     """
     
     for (i, cluster) in enumerate(unique_clusters)
         y_pos = legend_y + (i-1) * 20
         svg *= """
         <rect x="$(legend_x)" y="$(y_pos-10)" width="10" height="10" fill="$(colors[i])" stroke="black" stroke-width="0.5"/>
-        <text x="$(legend_x + 20)" y="$(y_pos)" font-family="Arial" font-size="12">$(cluster)</text>
+        <text x="$(legend_x + 20)" y="$(y_pos)" font-family="Arial" font-size="16">$(cluster)</text>
         """
     end
     
