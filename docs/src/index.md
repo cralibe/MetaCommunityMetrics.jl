@@ -30,7 +30,7 @@ Pkg.add("MetaCommunityMetrics")
 ```
 ### Acessing Help File
 
-For all the functions in this package, detailed instructions and examples can be accessed here or by switching to help mode in the `Julia` REPL. To switch to help mode in the Julia `REPL`, user can press `?` at an empty `julia>` prompt , then type a keyword (e.g. the name of the function) to retrieve the corresponding help file. 
+For all the functions in this package, detailed instructions and examples can be accessed here or by switching to help mode in the `Julia` REPL. To switch to help mode in the `Julia` REPL, user can press `?` at an empty `julia>` prompt , then type a keyword (e.g. the name of the function) to retrieve the corresponding help file. 
 
 ## Function Documentation
 
