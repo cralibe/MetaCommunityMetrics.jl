@@ -1,4 +1,5 @@
 # test/runtests.jl
+#This is a script to test the functions in the MetaCommunityMetrics.jl package
 using Test
 using MetaCommunityMetrics
 using Random

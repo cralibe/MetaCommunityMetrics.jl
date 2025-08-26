@@ -1,4 +1,5 @@
 # benchmarks/benchmark_julia_vs_r.jl
+#This is a script to benchmark the functions in the MetaCommunityMetrics.jl package using the sample datasets.
 using Pkg
 Pkg.activate("benchmarks")
 using BenchmarkTools

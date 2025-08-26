@@ -21,13 +21,14 @@ function assign_single_site_to_nearest_group(grouped_df, single_site, min_group)
     single_lat = single_site.Latitude[1]
     single_lon = single_site.Longitude[1]
     
+    # Initialize variables to keep track of the nearest group and distance
     min_distance = Inf
     nearest_group_id = nothing
 
     # Filter for other groups
     other_group = grouped_df[grouped_df.Group .!= min_group, :]
 
-    
+    # Check if there are other groups available
     other_group_with_xy = @pipe other_group |>
                             select(_, [:Site, :Latitude, :Longitude, :Group]) |>
                             unique(_)
@@ -77,6 +78,7 @@ function find_nearest_site(grouped_df, min_group)
         error("No other groups are avaliable to compare.")
     end
 
+    # Get unique sites with their coordinates from other groups
     other_group_with_xy = @pipe other_group |>
     select(_, [:Site, :Latitude, :Longitude, :Group]) |>
     unique(_)
@@ -253,6 +255,7 @@ function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for p
     
     permat=nullmodel(data, ALGO, Nperm)
     
+    # Check if the generated null models preserve the row and/or column sums
     if !check_sums(data,permat, ALGO)
         if ALGO == "r0"
             throw(ArgumentError("The row sums do not match with the original matrix."))
@@ -411,7 +414,7 @@ function simper(comm::Matrix, groups::Vector)
     ## Species contributions of differences needed for every species,
     ## but denominator is constant. Bray-Curtis is actually
     ## manhattan/(mean(rowsums)) and this is the way we collect data
-    # Calculate row sums to obtain the total diversity of the whole community at each site
+    # Calculate row sums to obtain the total richness of the community at each site
     rs = sum(comm_with_pseudo_species, dims=2)
     # Calculate pairwise sums and extract lower triangular part
     pairwise_sums = rs .+ transpose(rs)
@@ -659,7 +662,6 @@ function PerSIMPER(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fa
         SommeEcartCarreBlue = (Blue[i,:] .- obs).^2
         
         # Log conversion of the sum of square deviations
-    
         sum_orange = sum(SommeEcartCarreOrange)
         VectorEcartCarreOrangeLog[i] = log10(sum_orange + 1.0e-20)
 
@@ -716,18 +718,18 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fal
     std_blue = std(E.Blue, corrected=true)
     cv = abs(std_blue / mean_blue)
 
-    # Handle cases when both dispersal and niche processes are so constraining that there's only one or very limited possible arrangement of species across sites when performing quasi-swap
-    if mean_blue == -20 && std_blue == 0  # Case 1
+    # Handle edge cases when both dispersal and niche processes are so constraining that there's only one or very limited possible arrangement of species across sites when performing quasi-swap
+    if mean_blue == -20 && std_blue == 0  # Case 4
         DNCI = NaN
         S_DNCI = NaN
         CI_DNCI = NaN
         status = "quasi_swap_permutation_not_possible"
-    elseif std_blue == 0  # Case 2
+    elseif std_blue == 0  # Case 5
         DNCI = NaN
         S_DNCI = NaN
         CI_DNCI = NaN
         status = "one_way_to_quasi_swap"
-    elseif cv < 0.01  # Case 3
+    elseif cv < 0.01  # Case 6
         DNCI = NaN
         S_DNCI = NaN
         CI_DNCI = NaN
@@ -740,7 +742,7 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fal
         DNCI = mean(SES_d) - mean(SES_n)
         S_DNCI = sqrt(std(SES_d, corrected=true)^2 + std(SES_n, corrected=true)^2)
         CI_DNCI = 2 * S_DNCI
-        status = "normal"
+        status = "normal" #Case 1
     end                               
     
     metric = DataFrames.DataFrame(group1= group[1], 

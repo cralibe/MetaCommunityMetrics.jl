@@ -590,7 +590,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_co
             println("Empty community detected, returning a metric with NaN values.")
             DNCI_result = DataFrame(group1=group_combinations[i][1], group2=group_combinations[i][2], 
                         DNCI=NaN, CI_DNCI=NaN, S_DNCI=NaN,
-                        status="empty_community")
+                        status="empty_community") #Case 2
             return DNCI_result
         end
     
@@ -602,7 +602,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_co
             println("Only one species present, not enough species in the selected groups to calculate DNCI. Skipping this group pair.")
             DNCI_result = DataFrame(group1=group_combinations[i][1], group2=group_combinations[i][2], 
                           DNCI=NaN, CI_DNCI=NaN, S_DNCI=NaN,
-                          status= "only_one_species_exists")
+                          status= "only_one_species_exists") #Case 3
             return DNCI_result
         end
 
@@ -611,7 +611,7 @@ function DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_co
             fill(group_combinations[i][1], size(splitx[group_combinations[i][1]], 1)),
             fill(group_combinations[i][2], size(splitx[group_combinations[i][2]], 1)))
 
-        #Calculate DNCI for the group pair
+        #Calculate DNCI for the group pair using the internal function
         DNCI_result = Internal.DNCI_ses(paired_x, group_pair, Nperm; count=Nperm_count)
             
         append!(ddelta, DNCI_result, promote=true)
