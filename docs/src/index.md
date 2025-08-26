@@ -42,8 +42,8 @@ For all the functions in this package, detailed instructions and examples can be
 - [`Hypervolume`] (https://cralibe.github.io/MetaCommunityMetrics.jl/Hypervolume/)
 
 ## Comparison between Julia and R implementations
-- [`Validation`] (https://cralibe.github.io/MetaCommunityMetrics.jl/Validation)
-- [`Benchmarking`](https://cralibe.github.io/MetaCommunityMetrics.jl/docs/src/Benchmarking/)
+- [`Validation Results`] (https://cralibe.github.io/MetaCommunityMetrics.jl/Validation)
+- [`Benchmarking Results`](https://cralibe.github.io/MetaCommunityMetrics.jl/Benchmarking/)
 
 
 ## Accessing the Sample Data for exploring the functions
