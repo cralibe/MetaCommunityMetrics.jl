@@ -44,18 +44,18 @@ beta_diversity_1 = @benchmark beta_diversity(matrix_with_abundance; quant=true) 
 beta_diversity_2 = @benchmark beta_diversity(matrix_with_abundance; quant=false) samples=100 evals=1
 beta_diversity_3 = @benchmark beta_diversity(matrix_with_presence; quant=false) samples=100 evals=1
 
-# Benchmark the mean_spatial_beta_div function
+# Benchmark the spatial_beta_div function
 spatial_beta_div_1 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true) samples=100 evals=1
 spatial_beta_div_2 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 spatial_beta_div_3 = @benchmark spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
-# Benchmark the mean_temporal_beta_div function
+# Benchmark the temporal_beta_div function
 temporal_beta_div_1 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true) samples=100 evals=1 seconds=1800
 temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
 ## Benchmark the DNCI functions
-clustering_result = create_clusters(df.Sampling_date_order, 
+clustering_result = create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
@@ -108,7 +108,6 @@ hypervolume_det_result = @benchmark MVNH_det(data_1; var_names=["Temperature", "
 
 hypervolume_dis_result = @benchmark MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Precipitation"]) samples=100 evals=1 seconds=1800
 
-#Save all the time samples to a DataFrame
 # Initialize empty DataFrame
 all_time_full = DataFrame()
 
@@ -135,10 +134,10 @@ for testcase in test_case_list
     # Append to the full DataFrame
     all_time_full = vcat(all_time_full, data)
 end
-# Save the time samples to a CSV file
+# Save all the trials to a CSV file
 CSV.write("benchmarks/result/all_time_full_julia.csv", all_time_full)
 
-# Save the results to a DataFrame
+# Save the summary to a DataFrame
 benchmark_result_full_df = DataFrame(TestCase = ["beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                         "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
                                         "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
@@ -192,12 +191,15 @@ benchmark_result_full_df = DataFrame(TestCase = ["beta_diversity_1", "beta_diver
 
 # Divide the time by 1e6 to convert from nanoseconds to milliseconds
 benchmark_result_full_df[:, 2:6] .= benchmark_result_full_df[:, 2:6] ./ 1e6
+
 # Divide the memory by 1024^2 to convert from bytes to mebibytes (Mib)
 # convert column type to Float64 before division
 benchmark_result_full_df[!, 7] = convert.(Float64, benchmark_result_full_df[:, 7])
+
 # perform the division
 benchmark_result_full_df[:, 7] .= benchmark_result_full_df[:, 7] ./ (1024^2)
 
+# Save the summary to a CSV file
 CSV.write("benchmarks/result/benchmark_result_full_df_julia.csv", benchmark_result_full_df)
 
 ##Medium dataset
@@ -221,23 +223,23 @@ matrix_with_presence =  @pipe df |>
            _[:, sum(_, dims=1)[1, :] .!= 0] |> 
            _[sum(_, dims=2)[:, 1] .!= 0,:]
 
-#### Benchmark the `beta_diversity` function
+#### Benchmark the beta_diversity function
 beta_diversity_1 = @benchmark beta_diversity(matrix_with_abundance; quant=true) samples=100 evals=1
 beta_diversity_2 = @benchmark beta_diversity(matrix_with_abundance; quant=false) samples=100 evals=1
 beta_diversity_3 = @benchmark beta_diversity(matrix_with_presence; quant=false) samples=100 evals=1
 
-# Benchmark the mean_spatial_beta_div function
+# Benchmark the spatial_beta_div function
 spatial_beta_div_1 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true) samples=100 evals=1
 spatial_beta_div_2 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 spatial_beta_div_3 = @benchmark spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
-# Benchmark the mean_temporal_beta_div function
+# Benchmark the temporal_beta_div function
 temporal_beta_div_1 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true) samples=100 evals=1 seconds=1800
 temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
 ## Benchmark the DNCI functions
-clustering_result = create_clusters(df.Sampling_date_order, 
+clustering_result = create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
@@ -289,7 +291,6 @@ hypervolume_det_result = @benchmark MVNH_det(data_1; var_names=["Temperature", "
 
 hypervolume_dis_result = @benchmark MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Precipitation"]) samples=100 evals=1 seconds=1800
 
-#Save all the time samples to a DataFrame
 # Initialize empty DataFrame
 all_time_medium = DataFrame()
 
@@ -316,10 +317,11 @@ for testcase in test_case_list
     # Append to the full DataFrame
     all_time_medium = vcat(all_time_medium, data)
 end
-# Save the time samples to a CSV file
+
+# Save all the trials to a CSV file
 CSV.write("benchmarks/result/all_time_medium_julia.csv", all_time_medium)
 
-                    # Save the results to a DataFrame
+# Save the summary to a DataFrame
 benchmark_result_medium_df = DataFrame(TestCase = ["beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                                 "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
                                                 "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
@@ -371,15 +373,17 @@ benchmark_result_medium_df = DataFrame(TestCase = ["beta_diversity_1", "beta_div
                                                 CV_meta_result.memory, 
                                                 hypervolume_det_result.memory, hypervolume_dis_result.memory])   
 
-# Save the results to a CSV file        
 # Divide the time by 1e6 to convert from nanoseconds to milliseconds
 benchmark_result_medium_df[:, 2:6] .= benchmark_result_medium_df[:, 2:6] ./ 1e6
+
 # Divide the memory by 1024^2 to convert from bytes to mebibytes (Mib)
 # convert column type to Float64 before division
 benchmark_result_medium_df[!, 7] = convert.(Float64, benchmark_result_medium_df[:, 7])
+
 # perform the division
 benchmark_result_medium_df[:, 7] .= benchmark_result_medium_df[:, 7] ./ (1024^2)
 
+# Save the summary to a CSV file
 CSV.write("benchmarks/result/benchmark_result_medium_df_julia.csv", benchmark_result_medium_df)
 
 
@@ -409,18 +413,18 @@ beta_diversity_1 = @benchmark beta_diversity(matrix_with_abundance; quant=true) 
 beta_diversity_2 = @benchmark beta_diversity(matrix_with_abundance; quant=false) samples=100 evals=1
 beta_diversity_3 = @benchmark beta_diversity(matrix_with_presence; quant=false) samples=100 evals=1
 
-# Benchmark the mean_spatial_beta_div function
+# Benchmark the spatial_beta_div function
 spatial_beta_div_1 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true) samples=100 evals=1
 spatial_beta_div_2 = @benchmark spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 spatial_beta_div_3 = @benchmark spatial_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
-# Benchmark the mean_temporal_beta_div function
+# Benchmark the temporal_beta_div function
 temporal_beta_div_1 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true) samples=100 evals=1 seconds=1800
 temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
 ## Benchmark the DNCI functions
-clustering_result = create_clusters(df.Sampling_date_order, 
+clustering_result = create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
@@ -473,7 +477,7 @@ hypervolume_det_result = @benchmark MVNH_det(data_1; var_names=["Temperature", "
 
 hypervolume_dis_result = @benchmark MVNH_dissimilarity(data_1, data_2; var_names=["Temperature", "Precipitation"]) samples=100 evals=1 seconds=1800
 
-#Save all the time samples to a DataFrame
+#Save all the trials to a DataFrame
 # Initialize empty DataFrame
 all_time_small = DataFrame()
 
@@ -500,10 +504,10 @@ for testcase in test_case_list
     # Append to the full DataFrame
     all_time_small = vcat(all_time_small, data)
 end
-# Save the time samples to a CSV file
+# Save all the trials to a CSV file
 CSV.write("benchmarks/result/all_time_small_julia.csv", all_time_small)
 
-# Save the results to a DataFrame
+# Save the summary to a DataFrame
 benchmark_result_small_df = DataFrame(TestCase = ["beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                                 "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
                                                 "temporal_beta_div_1", "temporal_beta_div_2", "temporal_beta_div_3",
@@ -554,13 +558,16 @@ benchmark_result_small_df = DataFrame(TestCase = ["beta_diversity_1", "beta_dive
                                                 prop_patches_result.memory, 
                                                 CV_meta_result.memory, 
                                                 hypervolume_det_result.memory, hypervolume_dis_result.memory])   
-# Save the results to a CSV file
+
 # Divide the time by 1e6 to convert from nanoseconds to milliseconds
 benchmark_result_small_df[:, 2:6] .= benchmark_result_small_df[:, 2:6] ./ 1e6
+
 # Divide the memory by 1024^2 to convert from bytes to mebibytes (Mib)
 # convert column type to Float64 before division
 benchmark_result_small_df[!, 7] = convert.(Float64, benchmark_result_small_df[:, 7])
+
 # perform the division
 benchmark_result_small_df[:, 7] .= benchmark_result_small_df[:, 7] ./ (1024^2)
 
+# Save the summary to a CSV file
 CSV.write("benchmarks/result/benchmark_result_small_df_julia.csv", benchmark_result_small_df)

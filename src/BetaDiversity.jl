@@ -3,11 +3,11 @@
 """
     beta_diversity(mat::Matrix; quant::Bool) -> DataFrame
 
-Calculate beta diversity for a given biodiversity data. This function supports both binary (presence/absence) and quantitative (abundance) data.
+Calculate beta diversity decompositions for a given biodiversity data. This function supports both binary (occurrences) and quantitative (abundance) data.
 
 Arguments
-- `mat::Matrix`: A matrix where each row represents a site and each column represents a species. The elements of the matrix should represent the presence/absence or abundance of species.
-- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as quantitative abundance data and applies Ruzicka-based indices.
+- `mat::Matrix`: A matrix where each row represents a site and each column represents a species. The elements of the matrix should represent the occurrence or abundance of species.
+- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as occurrences, converting any quantitative values into binary values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
 - `DataFrame`: A DataFrame with the following columns:
@@ -207,23 +207,22 @@ end
 """
     spatial_beta_div(abundance::AbstractVector, time::AbstractVector, site::AbstractVector, species::AbstractVector; quant::Bool) -> DataFrame
 
-Calculate the beta diversity decompositions of a metacommunity in space based on species abundances or presence-absences using the function `beta_diversity`.
+Calculate the beta diversity decompositions in space based on species abundances or occurrences.
 
 Arguments
-- `abundance::AbstractVector`: Vector representing the abundance or occurence of species.
+- `abundance::AbstractVector`: Vector representing the abundance or occurrence of species.
 - `time::AbstractVector`: Vector representing sampling dates.
 - `site::AbstractVector`: Vector representing site names or IDs.
 - `species::AbstractVector`: Vector representing species names or IDs.
-- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as quantitative abundance data and applies Ruzicka-based indices.
+- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
 - `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in space. Columns are `spatial_BDtotal`, `spatial_Repl`, and `spatial_RichDif`.
 
 Details
-- This function uses the `beta_diversity` function to calculate beta diversity components after aggregating .
+- This function uses the `beta_diversity` function to calculate beta diversity decompositions after aggregating individual species abundances/occurrences across time.
 - For binary data, the function calculates Podani family, Jaccard-based indices. 
 - For quantitative data, the function calculates Podani family, Ruzicka-based indices.
-- The beta diversity decompositions of a metacommunity in space is a set of metrics suggested by Guzman et al. (2022) to infer metacommunity processes.
 
 Example
 ```jildoctest
@@ -287,7 +286,7 @@ function spatial_beta_div(abundance::AbstractVector, time::AbstractVector, site:
         _[:, sum(_, dims=1)[1, :] .!= 0] |> 
         _[sum(_, dims=2)[:, 1] .!= 0,:] 
     
-    #Calculate beta diversity components
+    #Calculate beta diversity decompositions
     components = beta_diversity(df_matrix; quant=quant)
 
     spatial_beta_div_summary = DataFrames.DataFrame(
@@ -301,23 +300,22 @@ end
 """
     temporal_beta_div(abundance::AbstractVector, time::AbstractVector, site::AbstractVector, species::AbstractVector;quant::Bool) -> DataFrame
 
-Calculate the beta diversity decompositions of a metacommunity in time based on species abundances or presence-absences using the function `beta_diversity`.
+Calculate the beta diversity decompositions in time based on species abundances or occurrences.
 
 Arguments
-- `abundance::AbstractVector`: Vector representing the abundance or occurence of species.
+- `abundance::AbstractVector`: Vector representing the abundance or occurrence of species.
 - `time::AbstractVector`: Vector representing sampling dates.
 - `site::AbstractVector`: Vector representing site names or IDs.
 - `species::AbstractVector`: Vector representing species names or IDs.
-- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as quantitative abundance data and applies Ruzicka-based indices.
+- `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as occurrences, converting any quantitative values into binary values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
 - `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in time. Columns are `temporal_BDtotal`, `temporal_Repl`, and `temporal_RichDif`.
 
 Details
-- This function uses the `beta_diversity` function to calculate beta diversity components for each site.
+- This function uses the `beta_diversity` function to calculate beta diversity decompositions after aggregating individual species abundances/occurrences across sites.
 - For binary data, the function calculates Podani family, Jaccard-based indices. 
 - For quantitative data, the function calculates Podani family, Ruzicka-based indices.
-- The beta diversity decompositions of a metacommunity in time is a set of metrics suggested by Guzman et al. (2022) to infer metacommunity processes.
 
 Example
 ```jildoctest
@@ -381,7 +379,7 @@ function temporal_beta_div(abundance::AbstractVector, time::AbstractVector, site
         _[:, sum(_, dims=1)[1, :] .!= 0] |> 
         _[sum(_, dims=2)[:, 1] .!= 0,:] 
     
-    #Calculate beta diversity components
+    #Calculate beta diversity decompositions
     components = beta_diversity(df_matrix; quant=quant)
 
     temporal_beta_div_summary = DataFrames.DataFrame(

@@ -11,16 +11,16 @@ Arguments
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
-- `DataFrame`: A DataFrame containing:
-  - `Correlation`: The correlation component (calculated as det(COV)/prod(variances))
-  - One column for each environmental variable showing its variance
-  - `total`: The total hypervolume (calculated as the determinant of the covariance matrix)
+`DataFrame`: A DataFrame containing:
+    - `Correlation`: The correlation component (calculated as det(COV)/prod(variances))
+    - One column for each environmental variable showing its variance
+    - `total`: The total hypervolume (calculated as the determinant of the covariance matrix)
 
 Details
 - Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
 - Variables should be standardized before using this function to avoid bias from different scales
 - The function computes the covariance matrix of the input data, extracts variances, and calculates the determinant
-- This function is a Julia implementation of the `MVNH_det` function from the R package `MVNH` (GPL-3)
+- This function is a Julia implementation of the `MVNH_det()` function from the R package `MVNH` (GPL-3)
 - Original package and documentation: https://github.com/lvmuyang/MVNH
 
 Example
@@ -118,15 +118,15 @@ Arguments
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
-- `DataFrame`: A dataframe containing three metrics and their components:
-  - `"Bhattacharyya_distance"`: The total Bhattacharyya distance and its components
-  - `"Mahalanobis_distance"`: The Mahalanobis component of the Bhattacharyya distance
-  - `"Determinant_ratio"`: The determinant ratio component of the Bhattacharyya distance
+`DataFrame`: A dataframe containing three metrics and their components:
+    - `"Bhattacharyya_distance"`: The total Bhattacharyya distance and its components
+    - `"Mahalanobis_distance"`: The Mahalanobis component of the Bhattacharyya distance
+    - `"Determinant_ratio"`: The determinant ratio component of the Bhattacharyya distance
 
-  Each metric contains:
-  - `total`: The total value of the respective distance measure
-  - `correlation`: The correlation component of the distance measure
-  - One value for each environmental variable showing its contribution to the distance
+Each metric contains:
+    - `total`: The total value of the respective distance measure
+    - `correlation`: The correlation component of the distance measure
+    - One value for each environmental variable showing its contribution to the distance
 
 # Details
 - The Bhattacharyya distance is calculated as the sum of two components:

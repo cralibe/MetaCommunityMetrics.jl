@@ -15,10 +15,9 @@ using Statistics
 #Load the sample data
 df = load_sample_data()
 
-###Data Wrangling for running functions in this package and the equivalent function in R 
-##Preparing the matrices for calculating beta diveristy
-#df = CSV.read("data/metacomm_rodent_df.csv", DataFrame)
+###Data Wrangling for running functions in this package and the equivalent functions in R 
 
+##Preparing the data for calculating beta diveristy
 #matrix with the species abundance
 sample_matrix_abundance = @pipe df |> 
 select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> # remove the unused four columns
@@ -28,7 +27,6 @@ select(_, Not(:Sampling_date_order, :plot)) |> # remove the unused columns
 Matrix(_) |> #convert the dataframe to a matrix
 _[:, sum(_, dims=1)[1, :] .!= 0] |> # Remove columns with sum of zero
 _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
-
 
 #matrix with the species presence-absence data
 sample_matrix_presence = @pipe df |> 
@@ -41,15 +39,14 @@ _[:, sum(_, dims=1)[1, :] .!= 0] |> # Remove columns with sum of zero
 _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
 
 #Data for the DNCI analysis
-
-# The groupings at t=60
-clustering_result = create_clusters(df.Sampling_date_order, 
+clustering_result = create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
                                             df.Species, 
                                             df.Presence)
 
+# The groupings at t=60
 group_df = @pipe df |>
                 filter(row -> row[:Sampling_date_order] == 60, _) |>
                 select(_, [:plot, :Species, :Presence]) |>
@@ -57,9 +54,10 @@ group_df = @pipe df |>
                 select(_, [:plot, :Species, :Presence, :Group]) |>
                 unstack(_, :Species, :Presence, fill=0)
 
-#The community presence matrix at t=50 with singletons removed
+#The community presence matrix at t=60
 comm= @pipe group_df |>
                   select(_, Not([:plot,:Group]))
+
 
 
 #Environmental Data for hypervolume calculations
@@ -169,7 +167,7 @@ temporal_beta_div_3 <- df %>%
 """
 
 
-## The DNCI analysis
+## The DNCI analysis in R
 R"""
 # Repeat DNCI_multigroup() multiple times
 n_reps <- 100
@@ -186,7 +184,7 @@ for (i in 1:n_reps) {
 }
 """
 
-## The Occupied Patches Proportion
+## The Occupied Patches Proportion in R
 R"""
 prop_patches_result <- df %>% 
                              group_by(Species, plot) %>%
@@ -198,10 +196,9 @@ prop_patches_result <- df %>%
 
 """
 
-
-R"""
-## The Variability metric
+## The Variability Metric in R
 # The R function “var.partition” written by Wang et al. (2019) to calculate variability and synchrony across hierarchical levels
+R"""
 var.partition <- function(metacomm_tsdata){
   ## The function "var.partition" performs the partitioning of variability
   ## across hierarchical levesl within a metacommunity.
@@ -253,10 +250,9 @@ CV_result <- var.partition(metacomm_tsdata)
 
 """
 
-## Hypervolume
-R"""
+## Hypervolume Measurements in R
 # using functions from the R package MVNH (https://github.com/lvmuyang/MVNH)
-
+R"""
 MVNH_det_result <- MVNH_det(sp1_data, var.names = c("normalized_temperature", "normalized_precipitation"))
 
 MVNH_dissimilarity <- MVNH_dissimilarity(sp1_data, sp2_data,  var.names = c("normalized_temperature", "normalized_precipitation"))
@@ -294,14 +290,14 @@ temporal_beta_div_3_r = rcopy(temporal_beta_div_3_r)
 #DNCI
 dnci_values_r = R"dnci_values_df"
 dnci_values_r = rcopy(dnci_values_r)
-save_object("validation/validation_output/dnci_values_r.jld2", dnci_values_r)
-dnci_values_r = load_object("validation/validation_output/dnci_values_r.jld2")
+save_object("validation/output/dnci_values_r.jld2", dnci_values_r)
+dnci_values_r = load_object("validation/output/dnci_values_r.jld2")
 
-# Occupied Patches Proportion
+#Occupied Patches Proportion
 prop_patches_result_r = R"prop_patches_result"
 prop_patches_result_r = rcopy(prop_patches_result_r)
 
-# Variability metric
+#Variability metric
 CV_result_r = R"CV_result[1:4]"
 CV_result_r = rcopy(CV_result_r)
 
@@ -336,8 +332,8 @@ for i in 1:n_rep
     append!(dnci_values_julia, result)
 end
 
-save_object("validation/validation_output/dnci_values_julia.jld2", dnci_values_julia)
-dnci_values_julia=load_object("validation/validation_output/dnci_values_julia.jld2")
+save_object("validation/output/dnci_values_julia.jld2", dnci_values_julia)
+dnci_values_julia=load_object("validation/output/dnci_values_julia.jld2")
 
 ##Occupied Patches Proportion
 prop_patches_result_julia = prop_patches(df.Presence, df.Species, df.plot)
@@ -460,10 +456,10 @@ MVNH_det_summary_df = format_numeric_columns(MVNH_det_summary_df)
 MVNH_dissimilarity_summary_df = format_numeric_columns(MVNH_dissimilarity_summary_df)
 
 # Save the results to CSV 
-CSV.write("validation/validation_output/beta_diversity_summary_df.csv", beta_diversity_summary_df)
-CSV.write("validation/validation_output/dnci_combined_df.csv", DNCI_combined_df)
-CSV.write("validation/validation_output/dnci_summary_df.csv", dnci_summary_df)
-CSV.write("validation/validation_output/prop_patches_summary_df.csv", prop_patches_summary_df)
-CSV.write("validation/validation_output/CV_summary_df.csv", CV_summary_df)
-CSV.write("validation/validation_output/MVNH_det_summary_df.csv", MVNH_det_summary_df)
-CSV.write("validation/validation_output/MVNH_dissimilarity_summary_df.csv", MVNH_dissimilarity_summary_df)
+CSV.write("validation/output/beta_diversity_summary_df.csv", beta_diversity_summary_df)
+CSV.write("validation/output/dnci_combined_df.csv", DNCI_combined_df)
+CSV.write("validation/output/dnci_summary_df.csv", dnci_summary_df)
+CSV.write("validation/output/prop_patches_summary_df.csv", prop_patches_summary_df)
+CSV.write("validation/output/CV_summary_df.csv", CV_summary_df)
+CSV.write("validation/output/MVNH_det_summary_df.csv", MVNH_det_summary_df)
+CSV.write("validation/output/MVNH_dissimilarity_summary_df.csv", MVNH_dissimilarity_summary_df)

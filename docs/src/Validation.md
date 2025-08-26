@@ -2,10 +2,9 @@
 ```@meta
 CurrentModule = MetaCommunityMetrics
 ```
-We validate all the calcuations in `MetaCommunityMetrics` that have equvilant functions in R to make sure the functions in `MetaCommunityMetrics` are correct and accurate as the equvilant functions in R. All validation results are presented to 4 decimal places (±0.0001) here. Floating-point differences between implementations smaller than 0.0001 were considered negligible for both statistical and ecological applications of these metrics.
+We validate all the implementation in `MetaCommunityMetrics` that have equvilant implementations in R to make sure the functions in `MetaCommunityMetrics` are correct and accurate as the equvilant functions in R. All validation results are presented to 4 decimal places (±0.0001) here. Floating-point differences between implementations smaller than 0.0001 were considered negligible for both statistical and ecological applications of these metrics.
 
 ## Validation Result
-*Below is a comparison of the results between `MetaCommunityMetrics` and functions/equivalent implementation in R.*
 
 ### Beta Diversity
 *Absolute Differences between the results from `MetaCommunityMetrics` and the equvilant functions in R are shown here. All values *

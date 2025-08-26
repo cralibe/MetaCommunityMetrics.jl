@@ -1,13 +1,14 @@
 # benchmarks/result.R
-#This script is used to calculate the speedup and combine the results from julia and R.
+#This script is used to calculate the speedup and combine the benchmarking results from julia and R.
 #Load necessary libraries
 library(dplyr)
 library(ggplot2)
 library(cowplot)
 library(ggrepel)
 library(boot)
+
 #Read in the result
-#all time samples
+#The results with all the trials
 all_time_full_julia<-read.csv("result/all_time_full_julia.csv")
 all_time_full_r<-read.csv("result/all_time_full_df_r.csv")
 
@@ -27,7 +28,7 @@ medium_result_r<-read.csv("result/benchmark_result_medium_df_r.csv")
 small_result_julia<-read.csv("result/benchmark_result_small_df_julia.csv")
 small_result_r<-read.csv("result/benchmark_result_small_df_r.csv")
 
-#Organize the data
+#Organize the summary data
 full_result<-full_result_julia%>%
   select(TestCase, Time_median)%>%
   rename(Time_median_julia=Time_median)%>%
@@ -61,7 +62,8 @@ write.csv(medium_result, "result/medium_df_speedup.csv")
 write.csv(full_result, "result/full_df_speedup.csv")
 
 
-##Bootstrap 95% confidence interval for the median to deal with outlier in the higher end
+##Bootstrap 95% confidence interval for the median execution time
+# Combine all data into one data frame with a Language column
 combined_data<-rbind(all_time_full_julia%>%mutate(DataSize="Large", Language="Julia"),
                      all_time_medium_julia%>%mutate(DataSize="Medium", Language="Julia"),
                     all_time_small_julia%>%mutate(DataSize="Small", Language="Julia"),
@@ -88,12 +90,12 @@ for (combo in 1:nrow(combinations)) {
                                         DataSize == current_combo$DataSize, 
                                         Language == "R")
 
-  # Calculate the ratio of medians
+  # Calculate the speedup ratio of medians
   median_julia <- median(julia_data$Time)
   median_r <- median(r_data$Time)
   speedup_ratio <- median_r / median_julia
   
-  # Bootstrap CI for ratio of medians
+  # Bootstrap CI for speedup ratio of medians
   n_boots <- 2000
   bootstrap_ratios <- numeric(n_boots)
   
@@ -137,6 +139,8 @@ test_case_order <- c(
   "Hypervolume Estimation",
   "Hypervolume Dissimilarity"
 )
+
+# Save the median_ci_all with descriptive TestCase names
 median_ci_all_save <- median_ci_all %>%
   mutate(TestCase = case_when(
     TestCase == "beta_diversity_1" ~ "Beta Diversity (Abundance, quant=true)",
@@ -159,11 +163,11 @@ median_ci_all_save <- median_ci_all %>%
   arrange(TestCase)
 
 write.csv(median_ci_all_save, "result/median_ci_all.csv")
-##plot
-# First, extract the base test name (before the underscore and number)
+
+##The Speedup Plot
 median_ci_df <- median_ci_all %>%
   mutate(
-    # Extract the base test name (everything before the last underscore or before _#)
+    # Extract the base test name (everything before the last underscore or before the number)
     TestGroup = case_when(
       grepl("beta_diversity", TestCase) ~ "beta_diversity",
       grepl("spatial_beta_div", TestCase) ~ "spatial_beta_div",
@@ -261,6 +265,8 @@ median_ci_df  <- median_ci_df  %>%
     TestGroup = factor(TestGroup, levels = test_group_order),
     TestCase = factor(TestCase, levels = test_case_order)
   )
+
+
 # Now create the plot with the ordered data
 p <- ggplot(median_ci_df , 
             aes(x = DataSize, y = Speedup_median, 
@@ -296,7 +302,8 @@ p <- ggplot(median_ci_df ,
 
 #save te plot
 ggsave("result/speedup.pdf", dpi=300, width = 10, height = 5, bg="white")
-#Memory
+
+# Memory comparison
 full_result_memory<-full_result_julia%>%
   select(TestCase, memory)%>%
   rename(memory_julia=memory)%>%
@@ -380,37 +387,7 @@ small_result_memory<-small_result_julia%>%
   mutate(TestCase = factor(TestCase, levels = test_case_order)) %>%
   arrange(TestCase)
 
+# save the memory comparison results
 write.csv(small_result_memory, "result/small_df_memory.csv")
 write.csv(medium_result_memory, "result/medium_df_memory.csv")
 write.csv(full_result_memory, "result/full_df_memory.csv")
-
-
-small_result_memory%>%
-  mutate(diff=memory_julia-memory_r)%>%
-  arrange(diff)
-
-medium_result_memory%>%
-  mutate(diff=memory_julia-memory_r)%>%
-  arrange(diff)
-
-full_result_memory%>%
-  mutate(diff=memory_julia-memory_r)%>%
-  arrange(diff)
-
-
-##Speedup for the DNCI with parallelComputing in R using the full dataset
-DNCI_multigroup_result<-read.csv("../benchmarks/result/benchmark_result_full_df_julia.csv")%>%
-  filter(TestCase=="DNCI_multigroup_result")
-DNCI_multigroup_result_p<-readRDS("../benchmarks/result/DNCI_full_result_with_parallelComputing.rds")
-
-
-result_df<-data.frame(TestCase = "DNCI_multigroup_result",
-                      Speedup = as.numeric(mean(DNCI_multigroup_result_p$time[[1]])) * 1e+3/
-                        DNCI_multigroup_result$Time_median,
-                      julia_memory = DNCI_multigroup_result$memory,
-                      r_memory = as.numeric(DNCI_multigroup_result_p$mem_alloc) / 1024^2)
-                      
-write.csv(result_df, "result/benchmark_DNCI_with_parallelComputing_full_df.csv")
-
-
-

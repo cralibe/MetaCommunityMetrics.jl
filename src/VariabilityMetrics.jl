@@ -6,10 +6,10 @@ using DataFrames, Pipe
 """
     CV_meta(abundance::AbstractVector, time::AbstractVector, site::AbstractVector, species::AbstractVector) -> DataFrame
 
-Calculates coefficients of variation (CV) for species and community biomass at both local and regional scales within a metacommunity.
+Calculates coefficients of variation for species and community abundances at both local and regional scales within a metacommunity.
 
 Arguments
-- `abundance::AbstractVector`: Vector representing the abundance of species.
+- `abundance::AbstractVector`: Vector representing the abundance (biomass can also be used) of species.
 - `time::AbstractVector`: Vector representing sampling dates.
 - `site::AbstractVector`: Vector representing site names or IDs.
 - `species::AbstractVector`: Vector representing species names or IDs.

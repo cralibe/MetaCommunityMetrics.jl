@@ -92,7 +92,7 @@ function niche_overlap(abundance::AbstractVector, species::AbstractVector, site:
         sp1 = values(proportion_use_df[i, :])
         sp2 = values(proportion_use_df[j, :])
         
-        # Calculate Pianka's overlap index - Standard approach
+        # Calculate Pianka's overlap index
         numerator = sum(sp1[k] * sp2[k] for k in 1:length(sp1))
         denom1 = sum(sp1[k]^2 for k in 1:length(sp1))
         denom2 = sum(sp2[k]^2 for k in 1:length(sp2))

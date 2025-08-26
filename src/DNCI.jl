@@ -17,11 +17,22 @@ Arguments
 - `presence::AbstractVector`: A vector indicating the presence (1) or absence (0) of species at each site.
 
 Returns
-- `Dict{Int, DataFrame}`: A dictionary where each key represents a unique time point from the input data, with the corresponding value being a `DataFrame` for that time step. Each `DataFrame` contains the following columns: `Time`, `Latitude`, `Longitude`, `Site`, `Species`, `Presence` and `Group` (indicating the assigned groups).
+- `Dict{Int, DataFrame}`: A dictionary where each key represents a unique time point from the input data, with the corresponding value being a `DataFrame` for that time step. Each `DataFrame` contains the following columns:
+    - `Time`
+    - `Latitude`
+    - `Longitude`
+    - `Site`
+    - `Species`
+    - `Presence`
+    - `Group` (indicating the assigned groups).
 
 Details
-- This function performs hierarchical clustering on the geographical coordinates of sampling sites at each unique time step. 
-- This function incorporates checks and adjustments to ensure the following conditions are met: having at least 2 groups, a minimum of 5 sites per group, and that the variation in the number of taxa/species and sites per group does not exceed 40% and 30%, respectively. These conditions are critical for calculating an unbiased DNCI value, and the function will issue warnings and the groupings will be returned as "missing" if any are not fulfilled.
+- This function performs hierarchical clustering on the geographical coordinates of sampling sites at each time point separately and processes all time points in a single execution. 
+- This function incorporates checks and adjustments to ensure the following conditions are met: 
+    - Having at least 2 groups
+    - A minimum of 5 sites per group, 
+    - The variation in the number of taxa/species and sites per group does not exceed 40% and 30%, respectively. 
+    These conditions are critical for calculating an unbiased DNCI value, and the function will issue warnings and the groupings will be returned as "missing" if any of the above are not fulfilled.
 - Empty sites are allowed.
 Example
 ```jildoctest
@@ -193,6 +204,7 @@ Visualizes grouping results by generating an SVG image displaying the geographic
 - `String`: The path to the created SVG file.
 
 # Details
+- The functions provides visualization for one time point per function call.
 - The function generates a standalone SVG file that can be viewed in any web browser or image viewer.
 - Each group is assigned a unique color, and sampling sites are plotted based on their geographic coordinates.
 - The visualization includes a legend identifying each group.
@@ -377,28 +389,28 @@ end
 """
     DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_count::Bool=true) -> DataFrame
 
-Calculates the dispersal-niche continuum index (DNCI) for multiple groups, a metric proposed by Vilmi(2021). The DNCI quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. 
+Calculates the dispersal-niche continuum index (DNCI) for a metacommunity, a metric proposed by Vilmi(2021). The DNCI quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. 
 
 Arguments
-- `comm::Matrix`: A presence-absence data matrix where rows represent observations (e.g., sites or samples) and columns represent species.
+- `comm::Matrix`: A presence-absence data matrix where rows represent observations (e.g., sites) and columns represent species.
 - `groups::Vector`: A vector indicating the group membership for each row in the `comm` matrix. You can use the `create_clusters` function to generate the group membership.
 - `Nperm::Int=1000`: The number of permutations for significance testing. Default is 1000.
 - `Nperm_count::Bool=true`: A flag indicating whether the number of permutations is printed. Default is `false`.
 
 Returns
-- The DataFrame will have the following columns:
-  - `Group1`: The first group in the pair.
-  - `Group2`: The second group in the pair.
-  - `DNCI`: The calculated DNCI value.
-  - `CI_DNCI`: The confidence interval for the DNCI value.
-  - `S_DNCI`: The standard deviation of the DNCI value.
-  - `Status`: A string indicating how the DNCI is calculated. It is mainly used to flag edge cases as follows:
-        - `normal` indicates that the DNCI is calculated as normal.
-        - `empty_community` indicates no species existed in any sites in a given group pair, `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
-        - `only_one_species_exists` indicates that only one species existed in a given group pair, which is not possible to calculate relative species contribution to overall dissimilarity. `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
-        - `quasi_swap_permutation_not_possible` indicates that the quasi-swap permutation (a matrix permutation algorithms that preserves row and column sums) is not possible due to extreme matrix constraints that prevent any rearrangement of species across sites. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
-        - `one_way_to_quasi_swap` indicates that only one arrangement is possible under quasi-swap constraints, preventing generation of a null distribution. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
-        - `inadequate_variation_quasi_swap` indicates that quasi-swap permutations generated insufficient variation (coefficient of variation <1%) for reliable statistical inference. DNCI, CI_DNCI, and S_DNCI are returned as NaN.
+The DataFrame will have the following columns:
+- `Group1`: The first group in the pair.
+- `Group2`: The second group in the pair.
+- `DNCI`: The calculated DNCI value.
+- `CI_DNCI`: The confidence interval for the DNCI value.
+- `S_DNCI`: The standard deviation of the DNCI value.
+- `Status`: A string indicating how the DNCI is calculated. It is mainly used to flag edge cases as follows:
+    - `normal` indicates that the DNCI is calculated as normal.
+    - `empty_community` indicates no species existed in any sites in a given group pair, `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
+    - `only_one_species_exists` indicates that only one species existed in a given group pair, which is not possible to calculate relative species contribution to overall dissimilarity. `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
+    - `quasi_swap_permutation_not_possible` indicates that the quasi-swap permutation (a matrix permutation algorithms that preserves row and column sums) is not possible due to extreme matrix constraints that prevent any rearrangement of species across sites. `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
+    - `one_way_to_quasi_swap` indicates that only one arrangement is possible under quasi-swap constraints, preventing generation of a null distribution. `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
+    - `inadequate_variation_quasi_swap` indicates that quasi-swap permutations generated insufficient variation (coefficient of variation <1%) for reliable statistical inference. `DNCI`, `CI_DNCI`, and `S_DNCI` are returned as `NaN`.
 Details
 - The function calculates the DNCI for each pair of groups in the input data.
 - When the DNCI value is significantly below zero, dispersal processes are likely the dominant drivers of community composition. 

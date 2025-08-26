@@ -3,9 +3,9 @@
 """
     prop_patches(presence::AbstractVector, species::AbstractVector, site::AbstractVector) -> DataFrame
 
-Calculate the proportion of patches occupied by each species and summarize the results.
+Calculate the proportion of sites occupied by each species and summarize the results.
 
-This function takes three vectors: `presence`, `species`, and `patch`, and performs the following steps:
+This function takes three vectors: `presence`, `species`, and `site`, and performs the following steps:
 
 Arguments
 - `presence::AbstractVector`: Vector representing the occurence of species.
@@ -13,7 +13,7 @@ Arguments
 - `site::AbstractVector`: Vector representing site names or IDs.
 
 Returns
-- `DataFrame`: A DataFrame containing the mean, minimum, and maximum proportion of patches 
+- `DataFrame`: A DataFrame containing the mean, minimum, and maximum proportion of sites 
                occupied across all species.
 
 Example

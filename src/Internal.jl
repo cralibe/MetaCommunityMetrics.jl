@@ -243,7 +243,7 @@ function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for p
         ALGO= "c0" #non-sequential algorithm for binary matrices 
         #that preserves species frequencies (Jonsson 2001).
     elseif fixedmar == "both"
-        ALGO = "quasiswap"#non-sequential algorithm for binary matrices 
+        ALGO = "quasiswap" #non-sequential algorithm for binary matrices 
         #that implements a method where matrix is first filled honouring 
         #row and column totals, but with integers that may be larger than one. 
         #Then the method inspects random 2*2 matrices and performs a quasiswap on them.

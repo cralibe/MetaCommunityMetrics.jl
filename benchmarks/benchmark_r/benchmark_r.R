@@ -1,14 +1,11 @@
-# benchmarks/benchmark_r.R
+#This is the script to benchmark the equivalent functions in R using the sample datasets
 # Load necessary libraries
 library(data.table)  
 library(tidyverse)
 library(bench)
-## R packages that provide equivalent functions of my package  
 library(adespatial) 
 library(DNCImper)
 library(MVNH)
-
-setwd()
 
 #Read in the sample data
 full_df <- read.csv("metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE) #There is a species called "NA", need to handle NAs with caution
@@ -151,12 +148,6 @@ prop_patches_result <- mark(df %>%
 #### Benchmark the CV_meta function
 # The R function “var.partition” to calculate variability and synchrony across hierarchical levels
 var.partition <- function(metacomm_tsdata){
-  ## The function "var.partition" performs the partitioning of variability
-  ## across hierarchical levesl within a metacommunity.
-  ## The input array "metacomm_tsdata" is an N*T*M array. The first dimension represents N species,
-  ## the second represents time-series observations of length T, and the third represents M local communities.
-  ## The output includes four variability and four synchrony metrics as defined in the main text.
-  ## Note that, to be able to handle large metacommunities, this code has avoided calculating all covariance.
   ts_metacom <- apply(metacomm_tsdata,2,sum) #summing the total biovolume across all species and patch at every time point
   ts_patch <- apply(metacomm_tsdata,c(2,3),sum) #summing the total biovolume across all species in every patch at every time point
   ts_species <- apply(metacomm_tsdata,c(1,2),sum)#summing the total biovolume across all patches for every species at every time point
@@ -169,14 +160,9 @@ var.partition <- function(metacomm_tsdata){
   CV_C_L <- sum(sd_patch_k)/mean_metacom
   CV_S_R <- sum(sd_species_i)/mean_metacom
   CV_C_R <- sd_metacom/mean_metacom
-  #phi_S_L2R <- CV_S_R/CV_S_L
-  #phi_C_L2R <- CV_C_R/CV_C_L
-  #phi_S2C_L <- CV_C_L/CV_S_L
-  #phi_S2C_R <- CV_C_R/CV_S_R
+
   partition_3level <- c(CV_S_L=CV_S_L, CV_C_L=CV_C_L, CV_S_R=CV_S_R, CV_C_R=CV_C_R)
-                        #,
-                        #phi_S_L2R=phi_S_L2R, phi_C_L2R=phi_C_L2R, phi_S2C_L=phi_S2C_L,
-                        #phi_S2C_R=phi_S2C_R)
+
   return(partition_3level)
 }
 
@@ -251,10 +237,12 @@ times <- as.numeric(testcase_obj$time[[1]]) * 1e+3
 # Create data frame for this test case
 data <- data.frame(TestCase = rep(testcase, length(times)),Time = times)
   
-  # Append to the full data frame - this is the key fix
-  all_time_full <- rbind(all_time_full, data)
+# Append to the full data frame
+all_time_full <- rbind(all_time_full, data)
+
 }
 
+#Save all trials' time results into a csv file
 write.csv(all_time_full, "../benchmarks/result/all_time_full_df_r.csv")
 
 
@@ -347,7 +335,8 @@ benchmark_result_full_df<-data.frame(TestCase = c("beta_diversity_1", "beta_dive
                                                as.numeric(CV_meta_result$mem_alloc) / 1024^2,
                                   as.numeric(hypervolume_det_result$mem_alloc) / 1024^2,
                                   as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
-           
+
+#Save the summary results into a csv file
 write.csv(benchmark_result_full_df, "../benchmarks/result/benchmark_result_full_df_r.csv")
 
 #Medium Dataset####
@@ -529,6 +518,7 @@ for (testcase in test_case_list) {
   all_time_medium <- rbind(all_time_medium, data)
 }
 
+#Save all trials' time results into a csv file
 write.csv(all_time_medium, "../benchmarks/result/all_time_medium_df_r.csv")
 
 benchmark_result_medium_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
@@ -622,7 +612,7 @@ benchmark_result_medium_df<-data.frame(TestCase = c("beta_diversity_1", "beta_di
                                                 as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
 
 
-
+#Save the summary results into a csv file
 write.csv(benchmark_result_medium_df, "../benchmarks/result/benchmark_result_medium_df_r.csv")
 
 #Small Dataset####
@@ -802,7 +792,7 @@ for (testcase in test_case_list) {
   # Append to the full data frame - this is the key fix
   all_time_small <- rbind(all_time_small, data)
 }
-
+#Save all trials' time results into a csv file
 write.csv(all_time_small, "../benchmarks/result/all_time_small_df_r.csv")
 
 benchmark_result_small_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
@@ -895,22 +885,8 @@ benchmark_result_small_df<-data.frame(TestCase = c("beta_diversity_1", "beta_div
                                                   as.numeric(hypervolume_det_result$mem_alloc) / 1024^2,
                                                   as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
 
-
+#Save the summary results into a csv file
 write.csv(benchmark_result_small_df, "../benchmarks/result/benchmark_result_small_df_r.csv")
-
-
-####Additional benchmarking result
-DNCI_multigroup_result_p <- mark(DNCImper:::DNCI_multigroup(comm_full,
-                                                            groups_full$Group, 
-                                                            Nperm = 100,
-                                                            symmetrize = FALSE,
-                                                            plotSIMPER = FALSE,                                              
-                                                        parallelComputing = TRUE), iterations = 100,
-                                                                 check = FALSE,
-                                                               time_unit = "ms")
-
-saveRDS(DNCI_multigroup_result_p, "../benchmarks/result/DNCI_full_result_with_parallelComputing.rds")
-
 
 
 

@@ -15,16 +15,17 @@ CurrentModule = MetaCommunityMetrics
 To assess the efficiency of `MetaCommunityMetrics` compared to equivalent `R` implementations, we benchmark our functions against their `R` counterparts, focusing on execution time and memory usage. The following tables summarize the benchmark results based on 100 samples each. 
 
 We tested using datasets of three sizes:
-- Small (5,325 observations)
-- Medium (26,676 observations) 
 - Large (53,352 observations)
+- Medium (26,676 observations, 50% of the size of the large dataset) 
+- Small (5,325 observations, 10% of the size of the large dataset)
 
 The large dataset is the sample data included with `MetaCommunityMetrics`, accessible via `load_sample_data()`. The small and medium datasets can be accessed [`here`](https://github.com/cralibe/MetaCommunityMetrics.jl/tree/main/data/data_for_testing).
 
 Each function was benchmarked using 100 samples in both `BenchmarkTools.jl` in `Julia` and `bench::mark()` in `R` to ensure robust statistical sampling. For memory usage comparisons:
 
-- In `Julia`, we report the `memory estimate` from `BenchmarkTools.jl`, which measures bytes allocated during the trial with minimum elapsed time
-- In `R`, we report the `mem_alloc` metric from `bench::mark()`, which tracks R heap allocations
+- In `Julia`, we report the `memory estimate` from `BenchmarkTools.jl`, which measures bytes allocated for a given expression per sample.
+
+- In `R`, we report the `mem_alloc` metric from `bench::mark()`, which tracks R heap allocation per sample.
 
 According to documentation, the `Julia` metric measures total memory allocation during execution, while the `R` metric specifically tracks heap allocations within the R runtime, excluding "memory allocated outside the R heap, e.g., by `malloc()` or `new` directly." Due to differences in language implementation and measurement methodology, direct numerical comparisons between languages should be interpreted with caution.
 
@@ -196,7 +197,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 ```
 
 ## Remarks
-- For `DNCI_multigroup_result`, 100 permutations are used in both the `Julia` and `R` implementation, and `parallelComputing` was set to be `TRUE` when benchmarking `DNCImper:::DNCI_multigroup()` in `R`.
+- For `DNCI_multigroup_result`, 100 permutations per sample are used in both the `Julia` and `R` implementation, and `parallelComputing` was set to be `TRUE` when benchmarking `DNCImper:::DNCI_multigroup()` in `R`.
 
 ## The Scripts Used for Benchmarking
 - [`Julia`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/benchmarks/benchmark_julia.jl)

@@ -2,15 +2,19 @@
 ```@meta
 CurrentModule = MetaCommunityMetrics
 ```
-The Dispersal-Niche Continuum Index (DNCI) functions in `MetaCommunityMetrics` quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. The function `DNCI_multigroup`  in this package is adapted from the R package `DNCImper`: Assembly process identification based on SIMPER analysis. These methods, originally developed by Clarke(1993) and later refined by Gibert & Escarguel(2019) and Vilmi et al.(2021), offer powerful tools for identifying the processes underlying species assembly in metacommunities. 
+The Dispersal-Niche Continuum Index (DNCI) functions in `MetaCommunityMetrics` quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. The function `DNCI_multigroup()` in this package is adapted from the R package `DNCImper`.
 
 ## Background
-The DNCI functions is built around the Per-SIMPER and DNCI analyses. PerSIMPER, based on the Similarity Percentage (SIMPER) analysis developed by Clarke (1993), assesses the contribution of individual taxa to overall dissimilarity (OAD) between groups of assemblages. PerSIMPER enhances this by comparing empirical SIMPER plots with randomized plots generated through matrix permutation, which helps identify whether niche, dispersal, or both processes are driving community assembly.
-
-The DNCI (Dispersal-Niche Continuum Index) further extends this approach by transforming the qualitative results of PerSIMPER into a quantitative index, providing a straightforward measure of the influence of niche and dispersal processes on community structure.
+Vilmi et al. (2021) developed DNCI based on the PER-SIMPER method introduced by Gibert and Escarguel (2019) to compare observed community composition against three null model scenarios: (1) a niche assembly model that randomizes species identities while maintaining site-level species richness, (2) a dispersal assembly model that randomizes spatial locations while maintaining species-level occurrence frequencies, and (3) a combined model that maintains both constraints (Vilmi et al. 2021). PER-SIMPER uses the SIMPER analysis (Clarke 1993) to generate the profiles of species contributions to average between-group dissimilarity for both the observed data and the community matrices permuted by the three corresponding null models (i.e. the PER-SIMPER profiles), where dissimilarity is averaged across all site pairs, one site from each group (Gibert and Escarguel 2019). PER-SIMPER provides qualitative analysis of similarity between the observed SIMPER profile and null model PER-SIMPER profiles, while DNCI quantifies these similarities to calculate the relative importance of dispersal and niche processe.
 
 ## Functionality Overview
-The DNCI functions in `MetaCommunityMetrics` allow you to analyze the processes driving species assembly within your dataset. By comparing empirical data with randomized permutations, one can determine the extent to which niche and dispersal processes influence the structure of metacommunities. Before calculating the DNCI, groupings of sites (clusters) are required, as the DNCI relies on analyzing community composition across spatial groups. This package provides a function to perform the necessary clustering, which is not available in the equivalent R package. When the DNCI value is significantly below zero, dispersal processes are likely the dominant drivers of community composition. In contrast, a DNCI value significantly above zero suggests that niche processes play a primary role in shaping community composition. If the DNCI value is not significantly different from zero, it indicates that dispersal and niche processes contribute equally to variations in community composition.
+Unlike the other metrics in this package, DNCI analysis operates on only one time point at
+a time. Positive DNCI values suggest niche processes dominate community assembly, while
+negative DNCI values suggest dispersal limitation is more influential at a given time point.
+DNCI values that do not differ significantly from zero suggest equal contributions from both
+processes at a given time point. 
+
+Before calculating the DNCI, groupings of sites are required, as the DNCI relies on analyzing community composition across site groups. This package provides `create_groups()` to perform the necessary groupings for all time points, and  `plot_groups()` to visualize the groupings at a given time points, which are not available in the R implementation. 
 
 ## The Functions 
 ```@docs
@@ -25,6 +29,7 @@ DNCI_multigroup
 ```
 
 ## References
-1. Clarke, K. R. Non-parametric multivariate analyses of changes in community structure. Australian Journal of Ecology 18, 117-143 (1993). https://doi.org:https://doi.org/10.1111/j.1442-9993.1993.tb00438.x
-2. Gibert, C. & Escarguel, G. PER-SIMPER—A new tool for inferring community assembly processes from taxon occurrences. Global Ecology and Biogeography 28, 374-385 (2019). https://doi.org:https://doi.org/10.1111/geb.12859
-3. Vilmi, A. et al. Dispersal–niche continuum index: a new quantitative metric for assessing the relative importance of dispersal versus niche processes in community assembly. Ecography 44, 370-379 (2021). https://doi.org:https://doi.org/10.1111/ecog.05356
+1. Clarke, K. R. (1993). Non‐parametric multivariate analyses of changes in community structure. Australian journal of ecology, 18(1), 117-143. https://doi.org:https://doi.org/10.1111/j.1442-9993.1993.tb00438.x
+2. Gibert, C., & Escarguel, G. (2019). PER‐SIMPER—A new tool for inferring community assembly processes from taxon occurrences. Global Ecology and Biogeography, 28(3), 374-385. https://doi.org:https://doi.org/10.1111/geb.12859
+3. Vilmi, A., Gibert, C., Escarguel, G., Happonen, K., Heino, J., Jamoneau, A., ... & Wang, J. (2021). Dispersal–niche continuum index: a new quantitative metric for assessing the relative importance of dispersal versus niche processes in community assembly. Ecography, 44(3), 370-379. https://doi.org:https://doi.org/10.1111/ecog.05356
+
