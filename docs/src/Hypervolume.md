@@ -20,8 +20,6 @@ The MVNH framework provides parametric measures for analyzing ecological niches 
     - Address variable interdependence through either:
         - Thoughtful pre-selection of ecologically meaningful variables with direct influence on species distributions
         - Application of dimension reduction methods such as PCA (principal component analysis)
-            - Important note: PCA creates orthogonal axes, which forces the correlation component to 1.0, eliminating correlation structure information.
-            - For datasets containing multiple distinct groups of related environmental variables (such as climate factors, soil properties, or topographic features), consider using generalized canonical variables to identify the most representative variables within each natural category while preserving the ecological relationships between different variable groups.
 
 - Measurement standardization: Before analysis, standardize all environmental variables to comparable scales to prevent variables with larger numerical ranges from disproportionately influencing results.
 
