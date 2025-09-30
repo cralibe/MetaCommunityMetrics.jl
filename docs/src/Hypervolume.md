@@ -6,10 +6,10 @@ Hypervolume is a concept originally proposed by Hutchinson (1957). It provides a
 
 ## An Overview
 The MVNH framework provides parametric measures for analyzing ecological niches using the multivariate normal distribution model. This framework offers powerful tools for quantifying and comparing the size and dissimilarity of species' niches. There are four hypervolume functions in this package:
-- `MVNH_det` calculates the total hypervolume of a species' niche based on the determinant of the covariance matrix.
-- `MVNH_dissimilarity` calculates the Bhattacharyya distance between two species' niches, providing a comprehensive measure of niche differentiation. 
-- `average_MVNH_det` calculates the mean hypervolume across multiple species in a community, providing an overall measure of niche size at the community level.
-- `average_MVNH_dissimilarity` calculates the mean Bhattacharyya distance between all unique pairs of species in a community, providing a measure of overall niche differentiation.
+- `MVNH_det()` calculates the total hypervolume of a species' niche based on the determinant of the covariance matrix.
+- `MVNH_dissimilarity()` calculates the Bhattacharyya distance between two species' niches, providing a comprehensive measure of niche differentiation. 
+- `average_MVNH_det()` calculates the mean hypervolume across multiple species in a community, providing an overall measure of niche size at the community level.
+- `average_MVNH_dissimilarity()` calculates the mean Bhattacharyya distance between all unique pairs of species in a community, providing a measure of overall niche differentiation.
 
 ### Practical Considerations
 - Statistical assumptions: This framework relies on multivariate normal distribution of environmental data.

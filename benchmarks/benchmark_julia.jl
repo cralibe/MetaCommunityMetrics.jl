@@ -23,7 +23,7 @@ small_df = select(small_df, All())   #convert all columns back to regular vector
 df=full_df
 ### The abundance matrix
 matrix_with_abundance = @pipe df |> 
-           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Presence)) |> 
            filter(row -> row[:Sampling_date_order] == 50, _) |> 
            unstack(_, :Species, :Abundance, fill=0) |>  
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -32,7 +32,7 @@ matrix_with_abundance = @pipe df |>
            _[sum(_, dims=2)[:, 1] .!= 0,:] 
 ### The binary matrix
 matrix_with_presence =  @pipe df |> 
-           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Abundance)) |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Abundance)) |> 
            filter(row -> row[:Sampling_date_order] == 50, _) |>
            unstack(_, :Species, :Presence, fill=0) |> 
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -98,12 +98,12 @@ CV_meta_result = @benchmark CV_meta(df.Abundance,
 data_1 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
 data_2 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
 hypervolume_det_result = @benchmark MVNH_det(data_1; var_names=["Temperature", "Precipitation"]) samples=100 evals=1 seconds=1800
 
@@ -207,7 +207,7 @@ CSV.write("benchmarks/result/benchmark_result_full_df_julia.csv", benchmark_resu
 df=medium_df
 ### The abundance matrix
 matrix_with_abundance = @pipe df |> 
-                select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> 
+                select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Presence)) |> 
                 filter(row -> row[:Sampling_date_order] == 50, _) |> 
                 unstack(_, :Species, :Abundance, fill=0) |>  
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -216,7 +216,7 @@ matrix_with_abundance = @pipe df |>
            _[sum(_, dims=2)[:, 1] .!= 0,:] 
 ### The binary matrix
 matrix_with_presence =  @pipe df |> 
-           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Abundance)) |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Abundance)) |> 
            filter(row -> row[:Sampling_date_order] == 50, _) |>
            unstack(_, :Species, :Presence, fill=0) |> 
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -281,12 +281,12 @@ CV_meta_result = @benchmark CV_meta(df.Abundance,
 data_1 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
 data_2 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
 hypervolume_det_result = @benchmark MVNH_det(data_1; var_names=["Temperature", "Precipitation"]) samples=100 evals=1 seconds=1800
 
@@ -392,7 +392,7 @@ CSV.write("benchmarks/result/benchmark_result_medium_df_julia.csv", benchmark_re
 df=small_df
 ### The abundance matrix
 matrix_with_abundance = @pipe df |> 
-           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Presence)) |> 
            filter(row -> row[:Sampling_date_order] == 55, _) |> 
            unstack(_, :Species, :Abundance, fill=0) |>  
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -401,7 +401,7 @@ matrix_with_abundance = @pipe df |>
            _[sum(_, dims=2)[:, 1] .!= 0,:] 
 ### The binary matrix
 matrix_with_presence =  @pipe df |> 
-           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Abundance)) |> 
+           select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Abundance)) |> 
            filter(row -> row[:Sampling_date_order] == 55, _) |>
            unstack(_, :Species, :Presence, fill=0) |> 
            select(_, Not(:Sampling_date_order, :plot)) |> 
@@ -467,12 +467,12 @@ CV_meta_result = @benchmark CV_meta(df.Abundance,
 data_1 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "BA", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
 data_2 = @pipe df |> 
             filter(row -> row[:Presence] > 0, _) |>
             filter(row -> row[:Species] == "SH", _) |>
-            select(_, [:normalized_temperature, :normalized_precipitation])
+            select(_, [:standardized_temperature, :standardized_precipitation])
 
 hypervolume_det_result = @benchmark MVNH_det(data_1; var_names=["Temperature", "Precipitation"]) samples=100 evals=1 seconds=1800
 

@@ -283,18 +283,18 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
     cluster_map = Dict(cluster => i for (i, cluster) in enumerate(unique_clusters))
     numeric_ids = [cluster_map[cluster] for cluster in group]
     
-    # Define a set of distinctive colors
+    # define a set of distinctive colors
     base_colors = [
         "#e41a1c", "#377eb8", "#4daf4a", "#984ea3", "#ff7f00", 
         "#ffff33", "#a65628", "#f781bf", "#999999", "#66c2a5", 
         "#fc8d62", "#8da0cb", "#e78ac3", "#a6d854", "#ffd92f"
     ]
     
-    # Generate colors for each cluster
+    # generate colors for each cluster
     colors = if length(unique_clusters) <= length(base_colors)
         base_colors[1:length(unique_clusters)]
     else
-        # Generate additional colors if needed
+        # G\generate additional colors if needed
         c = copy(base_colors)
         while length(c) < length(unique_clusters)
             push!(c, "#" * join(rand('0':'9', 6)))
@@ -311,12 +311,12 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
     min_lat = minimum(latitude) - lat_padding
     max_lat = maximum(latitude) + lat_padding
     
-    # SVG dimensions
+    # image dimensions
     width = 800
     height = 600
     margin = 100
     
-    # Map coordinates to SVG space
+    # map coordinates to SVG space
     function map_coords(lon, lat)
         x = margin + (lon - min_lon) / (max_lon - min_lon) * (width - 2 * margin)
         # Flip y-axis (SVG has origin at top-left)
@@ -324,7 +324,7 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
         return round(x, digits=1), round(y, digits=1)
     end
     
-    # Start building SVG content
+    # the SVG content
     svg = """<?xml version="1.0" encoding="UTF-8"?>
     <svg width="$(width)" height="$(height)" xmlns="http://www.w3.org/2000/svg">
     <rect width="100%" height="100%" fill="white"/>
@@ -343,7 +343,7 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
     <!-- Data points -->
     """
     
-    # Add all data points
+    # add all data points
     for i in 1:length(latitude)
         x, y = map_coords(longitude[i], latitude[i])
         cluster_id = numeric_ids[i]
@@ -354,7 +354,7 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
         """
     end
     
-    # Add legend
+    # add legend
     legend_x = width - margin + 15
     legend_y = margin + 20
     
@@ -371,10 +371,10 @@ function plot_groups(latitude::Vector{Float64}, longitude::Vector{Float64}, grou
         """
     end
     
-    # Close SVG
+    # close SVG
     svg *= "</svg>"
     
-    # Write to file
+    # write to file
     open(output_file, "w") do f
         write(f, svg)
     end

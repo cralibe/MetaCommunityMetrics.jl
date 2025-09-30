@@ -20,7 +20,7 @@ df = load_sample_data()
 ##Preparing the data for calculating beta diveristy
 #matrix with the species abundance
 sample_matrix_abundance = @pipe df |> 
-select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Presence)) |> # remove the unused four columns
+select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Presence)) |> # remove the unused four columns
 filter(row -> row[:Sampling_date_order] == 50, _) |> # filter rows where Sampling_date_order == 50
 unstack(_, :Species, :Abundance) |> #convert it back to the wide format 
 select(_, Not(:Sampling_date_order, :plot)) |> # remove the unused columns
@@ -30,7 +30,7 @@ _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
 
 #matrix with the species presence-absence data
 sample_matrix_presence = @pipe df |> 
-select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :normalized_temperature, :normalized_precipitation, :Abundance)) |> # remove the unused four columns
+select(_, Not(:Year, :Month, :Day, :Longitude, :Latitude, :standardized_temperature, :standardized_precipitation, :Abundance)) |> # remove the unused four columns
 filter(row -> row[:Sampling_date_order] == 50, _) |># filter rows where Sampling_date_order == 50
 unstack(_, :Species, :Presence, fill=0) |> #convert it back to the wide format 
 select(_, Not(:Sampling_date_order, :plot)) |> # remove the unused columns
@@ -64,12 +64,12 @@ comm= @pipe group_df |>
 sp1_data = @pipe df |> 
 filter(row -> row[:Presence] > 0, _) |>
 filter(row -> row[:Species] == "BA", _) |>
-select(_, [:normalized_temperature, :normalized_precipitation])
+select(_, [:standardized_temperature, :standardized_precipitation])
 
 sp2_data = @pipe df |> 
 filter(row -> row[:Presence] > 0, _) |>
 filter(row -> row[:Species] == "SH", _) |>
-select(_, [:normalized_temperature, :normalized_precipitation])
+select(_, [:standardized_temperature, :standardized_precipitation])
 
 ## Make data available to R
 R"df <- $df"  
@@ -253,9 +253,9 @@ CV_result <- var.partition(metacomm_tsdata)
 ## Hypervolume Measurements in R
 # using functions from the R package MVNH (https://github.com/lvmuyang/MVNH)
 R"""
-MVNH_det_result <- MVNH_det(sp1_data, var.names = c("normalized_temperature", "normalized_precipitation"))
+MVNH_det_result <- MVNH_det(sp1_data, var.names = c("standardized_temperature", "standardized_precipitation"))
 
-MVNH_dissimilarity <- MVNH_dissimilarity(sp1_data, sp2_data,  var.names = c("normalized_temperature", "normalized_precipitation"))
+MVNH_dissimilarity <- MVNH_dissimilarity(sp1_data, sp2_data,  var.names = c("standardized_temperature", "standardized_precipitation"))
 """
 
 ## Get results back from R to Julia

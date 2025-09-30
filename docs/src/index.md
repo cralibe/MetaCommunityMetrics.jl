@@ -12,7 +12,7 @@ However, they usually come with high computational costs, especially for large s
 These metrics include:
 - Beta diversity decompositions in space/time: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data
 - Dispersal-niche continuum index to evaluate the degree to which communities are influenced by dispersal processes and niche breadth
-- Niche overlap indices to determine the extent of niche sharing among species within the metacommunity
+- Niche overlap index to determine the extent of niche sharing among species within the metacommunity
 - The proportion of sites occupied by each species
 - The variability of community composition across different spatial and temporal scales
 - Niche hypervolume measurements (individual species, average, and between-species dissimilarities)
