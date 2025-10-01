@@ -2,7 +2,7 @@
 ```@meta
 CurrentModule = MetaCommunityMetrics
 ```
-## An Overview
+## Functionality Overview
 
 The Occupied Patches Proportion function in `MetaCommunityMetrics` provides a simple yet powerful metric for understanding the distribution and prevalence of species across different sites within a metacommunity. By calculating the averaged, minmum and maximum proportion of sites occupied across species, this function helps ecologists assess the spatial extent of species distributions and identify potential patterns of rarity or commonness across the landscape.
 

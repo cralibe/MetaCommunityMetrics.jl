@@ -1,13 +1,13 @@
 # MetaCommunityMetrics.jl 
 
-*A collection of tools and utilities for analyzing ecological communities in Julia.*
+*A collection of metrics for analyzing ecological community datasets across space and time in Julia.*
 
 Welcome to the documentation for `MetaCommunityMetrics`. Here you can find guides and reference material on how to use the functions.
 
 ## An Overview
-This package is a comprehensive toolkit designed to characterize the spatiotemporal structure and dynamics of a metacommunity—a network of communities linked by the dispersal of multiple, interacting species, each with unique niche breadths. It includes functions to calculate a range of specific metrics, which have been previously implemented in `R` and proven valuable for metacommunity analysis. 
+This package is a comprehensive toolkit designed to characterize the spatiotemporal structure and dynamics of a metacommunity, a network of communities linked by the dispersal of multiple, interacting species, each with unique niche breadths. It includes functions to calculate a range of specific metrics, which have been previously implemented in `R` and proven valuable for ecological community analysis. 
 
-However, they usually come with high computational costs, especially for large species community datasets. To address this issue, MetaCommunityMetrics.jl was developed in `Julia`, a programming language known for its efficiency in handling computationally intensive tasks. This implementation significantly improves the efficiency of calculating these metrics, making it a powerful tool for community analysis. 
+However, they usually come with high computational costs, especially for large spatiotemporal community datasets. To address this issue, MetaCommunityMetrics.jl was developed in `Julia`, a programming language known for its efficiency in handling computationally intensive tasks. This implementation significantly improves the efficiency of calculating these metrics, making it a powerful tool for ecological community analysis. 
 
 These metrics include:
 - Beta diversity decompositions in space/time: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data
@@ -83,8 +83,26 @@ julia> load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                  0.48949                 -1.59416
                                                                                                                                                 53342 rows omitted
 ```
+## Acknowledgment
+[`Acknowledgment`](https://cralibe.github.io/MetaCommunityMetrics.jl/Acknowledgment/)
+
+## License
+This project is licensed under the terms of the GNU General Public License v3.0. See the LICENSE file for more details.
+
+## Contributing
+We welcome contributions! To contribute:
+1. Fork the repository
+2. Create a new branch
+3. Make well commmented commits
+4. Submit a pull request
+
+Please follow Julia community coding standards and ensure all tests pass.
+
+### Reporting Issues and Needing Support
+If you encounter bugs, have feature requests, or need any support, please open an issue on our 
+[GitHub Issues page](https://github.com/cralibe/MetaCommunityMetrics.jl/issues).
+
 ## References
 Ernest, S. M., Yenni, G. M., Allington, G., Bledsoe, E. K., Christensen, E. M., Diaz, R. M., ... & Valone, T. J. (2018). The Portal Project: a long-term study of a Chihuahuan desert ecosystem. BioRxiv, 332783. https://doi.org/10.1101/332783
 
-## Acknowledgment
-[`Acknowledgment`](https://cralibe.github.io/MetaCommunityMetrics.jl/Acknowledgment/)
+
