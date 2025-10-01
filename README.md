@@ -6,17 +6,16 @@
 </table>
 
 
-
-`MetaCommunityMetrics` is a collection of tools and utilities for analyzing meta-communities in Julia. The current version is compatible with `julia` version 1.9.3.
+`MetaCommunityMetrics` is a collection of tools and utilities for analyzing spatiotemporal datasets of species observations in Julia. The current version is compatible with `julia` version 1.9.3.
 
 ## An Overview
 This package is a comprehensive toolkit designed to characterize the spatiotemporal structure and dynamics of a metacommunity—a network of communities linked by the dispersal of multiple, interacting species, each with unique niche breadths. It includes functions to calculate a range of specific metrics, which have been previously implemented in R and proven valuable for metacommunity analysis. 
 
-However, they come with high computational costs, especially for large species community datasets. To address this issue, MetaCommunityMetrics.jl was developed in Julia, a programming language known for its efficiency in handling computationally intensive tasks. This implementation significantly improves the efficiency of calculating these metrics, making it a powerful tool for metacommunity analysis. 
+However, they come with high computational costs, especially for large species community datasets. To address this issue, MetaCommunityMetrics.jl was developed in Julia, a programming language known for its efficiency in handling computationally intensive tasks. This re-implementation significantly improves the efficiency of calculating these metrics, making it a powerful tool for metacommunity analysis. 
 
 These metrics include:
-- Averaged beta diversity decomposition in space/time: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data
-- Dispersal-niche continuum index to evaluate the degree to which communities are influenced by dispersal processes and niche breadth
+- Beta diversity decomposition in space/time: total diversity, species replacement (turnover), and richness differences for both presence-absence and abundance data
+- Dispersal-niche continuum index (DNCI) to evaluate the degree to which communities are influenced by dispersal processes and niche breadth
 - Niche overlap indices to determine the extent of niche sharing among species within the metacommunity
 - The proportion of habitat patches occupied by each species
 - The variability of community composition across different spatial and temporal scales
@@ -66,13 +65,14 @@ julia> load_sample_data()
 ```
 
 ## Acknowledgment
-This package includes translations and adaptations of functions from the R packages `adespatial` (licensed under GPL-3), `vegan` (licensed under GPL-2 or later), and `DNCImper` (licensed under GPL-3). The original packages and their documentation are available at:
+This package includes re-implementation of functions (some of them are re-implemented as internal functions in this package) from the R packages `adespatial` (licensed under GPL-3), `vegan` (licensed under GPL-2 or later), `DNCImper` (licensed under GPL-3), and `MVNH` (licensed under GPL-3) and two R scripts from Wang et al. (2019) and Guzman et al. (2022). The original packages and their documentation are available at:
 
 - `adespatial`: [https://cran.r-project.org/web/packages/adespatial/index.html](https://cran.r-project.org/web/packages/adespatial/index.html)
 - `vegan`: [https://cran.r-project.org/web/packages/vegan/index.html](https://cran.r-project.org/web/packages/vegan/index.html)
 - `DNCImper`: [https://github.com/Corentin-Gibert-Paleontology/DNCImper](https://github.com/Corentin-Gibert-Paleontology/DNCImper)
+- `MVNH`: [https://github.com/lvmuyang/MVNH](https://github.com/lvmuyang/MVNH)
 
-This package also includes translations and adaptations of functions that are provided by the scripts of these papers:
+The two R scripts are from these papers:
 - Wang, S., Lamy, T., Hallett, L. M. & Loreau, M. Stability and synchrony across ecological hierarchies in heterogeneous metacommunities: linking theory to data. Ecography 42, 1200-1211 (2019). [https://doi.org:https://doi.org/10.1111/ecog.04290](https://doi.org:https://doi.org/10.1111/ecog.04290)
 - Guzman, L. M. et al. Accounting for temporal change in multiple biodiversity patterns improves the inference of metacommunity processes. Ecology 103, e3683 (2022). [https://doi.org:https://doi.org/10.1002/ecy.3683](https://doi.org:https://doi.org/10.1002/ecy.3683)
 
@@ -85,3 +85,18 @@ Please refer to these sources for full details on the original implementations a
 
 ## License
 This project is licensed under the terms of the GNU General Public License v3.0. See the LICENSE file for more details.
+
+## Contributing
+We welcome contributions! To contribute:
+1. Fork the repository
+2. Create a new branch
+3. Make well commmented commits
+4. Submit a pull request
+
+Please follow Julia community coding standards and ensure all tests pass.
+
+### Reporting Issues and Needing Support
+If you encounter bugs, have feature requests, or need any support, please open an issue on our 
+[GitHub Issues page](https://github.com/cralibe/MetaCommunityMetrics.jl/issues).
+
+
