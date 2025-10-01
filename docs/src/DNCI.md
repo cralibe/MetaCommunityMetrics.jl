@@ -4,7 +4,6 @@ CurrentModule = MetaCommunityMetrics
 ```
 The Dispersal-Niche Continuum Index (DNCI) functions in `MetaCommunityMetrics` quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. The function `DNCI_multigroup()` in this package is adapted from the R package `DNCImper`.
 
-## Background
 Vilmi et al. (2021) developed DNCI based on the PER-SIMPER method introduced by Gibert and Escarguel (2019) to compare observed community composition against three null model scenarios: (1) a niche assembly model that randomizes species identities while maintaining site-level species richness, (2) a dispersal assembly model that randomizes spatial locations while maintaining species-level occurrence frequencies, and (3) a combined model that maintains both constraints (Vilmi et al. 2021). PER-SIMPER uses the SIMPER analysis (Clarke 1993) to generate the profiles of species contributions to average between-group dissimilarity for both the observed data and the community matrices permuted by the three corresponding null models (i.e. the PER-SIMPER profiles), where dissimilarity is averaged across all site pairs, one site from each group (Gibert and Escarguel 2019). PER-SIMPER provides qualitative analysis of similarity between the observed SIMPER profile and null model PER-SIMPER profiles, while DNCI quantifies these similarities to calculate the relative importance of dispersal and niche processe.
 
 ## Functionality Overview
