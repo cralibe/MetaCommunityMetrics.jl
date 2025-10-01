@@ -1,7 +1,7 @@
 # Example
 Here, we will illustrate how to analyze the rodent data across space and time, first by focusing on how species composition changes across sites and sampling events (using `CV_meta()`, `spatial_beta_div()`, and `temporal_beta_div()`), then determining whether the changes are attributable to dispersal or niche processes (using `create_groups()`, `plot_groups()`, and `DNCI_multigroup()`), and finally estimating the niche space of every species and how the shared space with other species within the metacommunity (using the `niche_overlap()`, `prop_patches()`, `average_MVNH_det()` and, `average_MVNH_dissimilarity()`). 
 
-First, we will look at how abundance varies across time on species-level and community-level at both local and regional scales using \fct{CV\_meta}:
+First, we will look at how abundance varies across time on species-level and community-level at both local and regional scales using `CV_meta()`:
 ```julia
 julia> using MetaCommunityMetrics
 
@@ -20,8 +20,6 @@ Now, we analyze compositional changes using `spatial_beta_div()` and `temporal_b
 ```julia
 julia> spatial_beta_div(df.Abundance, df.Sampling_date_order, 
          df.plot, df.Species; quant = true)
-\end{CodeInput}
-\begin{CodeOutput}
 1×3 DataFrame
  Row  spatial_BDtotal  spatial_Repl  spatial_RichDif 
       Float64          Float64       Float64         
@@ -102,7 +100,7 @@ julia> plot_groups(grouping_result[60].Latitude, grouping_result[60].Longitude,
 ![A plot showing the location of sites and their groups. Different colors represent different groups at `Sampling_date_order` = 60.](assets/groups.svg)
 
 
-We can then join the data `df` with \`grouping_result[60]` to obtain the matrix and group assignment column for calculating DNCI at `Sampling_date_order` = 60.
+We can then join the data `df` with `grouping_result[60]` to obtain the matrix and group assignment column for calculating DNCI at `Sampling_date_order` = 60.
 ```julia
 julia> group_df = @pipe df |>
                   filter(row -> row[:Sampling_date_order] == 60, _) |>
@@ -159,7 +157,7 @@ julia> DNCI_result = DNCI_multigroup(comm, group_df.Group, 1000; Nperm_count = f
 ```
 The DNCI values at `Sampling_date_order` = 60 do not differ significantly from zero for group pairs 1-4 and 3-4, while the rest are significantly smaller than zero. This indicates that most local communities in this metacommunity are dominated by dispersal processes, while both dispersal and niche processes contribute evenly to some local communities at `Sampling_date_order` = 60. To draw conclusions about the entire metacommunity over time, we suggest running this function for all available time points and averaging across all group pairs at all time points.
 
-We will now investigate how species share their niche spaces across all sites and time points using `niche_overlap(), `prop_patches(), `average_MVNH_det()`, and `average_MVNH_dissimilarity()`. We will start with `niche_overlap()`:
+We will now investigate how species share their niche spaces across all sites and time points using `niche_overlap()`, `prop_patches()`, `average_MVNH_det()`, and `average_MVNH_dissimilarity()`. We will start with `niche_overlap()`:
 ```julia
 julia> niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order)
 1×3 DataFrame
