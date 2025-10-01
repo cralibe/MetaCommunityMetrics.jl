@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Illustration on rodent metacommunity data · MetaCommunityMetrics Documentation</title><meta name="title" content="Illustration on rodent metacommunity data · MetaCommunityMetrics Documentation"/><meta property="og:title" content="Illustration on rodent metacommunity data · MetaCommunityMetrics Documentation"/><meta property="twitter:title" content="Illustration on rodent metacommunity data · MetaCommunityMetrics Documentation"/><meta name="description" content="Documentation for MetaCommunityMetrics Documentation."/><meta property="og:description" content="Documentation for MetaCommunityMetrics Documentation."/><meta property="twitter:description" content="Documentation for MetaCommunityMetrics Documentation."/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="MetaCommunityMetrics Documentation logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">MetaCommunityMetrics Documentation</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../BetaDiversity/">Beta Diverisity Functions</a></li><li><a class="tocitem" href="../DNCI/">Dispersal-Niche Continuum Index (DNCI) Functions</a></li><li><a class="tocitem" href="../NicheOverlapIndex/">Niche Overlap Index Function</a></li><li><a class="tocitem" href="../OccupiedPatchesProportion/">Occupied Patches Proportion Function</a></li><li><a class="tocitem" href="../VariabilityMetrics/">Variability Metrics Functions</a></li><li><a class="tocitem" href="../Hypervolume/">Hypervolume Functions</a></li><li><a class="tocitem" href="../Validation/">Validation</a></li><li><a class="tocitem" href="../Benchmarking/">Benchmark Results</a></li><li class="is-active"><a class="tocitem" href>Illustration on rodent metacommunity data</a></li><li><a class="tocitem" href="../Acknowledgment/">Acknowledgment</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Illustration on rodent metacommunity data</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Illustration on rodent metacommunity data</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/cralibe/MetaCommunityMetrics.jl" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Example"><a class="docs-heading-anchor" href="#Example">Example</a><a id="Example-1"></a><a class="docs-heading-anchor-permalink" href="#Example" title="Permalink"></a></h1><p>Here, we will illustrate how to analyze the rodent data across space and time, first by focusing on how species composition changes across sites and sampling events (using <code>CV_meta()</code>, <code>spatial_beta_div()</code>, and <code>temporal_beta_div()</code>), then determining whether the changes are attributable to dispersal or niche processes (using <code>create_groups()</code>, <code>plot_groups()</code>, and <code>DNCI_multigroup()</code>), and finally estimating the niche space of every species and how the shared space with other species within the metacommunity (using the <code>niche_overlap()</code>, <code>prop_patches()</code>, <code>average_MVNH_det()</code> and, <code>average_MVNH_dissimilarity()</code>). </p><p>First, we will look at how abundance varies across time on species-level and community-level at both local and regional scales using \fct{CV_meta}:</p><pre><code class="language-julia hljs">julia&gt; using MetaCommunityMetrics
+
+julia&gt; df = load_sample_data()
+
+julia&gt; CV_meta(df.Abundance, df.Sampling_date_order, df.plot, df.Species)
+1×4 DataFrame
+ Row  CV_s_l   CV_s_r    CV_c_l    CV_c_r   
+      Float64  Float64   Float64   Float64  
+
+   1  1.48859  0.944937  0.718266  0.580183</code></pre><p>From these results, when comparing <code>CV_s_l</code> to <code>CV_s_r</code> and <code>CV_c_l</code> to <code>CV_c_r</code>, we can see that variability in abundance at both the species and community level decreases, from local to regional scales, as spatial scale increases. Further, when comparing <code>CV_s_l</code> to <code>CV_c_l</code> and <code>CV_s_r</code> to <code>CV_c_r</code>, variability in abundance also decreases, from species to community level at local and regional scales, respectively. These result indicate that abundance at the community level is more stable than at the species level and abundance at the regional scale is more stable that at the local level. </p><p>Now, we analyze compositional changes using <code>spatial_beta_div()</code> and <code>temporal_beta_div()</code>. We will skip the illustration of <code>beta_diversity()</code> because it is mainly used as the root function that <code>spatial_beta_div()</code> and <code>temporal_beta_div()</code> depend on when analyzing data across space and time. We will only focus on abundance data here, but a similar interpretation of beta diversity decomposition also applies to occurrence data. The beta diversity decompositions of the rodent metacommunity in space based on species abundances:</p><pre><code class="language-julia hljs">julia&gt; spatial_beta_div(df.Abundance, df.Sampling_date_order, 
+         df.plot, df.Species; quant = true)
+\end{CodeInput}
+\begin{CodeOutput}
+1×3 DataFrame
+ Row  spatial_BDtotal  spatial_Repl  spatial_RichDif 
+      Float64          Float64       Float64         
+
+   1         0.264822      0.121882         0.142939</code></pre><p>The beta diversity decompositions of the rodent metacommunity in time based on species abundances:</p><pre><code class="language-julia hljs">julia&gt; temporal_beta_div(df.Abundance, df.Sampling_date_order, 
+         df.plot, df.Species; quant = true)
+1×3 DataFrame
+ Row  temporal_BDtotal  temporal_Repl  temporal_RichDif 
+      Float64           Float64        Float64          
+
+   1          0.311222      0.0995483          0.211674</code></pre><p>The differences in species composition across space are driven nearly equally by both replacement and abundance differences as the values are very close to each other. This indicates both differences in the total abundance of species, as well as the replacement of species contributes significantly to beta diversity across sites. On the other hand, the differences in community composition across time is primarily driven by abundance differences as the value of abundance differences is higher than that of replacement, meaning that more species are either lost of gained through time which then contributes to temporal beta diversity. This suggests that most sites are experiencing strong seasonal patterns or disturbance over time. </p><p>To further determine the relative contribution of the dispersal and niche processes, we will compute DNCI using <code>DNCI_multigroup()</code>. Although this index operates on one time point at a time, we do not have to worry about species that are absent or sites that are empty at a given time point, because <code>DNCI_multigroup()</code> will filter out species that are completely absent or present everywhere at a given time point in the data before calculating DNCI, and empty sites are allowed in our implementation. </p><p>Before computing the DNCI, we need to group sites using <code>create_groups()</code> to make sure we have at least two groups, a minimum of five sites per group, and that the variation in the number of species and sites per group does not exceed 40\% and 30\%, respectively. We can proceed as follows:</p><pre><code class="language-julia hljs">julia&gt; grouping_result = create_groups(df.Sampling_date_order,
+         df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
+Warning: Group count fell below 2 at time 10, which is not permissible for 
+DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 14, which is not permissible for 
+DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 76, which is not permissible for 
+DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 89, which is not permissible for 
+DNCI analysis. Groups assigned as missing.
+Warning: Group count fell below 2 at time 99, which is not permissible for 
+DNCI analysis. Groups assigned as missing.
+Dict{Int64, DataFrames.DataFrame} with 117 entries:
+  5   =&gt; 456×7 DataFrame…
+  56  =&gt; 456×7 DataFrame…
+  35  =&gt; 456×7 DataFrame…
+  55  =&gt; 456×7 DataFrame…
+  110 =&gt; 456×7 DataFrame…
+  114 =&gt; 456×7 DataFrame…
+  60  =&gt; 456×7 DataFrame…
+  30  =&gt; 456×7 DataFrame…
+  32  =&gt; 456×7 DataFrame…
+  6   =&gt; 456×7 DataFrame…
+  67  =&gt; 456×7 DataFrame…
+  45  =&gt; 456×7 DataFrame…
+  117 =&gt; 456×7 DataFrame…
+  73  =&gt; 456×7 DataFrame…
+      =&gt; </code></pre><p>The output shows a dictionary with <code>Sampling_date_order</code> as the key. Not all time points fulfilled the grouping requirements and therefore the grouping memberships of all sites at these time points were assigned as <code>missing</code>. Note that <code>Julia</code> uses the <code>Base.hash()</code> function to compute hash values for the keys in a <code>Dict</code>, so the keys do not follow sequential order. Within each key, there is a <code>DataFrame</code>. For example, we can look at the grouping result at <code>Sampling_date_order</code> = 60:</p><pre><code class="language-julia hljs">julia&gt; grouping_result[60]
+456×7 DataFrame
+ Row  Time   Latitude  Longitude  Site   Species  Presence  Group  
+      Int64  Float64   Float64    Int64  String3  Int64     Int64? 
+
+
+   1     60      35.0     -108.5      4  BA              0       1
+   2     60      35.0     -108.0      5  BA              1       1
+   3     60      35.0     -107.5      6  BA              0       1
+   4     60      35.5     -110.0      7  BA              0       2
+   5     60      35.5     -108.0     11  BA              0       1
+
+ 452     60      35.5     -109.0      9  SH              0       2
+ 453     60      35.5     -108.5     10  SH              0       1
+ 454     60      35.5     -107.5     12  SH              1       1
+ 455     60      36.0     -108.5     16  SH              0       4
+ 456     60      36.5     -108.0     23  SH              0       4
+                                                    446 rows omitted</code></pre><p>Now, we will use <code>plot_groups()</code> to visualize the grouping at <code>Sampling_date_order</code> = 60:</p><pre><code class="language-julia hljs">julia&gt; plot_groups(grouping_result[60].Latitude, grouping_result[60].Longitude, 
+         grouping_result[60].Group; output_file = &quot;groups.svg&quot;)</code></pre><p><img src="../assets/groups.svg" alt="A plot showing the location of sites and their groups. Different colors represent different groups at `Sampling_date_order` = 60."/></p><p>We can then join the data <code>df</code> with `grouping<em>result[60]<code>to obtain the matrix and group assignment column for calculating DNCI at</code>Sampling</em>date_order` = 60.</p><pre><code class="language-julia hljs">julia&gt; group_df = @pipe df |&gt;
+                  filter(row -&gt; row[:Sampling_date_order] == 60, _) |&gt;
+                  select(_, [:plot, :Species, :Presence]) |&gt;
+                  innerjoin(_, grouping_result[60], on = [:plot =&gt; :Site, 
+                  :Species], makeunique = true)|&gt;
+                  select(_, [:plot, :Species, :Presence, :Group]) |&gt;
+                  unstack(_, :Species, :Presence, fill = 0)
+
+julia&gt; comm= @pipe group_df |&gt;
+             select(_, Not([:plot,:Group])) |&gt;
+             Matrix(_)
+24×19 Matrix{Int64}:
+ 0  1  1  0  0  1  1  0  0  0  0  0  0  0  0  1  0  1  0
+ 1  1  1  0  0  0  1  0  1  0  0  0  0  1  0  1  0  0  0
+ 0  1  1  0  0  0  0  0  1  0  0  0  0  1  0  1  0  0  0
+ 0  1  1  0  0  1  1  0  0  0  0  0  0  1  0  0  0  0  1
+ 0  1  1  0  0  0  1  0  0  0  0  0  0  1  0  0  0  0  0
+ 0  1  1  0  0  0  0  1  1  0  0  0  0  0  0  1  0  0  0
+ 1  1  1  0  0  0  0  0  0  0  0  0  0  1  0  1  0  0  0
+ 1  1  1  0  0  1  1  0  1  0  0  0  0  1  0  0  0  0  0
+ 0  1  0  0  1  0  0  1  0  0  0  0  1  1  0  0  0  0  0
+ 0  1  1  0  0  1  1  0  1  0  0  0  0  1  0  1  0  0  1
+ 0  0  0  0  1  1  1  1  1  0  0  0  0  0  0  1  0  0  0
+ 1  1  0  0  0  1  1  1  0  1  0  0  0  1  0  0  0  0  0
+ 0  0  0  0  0  0  1  1  1  1  0  0  0  1  0  1  0  0  0
+ 0  0  0  0  0  1  1  0  1  0  0  0  0  1  0  1  0  0  1
+ 0  0  0  0  0  0  1  1  1  0  0  0  1  1  0  1  0  0  0
+ 0  0  0  0  0  1  1  0  1  0  0  0  1  1  0  1  0  0  0
+ 0  0  0  0  0  0  0  1  1  1  0  0  1  0  0  0  0  0  0
+ 0  0  0  0  0  1  0  1  0  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  1  0  1  0  0  1  1  0  0  0  0  0  0
+ 0  1  0  0  0  1  1  0  1  0  0  0  0  0  0  0  0  0  0
+ 0  0  0  0  0  0  0  0  1  0  0  0  0  1  0  0  0  0  0
+ 0  0  0  0  1  0  1  0  1  0  0  0  1  0  0  1  0  0  1
+ 0  0  1  0  0  0  1  0  1  0  0  0  0  0  0  1  0  0  0
+ 0  1  0  0  0  0  0  1  0  0  0  0  1  0  0  0  0  0  0</code></pre><p>We can then compute the DNCI at <code>Sampling_date_order</code> = 60 (please use the same seed to obtain the following result):</p><pre><code class="language-julia hljs">julia&gt; Random.seed!(1234) 
+
+julia&gt; DNCI_result = DNCI_multigroup(comm, group_df.Group, 1000; Nperm_count = false)
+6×6 DataFrame
+ Row  group1  group2  DNCI      CI_DNCI  S_DNCI    status 
+      Int64   Int64   Float64   Float64  Float64   String 
+
+   1       1       2  -3.41127  2.17348  1.08674   normal
+   2       1       3  -2.44866  2.05951  1.02976   normal
+   3       1       4  -2.3671   2.45697  1.22848   normal
+   4       2       3  -2.65022  2.28931  1.14466   normal
+   5       2       4  -3.0168   2.43496  1.21748   normal
+   6       3       4  -1.83521  1.9589   0.979449  normal</code></pre><p>The DNCI values at <code>Sampling_date_order</code> = 60 do not differ significantly from zero for group pairs 1-4 and 3-4, while the rest are significantly smaller than zero. This indicates that most local communities in this metacommunity are dominated by dispersal processes, while both dispersal and niche processes contribute evenly to some local communities at <code>Sampling_date_order</code> = 60. To draw conclusions about the entire metacommunity over time, we suggest running this function for all available time points and averaging across all group pairs at all time points.</p><p>We will now investigate how species share their niche spaces across all sites and time points using <code>niche_overlap(),</code>prop<em>patches(), `average</em>MVNH<em>det()<code>, and</code>average</em>MVNH<em>dissimilarity()<code>. We will start with</code>niche</em>overlap()`:</p><pre><code class="language-julia hljs">julia&gt; niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order)
+1×3 DataFrame
+ Row  mean_niche_overlap_index  min_niche_overlap_index  max_niche_overlap_index 
+      Float64                   Float64                  Float64                 
+
+   1                 0.0923816                      0.0                 0.406837</code></pre><p>Then, we will use <code>prop_patches()</code>:</p><pre><code class="language-julia hljs">julia&gt; prop_patches(df.Presence, df.Species, df.plot)
+1×3 DataFrame
+ Row  mean_prop_patches  min_prop_patches  max_prop_patches 
+      Float64            Float64           Float64          
+
+   1           0.734649         0.0833333               1.0</code></pre><p>Finally, we will calculate the average niche volume and average niche volume dissimilarity across all species using <code>average_MVNH_det()</code> and <code>average_MVNH_dissimilarity()</code>, respectively. Note that these functions, unlike the others, require environmental data, which is already available in our sample dataset (i.e., temperature and precipitation). These environmental variables were already standardized and checked for normality before being stored as our sample data. Note that users need to (1) standardized their environmental variables and transform them to normal distribution (if necessary); and (2) remove singletons before using these functions. The following demonstrates how we use these functions:</p><pre><code class="language-julia hljs">julia&gt; df = @pipe load_sample_data() |&gt;
+                      groupby(_, :Species) |&gt;
+                      filter(row -&gt; sum(row.Presence) &gt; 1, _)|&gt;
+                      DataFrame(_)
+                      
+julia&gt; env_data = @pipe df |&gt; 
+           select(_, [:standardized_temperature, :standardized_precipitation])
+           
+julia&gt; average_MVNH_det(env_data, df.Presence, df.Species; var_names = 
+         [&quot;Temperature&quot;, &quot;Precipitation&quot;])
+1.2103765096417536
+
+julia&gt; average_MVNH_dissimilarity(env_data, df.Presence, df.Species;
+         var_names = [&quot;Temperature&quot;, &quot;Precipitation&quot;])     
+0.03059942936454443</code></pre><p>Recall that <code>mean_prop_patches</code> does not account for the time point a species occupy a site but <code>mean_niche_overlap_index</code> accounts for spatiotemporal overlap between a pair of species. Therefore, a high <code>mean_prop_patches</code> value and a low <code>mean_niche_overlap_index</code> value suggest that most species occupy most of the sites yet at different time points. The MVNH (<code>average_MVNH_det</code> and <code>average_MVNH_dissimilarity</code>) metrics provide additional context. While their values do not directly reveal the intensity of species co-occurance (since they can take any non-negative value up to infinity), the low value of <code>average_MVNH_dissimilarity</code> (<span>$\sim$</span> 0.03), which is close to zero, suggests high environmental niche similarity. High environmental niche similarity, together with the above result, suggest species experience high temporal turnover, potentially due to temporal niche partitioning, where species rarely co-occur in the same site at the same time even when they share similar environmental niche.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../Benchmarking/">« Benchmark Results</a><a class="docs-footer-nextpage" href="../Acknowledgment/">Acknowledgment »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.11.3 on <span class="colophon-date" title="Wednesday 1 October 2025 19:11">Wednesday 1 October 2025</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
