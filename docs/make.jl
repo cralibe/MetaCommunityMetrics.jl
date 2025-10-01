@@ -19,6 +19,7 @@ makedocs(
                 "Hypervolume Functions" => "Hypervolume.md",
                 "Validation" => "Validation.md",
                 "Benchmark Results" => "Benchmarking.md",
+                "Illustration on rodent metacommunity data" => "Example.md",
                 "Acknowledgment" => "Acknowledgment.md"]
 )
 
