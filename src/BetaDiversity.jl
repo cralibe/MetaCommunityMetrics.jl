@@ -13,11 +13,11 @@ Returns
 - `DataFrame`: A DataFrame with the following columns:
     - `BDtotal`: Total beta diversity, which captures the overall dissimilarity between local communities.
     - `Repl`: Replacement component of diversity, which reflects species turnover between sites: how much communities differ due to having different species compositions rather than different species counts.
-    - `RichDif`: Richness difference component of diversity, which captures differences in the number of species between communities.
+    - `RichDif`: When occurrence data is used, it represents the richness difference component of beta diversity, which captures differences in the number of species between communities. When abundance data is used, it represents the abundance difference component of beta diversity, which captures differences in species abundances between communities.
 
 Details
-- Empty sites (empty rows in the matrix) have to be removed before calculation.
-- Species that did not occupy any sites in the data (empty columns in the matrix) have to be removed before calculation.
+- User has to remove empty sites (empty rows in the matrix) before calculation.
+- User has to remove species that did not occupy any sites in the data (empty columns in the matrix) before calculation.
 - This function is a translation/adaptation of the `beta.div.comp` function from the R package `adespatial`, licensed under GPL-3.
 - Original package and documentation available at: https://cran.r-project.org/web/packages/adespatial/index.html
 
@@ -217,7 +217,7 @@ Arguments
 - `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
-- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in space. Columns are `spatial_BDtotal`, `spatial_Repl`, and `spatial_RichDif`.
+- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness/abundance difference components in space. Columns are `spatial_BDtotal`, `spatial_Repl`, and `spatial_RichDif`.
 
 Details
 - This function uses the `beta_diversity` function to calculate beta diversity decompositions after aggregating individual species abundances/occurrences across time.
@@ -310,7 +310,7 @@ Arguments
 - `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as occurrences, converting any quantitative values into binary values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
-- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness difference components in time. Columns are `temporal_BDtotal`, `temporal_Repl`, and `temporal_RichDif`.
+- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness/abundance difference components in time. Columns are `temporal_BDtotal`, `temporal_Repl`, and `temporal_RichDif`.
 
 Details
 - This function uses the `beta_diversity` function to calculate beta diversity decompositions after aggregating individual species abundances/occurrences across sites.

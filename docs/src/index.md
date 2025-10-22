@@ -5,7 +5,7 @@
 Welcome to the documentation for `MetaCommunityMetrics`. Here you can find guides and reference material on how to use the functions.
 
 ## An Overview
-This package is a comprehensive toolkit designed to characterize the spatiotemporal structure and dynamics of a metacommunity, a network of communities linked by the dispersal of multiple, interacting species, each with unique niche breadths. It includes functions to calculate a range of specific metrics, which have been previously implemented in `R` and proven valuable for ecological community analysis. 
+This package is a comprehensive toolkit designed to characterize the spatiotemporal structure and dynamics of a metacommunity, a network of communities linked by the dispersal of multiple, interacting species, each with unique niche breadths. It includes functions to calculate a range of metrics, which have been previously implemented in `R` and proven valuable for analysis of community composition.
 
 However, they usually come with high computational costs, especially for large spatiotemporal community datasets. To address this issue, MetaCommunityMetrics.jl was developed in `Julia`, a programming language known for its efficiency in handling computationally intensive tasks. This implementation significantly improves the efficiency of calculating these metrics, making it a powerful tool for ecological community analysis. 
 
@@ -47,7 +47,7 @@ For all the functions in this package, detailed instructions and examples can be
 
 
 ## Accessing the Sample Data for exploring the functions
-This package used a subset of rodent data that is available in the Portal Project: a long-term study of a Chihuahuan desert ecosystem (Ernest et al. 2018) as the sample data. The rodent abundance data were selected from 2010 to 2023. Abundance data were collected monthly across 24 sites, and 21 species were recorded in total. There are 117 sampling events in total. Most sampling occurred monthly, though some months during the selected period were not sampled. Additionally, we simulated spatial coordinates, temperature, and precipitation data for all sampling sites, as these are required by some functions in our package.
+This package uses a subset of rodent data that is available in the Portal Project: a long-term study of a Chihuahuan desert ecosystem (Ernest et al. 2018) as the sample data. The rodent abundance data were selected from 2010 to 2023. Abundance data were collected monthly across 24 sites, and 21 species were recorded in total. There are 117 sampling events in total. Most sampling occurred monthly, though some months during the selected period were not sampled. Additionally, we simulated spatial coordinates, temperature, and precipitation data for all sampling sites, as these are required by some functions in our package.
 
 Before using any functions from this package, we need to remove species that were absent and sites that were empty during the entire selected period, as this can occur when subsetting data. For computational convenience, we converted sampling dates to integers and stored them as `Sampling_date_order`. The sample data provide by our package has been already filtered based on these two conditions. The scripts to download and wrangle the original data can be found here:
 

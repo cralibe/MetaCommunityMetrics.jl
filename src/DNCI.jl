@@ -389,7 +389,7 @@ end
 """
     DNCI_multigroup(comm::Matrix, groups::Vector, Nperm::Int=1000; Nperm_count::Bool=true) -> DataFrame
 
-Calculates the dispersal-niche continuum index (DNCI) for a metacommunity, a metric proposed by Vilmi(2021). The DNCI quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. 
+Calculates the dispersal-niche continuum index (DNCI) for a metacommunity, a metric proposed by Vilmi et al. (2021). The DNCI quantifies the balance between dispersal and niche processes within a metacommunity, providing insight into community structure and the relative influence of these two key ecological drivers. 
 
 Arguments
 - `comm::Matrix`: A presence-absence data matrix where rows represent observations (e.g., sites) and columns represent species.

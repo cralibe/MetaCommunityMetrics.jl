@@ -30,15 +30,15 @@ Each function was benchmarked using 100 samples in both `BenchmarkTools.jl` in `
 According to documentation, the `Julia` metric measures total memory allocation during execution, while the `R` metric specifically tracks heap allocations within the R runtime, excluding "memory allocated outside the R heap, e.g., by `malloc()` or `new` directly." Due to differences in language implementation and measurement methodology, direct numerical comparisons between languages should be interpreted with caution.
 
 ## Speedup Summary
-*Below is a plot showing the speedup of all benchmarked functions across the three datasets (small, medium and large). Speedup is calculated as the `R` median execution time divided by the `Julia` median execution time.*
+*Below is a plot showing the speedup of all benchmarked functions across the three datasets (small, medium and large). Speedup is calculated as the `R` median execution time divided by the `Julia` median execution time.Median speedup and its confidence interval of each comparison is shown. The grey dashed line shows where speedup equals to 1, that is both `R` and `Julia`'s implementations require the same amount of time. The calcualation of beta diversity has two variants: `quant = true` (abundance data is used) and `quant = false`(occurence data is used).*
 ![Speedup Plot](assets/speedup.png)
 
 
 ## Benchmarking Results in Details
 All times are in millisecond (ms), and memory is in mebibytes (MiB). All values are rounded up to 4 decimal places.
 
-### Median Execution time and Speedup Values
-*95% confidence interval is reported.*
+### Median Execution Time and Speedup Values
+*The test cases with the maximum and minimum speedup values are highligthed. 95% confidence interval of the speedup is reported.*
 
 | TestCase                                         | DataSize | `Julia`      | `R`        | Speedup        | Lower CI | Upper CI |
 |--------------------------------------------------|----------|--------------|------------|----------------|----------|----------|
@@ -47,7 +47,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Beta Diversity (Abundance, quant=true)           | Small    | 0.0394       | 0.9179     | 23.3000        | 22.0561  | 25.3414  |
 | Beta Diversity (Abundance, quant=false)          | Large    | 0.0146       | 0.1997     | 13.6934        | 13.2358  | 16.8835  |
 | Beta Diversity (Abundance, quant=false)          | Medium   | 0.0104       | 0.2138     | 20.5226        | 19.6683  | 22.2222  |
-| Beta Diversity (Abundance, quant=false)          | Small    | 0.0054       | 0.2414     | 44.5725        | 40.8472  | 47.8959  |
+| ==Beta Diversity (Abundance, quant=false)==          | Small    | 0.0054       | 0.2414     | 44.5725        | 40.8472  | 47.8959  |
 | Beta Diversity (Presence, quant=false)           | Large    | 0.0139       | 0.1962     | 14.1653        | 13.5828  | 14.7816  |
 | Beta Diversity (Presence, quant=false)           | Medium   | 0.0113       | 0.1994     | 17.5968        | 17.1127  | 18.1192  |
 | Beta Diversity (Presence, quant=false)           | Small    | 0.0057       | 0.2513     | 44.1863        | 39.5111  | 46.2503  |
@@ -63,7 +63,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | Large    | 5.3096       | 53.9455    | 10.1600        | 10.0780  | 10.2358  |
 | Temporal Beta Diversity (Abundance, quant=true)  | Medium   | 5.3015       | 53.3531    | 10.0638        | 9.8600   | 10.2946  |
 | Temporal Beta Diversity (Abundance, quant=true)  | Small    | 4.7431       | 53.3732    | 11.2528        | 10.7984  | 11.5056  |
-| Temporal Beta Diversity (Abundance, quant=false) | Large    | 2.6548       | 9.5602     | 3.6012         | 3.5442   | 3.6613   |
+| ==Temporal Beta Diversity (Abundance, quant=false)== | Large    | 2.6548       | 9.5602     | 3.6012         | 3.5442   | 3.6613   |
 | Temporal Beta Diversity (Abundance, quant=false) | Medium   | 2.2395       | 9.4459     | 4.2179         | 4.0805   | 4.3567   |
 | Temporal Beta Diversity (Abundance, quant=false) | Small    | 2.2169       | 9.2761     | 4.1843         | 4.0034   | 4.3031   |
 | Temporal Beta Diversity (Presence, quant=false)  | Large    | 2.6877       | 10.7795    | 4.0106         | 3.8444   | 4.1896   |
@@ -88,6 +88,8 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 
 ### Memory Usage
 #### Benchmarked using Large Dataset
+*The test case with the biggest memory usage difference between `Julia` and `R` is highligthed.*
+
 | TestCase                                         | `Julia`      | `R`      |
 |--------------------------------------------------|--------------|----------|
 | Beta Diversity (Abundance, quant=true)           | 0.4346       | 0.0566   |
@@ -99,13 +101,15 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | 16.8838      | 16.8863  |
 | Temporal Beta Diversity (Abundance, quant=false) | 5.6586       | 5.1752   |
 | Temporal Beta Diversity (Presence, quant=false)  | 5.6586       | 5.1752   |
-| Dispersal-niche continuum index                  | 781.9220     | 71.9833  |
+| ==Dispersal-niche continuum index==              | 781.9220     | 71.9833  |
 | Occupied Patches Proportion                      | 1.9098       | 1.8857   |
 | Variability Metrics                              | 12.4573      | 60.2217  |
 | Hypervolume Estimation                           | 0.0122       | 0.0022   |
 | Hypervolume Dissimilarity                        | 0.0168       | 0.0145   |
 
 #### Benchmarked using Medium Dataset
+*The test case with the biggest memory usage difference between `Julia` and `R` is highligthed.*
+
 | TestCase                                         | `Julia`      | `R`      |
 |--------------------------------------------------|--------------|----------|
 | Beta Diversity (Abundance, quant=true)           | 0.2491       | 0.0357   |
@@ -117,7 +121,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | 15.2773      | 16.2509  |
 | Temporal Beta Diversity (Abundance, quant=false) | 4.1328       | 4.5397   |
 | Temporal Beta Diversity (Presence, quant=false)  | 4.1328       | 4.5397   |
-| Dispersal-niche continuum index                  | 542.9327     | 59.2854  |
+| ==Dispersal-niche continuum index==              | 542.9327     | 59.2854  |
 | Occupied Patches Proportion                      | 0.9940       | 1.3994   |
 | Variability Metrics                              | 7.6746       | 32.5536  |
 | Hypervolume Estimation                           | 0.0085       | 0.0011   |
@@ -135,7 +139,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | 12.8811      | 15.4341  |
 | Temporal Beta Diversity (Abundance, quant=false) | 2.8937       | 3.7230   |
 | Temporal Beta Diversity (Presence, quant=false)  | 2.8937       | 3.7230   |
-| Dispersal-niche continuum index                  | 192.5782     | 11.1101  |
+| ==Dispersal-niche continuum index==              | 192.5782     | 11.1101  |
 | Occupied Patches Proportion                      | 0.2612       | 0.4931   |
 | Variability Metrics                              | 3.8483       | 10.5805  |
 | Hypervolume Estimation                           | 0.0059       | 0.0003   |

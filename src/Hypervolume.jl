@@ -320,11 +320,11 @@ Details
   1. Filters observations where the species is present (presence_absence > 0)
   2. Calculates the niche hypervolume using the `MVNH_det` function
   3. Extracts the total hypervolume value
-- The function then computes the mean of all individual species hypervolumes
-- Species with no presence data are skipped in the calculation
+- The function then computes the mean of all individual species hypervolumes.
+- Species with no presence data are skipped in the calculation.
 - Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
-- Variables should be standardized before using this function to avoid bias from different scales
-- Singletons should be removed before using this function to avoid NaN values in the hypervolume calculation
+- User should standardize the environmental variables before using this function to avoid bias from different scales. So user should transform them to normal distribution when necessary.
+- User should remove singletons (species only occupied one site) before using this function to avoid NaN values in the hypervolume calculation.
 
 Example
 ```jildoctest
@@ -435,8 +435,9 @@ Details
 - The function then computes the mean of all pairwise Bhattacharyya distances
 - Species pairs where either species has no presence data are skipped
 - Each species pair is processed only once (i.e., sp1-sp2 is calculated, but sp2-sp1 is skipped)
-- Environmental variables are assumed to follow a multivariate normal distribution
-- Variables should be standardized before using this function to avoid bias from different scales
+- Environmental variables are assumed to follow a multivariate normal distribution. So user should transform them to normal distribution when necessary.
+- User should standardize the environmental variables before using this function to avoid bias from different scales.
+- User should remove singletons (species only occupied one site) before using this function to avoid NaN values in the hypervolume calculation.
 
 Example
 ```jildoctest
