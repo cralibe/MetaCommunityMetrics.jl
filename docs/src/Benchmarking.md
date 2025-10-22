@@ -63,7 +63,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | Large    | 5.3096       | 53.9455    | 10.1600        | 10.0780  | 10.2358  |
 | Temporal Beta Diversity (Abundance, quant=true)  | Medium   | 5.3015       | 53.3531    | 10.0638        | 9.8600   | 10.2946  |
 | Temporal Beta Diversity (Abundance, quant=true)  | Small    | 4.7431       | 53.3732    | 11.2528        | 10.7984  | 11.5056  |
-| <mark>Temporal Beta Diversity (Abundance, quant=false)</mark> | Large    | 2.6548       | <mark>9.5602</mark>     | 3.6012         | 3.5442   | 3.6613   |
+| <mark>Temporal Beta Diversity (Abundance, quant=false)</mark> | Large    | 2.6548       | 9.5602    | <mark>3.6012</mark>         | 3.5442   | 3.6613   |
 | Temporal Beta Diversity (Abundance, quant=false) | Medium   | 2.2395       | 9.4459     | 4.2179         | 4.0805   | 4.3567   |
 | Temporal Beta Diversity (Abundance, quant=false) | Small    | 2.2169       | 9.2761     | 4.1843         | 4.0034   | 4.3031   |
 | Temporal Beta Diversity (Presence, quant=false)  | Large    | 2.6877       | 10.7795    | 4.0106         | 3.8444   | 4.1896   |
