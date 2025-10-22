@@ -60,7 +60,7 @@ Beyond performance improvements, we extended pre-existing `R` implementations to
 ## Additional handling of edge cases when calculating DNCI
 We extended our DNCI implementation to handle edge cases common in simulated community datasets (e.g., single-species communities, insufficient permutation variation) by returning status flags that identify when the standard DNCI calculation is not possible. See [documentation](https://cralibe.github.io/MetaCommunityMetrics.jl/DNCI/) for details on all five edge cases.
 
-![A plot showing the speedup of all benchmarked functions across three [datasets](https://cralibe.github.io/MetaCommunityMetrics.jl/Benchmarking/#Benchmarked-using-Large-Dataset): small (5,335 observations), medium (26,676 observations), and large (53,352 observations). Speedup is calculated as the `R` median execution time divided by the `Julia` median execution time. Median speedup and its confidence interval of each comparison is shown. The grey dashed line shows where speedup equals to 1, that is both `R` and `Julia`'s implementations require the same amount of time. The calcualation of beta diversity has two variants: `quant = true` (abundance data is used) and `quant = false`(occurrence data is used). Details about this benchmarking can be found in the documentation under the [benchmark results section](https://cralibe.github.io/MetaCommunityMetrics.jl/Benchmarking/).\label{speedup}](/Users/yc2864/Documents/research/MetaCommunityMetrics.jl/paper/speedup.pdf){width=100%}
+![A plot showing the speedup of all benchmarked functions across three [datasets](https://cralibe.github.io/MetaCommunityMetrics.jl/Benchmarking/#Benchmarked-using-Large-Dataset): small (5,335 observations), medium (26,676 observations), and large (53,352 observations). Speedup is calculated as the `R` median execution time divided by the `Julia` median execution time. Median speedup and its confidence interval of each comparison is shown. The grey dashed line shows where speedup equals to 1, that is both `R` and `Julia`'s implementations require the same amount of time. The calcualation of beta diversity has two variants: `quant = true` (abundance data is used) and `quant = false`(occurrence data is used). Details about this benchmarking can be found in the documentation under the [benchmark results section](https://cralibe.github.io/MetaCommunityMetrics.jl/Benchmarking/).\label{speedup}](speedup.pdf){width=100%}
 
 ## Validation 
 All re-implementations were validated against their R equivalents (see [documentation](https://cralibe.github.io/MetaCommunityMetrics.jl/Validation/)).
@@ -129,7 +129,7 @@ julia> plot_groups(grouping_result[60].Latitude,
           grouping_result[60].Longitude, 
           grouping_result[60].Group; output_file = "groups.svg")
 ```
-![A plot showing the location of sites and their groups. Different colors represent different groups at `Sampling_date_order` $=$ 60.\label{groups}](/Users/yc2864/Documents/research/MetaCommunityMetrics.jl/paper/groups.pdf){width=100%}
+![A plot showing the location of sites and their groups. Different colors represent different groups at `Sampling_date_order` $=$ 60.\label{groups}](groups.pdf){width=100%}
 
 \autoref{groups} shows the grouping result at `Sampling_date_order` $=$ 60.
 
