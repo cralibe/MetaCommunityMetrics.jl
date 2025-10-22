@@ -47,7 +47,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Beta Diversity (Abundance, quant=true)           | Small    | 0.0394       | 0.9179     | 23.3000        | 22.0561  | 25.3414  |
 | Beta Diversity (Abundance, quant=false)          | Large    | 0.0146       | 0.1997     | 13.6934        | 13.2358  | 16.8835  |
 | Beta Diversity (Abundance, quant=false)          | Medium   | 0.0104       | 0.2138     | 20.5226        | 19.6683  | 22.2222  |
-| ==Beta Diversity (Abundance, quant=false)==          | Small    | 0.0054       | 0.2414     | 44.5725        | 40.8472  | 47.8959  |
+| <mark>Beta Diversity (Abundance, quant=false) text</mark> | Small    | 0.0054       | 0.2414     | 44.5725        | 40.8472  | 47.8959  |
 | Beta Diversity (Presence, quant=false)           | Large    | 0.0139       | 0.1962     | 14.1653        | 13.5828  | 14.7816  |
 | Beta Diversity (Presence, quant=false)           | Medium   | 0.0113       | 0.1994     | 17.5968        | 17.1127  | 18.1192  |
 | Beta Diversity (Presence, quant=false)           | Small    | 0.0057       | 0.2513     | 44.1863        | 39.5111  | 46.2503  |
@@ -63,7 +63,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | Large    | 5.3096       | 53.9455    | 10.1600        | 10.0780  | 10.2358  |
 | Temporal Beta Diversity (Abundance, quant=true)  | Medium   | 5.3015       | 53.3531    | 10.0638        | 9.8600   | 10.2946  |
 | Temporal Beta Diversity (Abundance, quant=true)  | Small    | 4.7431       | 53.3732    | 11.2528        | 10.7984  | 11.5056  |
-| ==Temporal Beta Diversity (Abundance, quant=false)== | Large    | 2.6548       | 9.5602     | 3.6012         | 3.5442   | 3.6613   |
+| <mark>Temporal Beta Diversity (Abundance, quant=false) text</mark> | Large    | 2.6548       | 9.5602     | 3.6012         | 3.5442   | 3.6613   |
 | Temporal Beta Diversity (Abundance, quant=false) | Medium   | 2.2395       | 9.4459     | 4.2179         | 4.0805   | 4.3567   |
 | Temporal Beta Diversity (Abundance, quant=false) | Small    | 2.2169       | 9.2761     | 4.1843         | 4.0034   | 4.3031   |
 | Temporal Beta Diversity (Presence, quant=false)  | Large    | 2.6877       | 10.7795    | 4.0106         | 3.8444   | 4.1896   |
@@ -101,7 +101,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | 16.8838      | 16.8863  |
 | Temporal Beta Diversity (Abundance, quant=false) | 5.6586       | 5.1752   |
 | Temporal Beta Diversity (Presence, quant=false)  | 5.6586       | 5.1752   |
-| ==Dispersal-niche continuum index==              | 781.9220     | 71.9833  |
+| <mark>Dispersal-niche continuum index text</mark> | 781.9220     | 71.9833  |
 | Occupied Patches Proportion                      | 1.9098       | 1.8857   |
 | Variability Metrics                              | 12.4573      | 60.2217  |
 | Hypervolume Estimation                           | 0.0122       | 0.0022   |
@@ -121,7 +121,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | 15.2773      | 16.2509  |
 | Temporal Beta Diversity (Abundance, quant=false) | 4.1328       | 4.5397   |
 | Temporal Beta Diversity (Presence, quant=false)  | 4.1328       | 4.5397   |
-| ==Dispersal-niche continuum index==              | 542.9327     | 59.2854  |
+| <mark>Dispersal-niche continuum index text</mark> | 542.9327     | 59.2854  |
 | Occupied Patches Proportion                      | 0.9940       | 1.3994   |
 | Variability Metrics                              | 7.6746       | 32.5536  |
 | Hypervolume Estimation                           | 0.0085       | 0.0011   |
@@ -139,7 +139,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 | Temporal Beta Diversity (Abundance, quant=true)  | 12.8811      | 15.4341  |
 | Temporal Beta Diversity (Abundance, quant=false) | 2.8937       | 3.7230   |
 | Temporal Beta Diversity (Presence, quant=false)  | 2.8937       | 3.7230   |
-| ==Dispersal-niche continuum index==              | 192.5782     | 11.1101  |
+| <mark>Dispersal-niche continuum index text</mark> | 192.5782     | 11.1101  |
 | Occupied Patches Proportion                      | 0.2612       | 0.4931   |
 | Variability Metrics                              | 3.8483       | 10.5805  |
 | Hypervolume Estimation                           | 0.0059       | 0.0003   |

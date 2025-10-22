@@ -18,7 +18,7 @@ all_time_medium_r<-read.csv("result/all_time_medium_df_r.csv")
 all_time_small_julia<-read.csv("result/all_time_small_julia.csv")
 all_time_small_r<-read.csv("result/all_time_small_df_r.csv")
 
-#min,median,mean,max time and memory data
+#min, median, mean, max execution time and memory data
 full_result_julia<-read.csv("result/benchmark_result_full_df_julia.csv")
 full_result_r<-read.csv("result/benchmark_result_full_df_r.csv")
 

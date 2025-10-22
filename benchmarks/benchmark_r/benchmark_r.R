@@ -131,8 +131,8 @@ DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_full[,-c(1,2)],
                                iterations = 100,
                                check = FALSE,
                             time_unit = "ms")
-saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_full_result.rds")
-DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_full_result.rds")
+saveRDS(DNCI_multigroup_result, "../result/DNCI_full_result.rds")
+DNCI_multigroup_result<-readRDS("../result/DNCI_full_result.rds")
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
                               group_by(Species, plot) %>%
@@ -243,7 +243,7 @@ all_time_full <- rbind(all_time_full, data)
 }
 
 #Save all trials' time results into a csv file
-write.csv(all_time_full, "../benchmarks/result/all_time_full_df_r.csv")
+write.csv(all_time_full, "../result/all_time_full_df_r.csv")
 
 
 benchmark_result_full_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
@@ -337,7 +337,7 @@ benchmark_result_full_df<-data.frame(TestCase = c("beta_diversity_1", "beta_dive
                                   as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
 
 #Save the summary results into a csv file
-write.csv(benchmark_result_full_df, "../benchmarks/result/benchmark_result_full_df_r.csv")
+write.csv(benchmark_result_full_df, "../result/benchmark_result_full_df_r.csv")
 
 #Medium Dataset####
 df <- medium_df%>%
@@ -456,8 +456,8 @@ DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_medium_filtered[,
                                iterations = 100,
                                check = FALSE,
                                time_unit = "ms")
-saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_medium_result.rds")
-DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_medium_result.rds")
+saveRDS(DNCI_multigroup_result, "../result/DNCI_medium_result.rds")
+DNCI_multigroup_result<-readRDS("../result/DNCI_medium_result.rds")
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
                               group_by(Species, plot) %>%
@@ -519,7 +519,7 @@ for (testcase in test_case_list) {
 }
 
 #Save all trials' time results into a csv file
-write.csv(all_time_medium, "../benchmarks/result/all_time_medium_df_r.csv")
+write.csv(all_time_medium, "../result/all_time_medium_df_r.csv")
 
 benchmark_result_medium_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                                   "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
@@ -613,7 +613,7 @@ benchmark_result_medium_df<-data.frame(TestCase = c("beta_diversity_1", "beta_di
 
 
 #Save the summary results into a csv file
-write.csv(benchmark_result_medium_df, "../benchmarks/result/benchmark_result_medium_df_r.csv")
+write.csv(benchmark_result_medium_df, "../result/benchmark_result_medium_df_r.csv")
 
 #Small Dataset####
 df <- small_df%>%
