@@ -8,14 +8,14 @@ library(DNCImper)
 library(MVNH)
 
 #Read in the sample data
-full_df <- read.csv("metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE) #There is a species called "NA", need to handle NAs with caution
-comm_full<- read.csv("data_for_testing/comm_full_df.csv")
+full_df <- read.csv("../../data/metacomm_rodent_df.csv",na.strings = c(""), stringsAsFactors = FALSE) #There is a species called "NA", need to handle NAs with caution
+comm_full<- read.csv("../../data/data_for_testing/comm_full_df.csv")
 
-medium_df <- read.csv("data_for_testing/medium_dataset.csv")
-comm_medium <- read.csv("data_for_testing/comm_medium_df.csv")
+medium_df <- read.csv("../../data/data_for_testing/medium_dataset.csv")
+comm_medium <- read.csv("../../data/data_for_testing/comm_medium_df.csv")
 
-small_df <- read.csv("data_for_testing/small_dataset.csv")
-comm_small <- read.csv("data_for_testing/comm_small_df.csv")
+small_df <- read.csv("../../data/data_for_testing/small_dataset.csv")
+comm_small <- read.csv("../../data/data_for_testing/comm_small_df.csv")
 
 #Data Wrangling
 #Full Dataset####
@@ -26,7 +26,7 @@ matrix_with_abundance <- df %>%
   filter(Sampling_date_order == 50) %>% 
   select(-Presence) %>%
   pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, standardized_temperature, standardized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
@@ -35,7 +35,7 @@ matrix_with_presence <- df %>%
   filter(Sampling_date_order == 50) %>% 
   select(-Abundance) %>%
   pivot_wider(names_from = Species, values_from = Presence, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, standardized_temperature, standardized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
@@ -202,12 +202,12 @@ CV_meta_result <- mark(CV_meta(df, df$Species, df$Sampling_date_order, df$plot, 
 data_1 <- df%>%
   filter(Presence >0)%>%
   filter(Species =="BA")%>%
-  select(normalized_temperature, normalized_precipitation)
+  select(standardized_temperature, standardized_precipitation)
 
 data_2 <- df%>%
   filter(Presence >0)%>%
   filter(Species =="SH")%>%
-  select(normalized_temperature, normalized_precipitation)
+  select(standardized_temperature, standardized_precipitation)
 
 hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Precipitation")), iterations = 100,
                                check = TRUE,
@@ -347,7 +347,7 @@ matrix_with_abundance <- df %>%
   filter(Sampling_date_order == 50) %>% 
   select(-Presence) %>%
   pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, standardized_temperature, standardized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
@@ -356,7 +356,7 @@ matrix_with_presence <- df %>%
   filter(Sampling_date_order == 50) %>% 
   select(-Abundance) %>%
   pivot_wider(names_from = Species, values_from = Presence, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, standardized_temperature, standardized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
@@ -479,12 +479,12 @@ CV_meta_result <- mark(CV_meta(df, df$Species, df$Sampling_date_order, df$plot, 
 data_1 <- df%>%
   filter(Presence >0)%>%
   filter(Species =="BA")%>%
-  select(normalized_temperature, normalized_precipitation)
+  select(standardized_temperature, standardized_precipitation)
 
 data_2 <- df%>%
   filter(Presence >0)%>%
   filter(Species =="SH")%>%
-  select(normalized_temperature, normalized_precipitation)
+  select(standardized_temperature, standardized_precipitation)
 
 hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Precipitation")), iterations = 100,
                                check = TRUE,
@@ -623,7 +623,7 @@ matrix_with_abundance <- df %>%
   filter(Sampling_date_order == 55) %>% 
   select(-Presence) %>%
   pivot_wider(names_from = Species, values_from = Abundance, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, standardized_temperature, standardized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
@@ -632,7 +632,7 @@ matrix_with_presence <- df %>%
   filter(Sampling_date_order == 55) %>% 
   select(-Abundance) %>%
   pivot_wider(names_from = Species, values_from = Presence, values_fill=0) %>%
-  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, normalized_temperature, normalized_precipitation)) %>% 
+  select(-c(Year, Month, Day, Sampling_date_order, plot, Longitude, Latitude, standardized_temperature, standardized_precipitation)) %>% 
   select(which(colSums(.) !=0)) %>%
   filter(rowSums(.) != 0)
 
@@ -754,12 +754,12 @@ CV_meta_result <- mark(CV_meta(df, df$Species, df$Sampling_date_order, df$plot, 
 data_1 <- df%>%
   filter(Presence >0)%>%
   filter(Species =="BA")%>%
-  select(normalized_temperature, normalized_precipitation)
+  select(standardized_temperature, standardized_precipitation)
 
 data_2 <- df%>%
   filter(Presence >0)%>%
   filter(Species =="SH")%>%
-  select(normalized_temperature, normalized_precipitation)
+  select(standardized_temperature, standardized_precipitation)
 
 hypervolume_det_result <- mark(MVNH_det(data_1, var.names = c("Temperature", "Precipitation")), iterations = 100,
                                check = TRUE,
