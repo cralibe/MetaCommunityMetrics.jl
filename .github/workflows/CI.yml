@@ -28,7 +28,7 @@ jobs:
         statsbase-version: ['0.33', '0.34.3']  # StatsBase version range ">= 0.33, < 1.0"
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # Setup Julia and ensure only compatible combinations are run
       - name: Set up Julia
