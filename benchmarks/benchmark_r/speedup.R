@@ -9,24 +9,24 @@ library(boot)
 
 #Read in the result
 #The results with all the trials
-all_time_full_julia<-read.csv("result/all_time_full_julia.csv")
-all_time_full_r<-read.csv("result/all_time_full_df_r.csv")
+all_time_full_julia<-read.csv("../result/all_time_full_julia.csv")
+all_time_full_r<-read.csv("../result/all_time_full_df_r.csv")
 
-all_time_medium_julia<-read.csv("result/all_time_medium_julia.csv")
-all_time_medium_r<-read.csv("result/all_time_medium_df_r.csv")
+all_time_medium_julia<-read.csv("../result/all_time_medium_julia.csv")
+all_time_medium_r<-read.csv("../result/all_time_medium_df_r.csv")
 
-all_time_small_julia<-read.csv("result/all_time_small_julia.csv")
-all_time_small_r<-read.csv("result/all_time_small_df_r.csv")
+all_time_small_julia<-read.csv("../result/all_time_small_julia.csv")
+all_time_small_r<-read.csv("../result/all_time_small_df_r.csv")
 
 #min, median, mean, max execution time and memory data
-full_result_julia<-read.csv("result/benchmark_result_full_df_julia.csv")
-full_result_r<-read.csv("result/benchmark_result_full_df_r.csv")
+full_result_julia<-read.csv("../result/benchmark_result_full_df_julia.csv")
+full_result_r<-read.csv("../result/benchmark_result_full_df_r.csv")
 
-medium_result_julia<-read.csv("result/benchmark_result_medium_df_julia.csv")
-medium_result_r<-read.csv("result/benchmark_result_medium_df_r.csv")
+medium_result_julia<-read.csv("../result/benchmark_result_medium_df_julia.csv")
+medium_result_r<-read.csv("../result/benchmark_result_medium_df_r.csv")
 
-small_result_julia<-read.csv("result/benchmark_result_small_df_julia.csv")
-small_result_r<-read.csv("result/benchmark_result_small_df_r.csv")
+small_result_julia<-read.csv("../result/benchmark_result_small_df_julia.csv")
+small_result_r<-read.csv("../result/benchmark_result_small_df_r.csv")
 
 #Organize the summary data
 full_result<-full_result_julia%>%
@@ -35,7 +35,6 @@ full_result<-full_result_julia%>%
   left_join(full_result_r)%>%
   select(TestCase, Time_median_julia, Time_median)%>%
   rename(Time_median_r=Time_median)%>%
-  filter(!is.na(Time_median_r))%>%
   mutate(Speedup=Time_median_r/Time_median_julia)
 
 medium_result<-medium_result_julia%>%
@@ -44,7 +43,6 @@ medium_result<-medium_result_julia%>%
   left_join(medium_result_r)%>%
   select(TestCase, Time_median_julia, Time_median)%>%
   rename(Time_median_r=Time_median)%>%
-  filter(!is.na(Time_median_r))%>%
   mutate(Speedup=Time_median_r/Time_median_julia)
 
 
@@ -54,16 +52,15 @@ small_result<-small_result_julia%>%
   left_join(small_result_r)%>%
   select(TestCase, Time_median_julia, Time_median)%>%
   rename(Time_median_r=Time_median)%>%
-  filter(!is.na(Time_median_r))%>%
   mutate(Speedup=Time_median_r/Time_median_julia)
 
-write.csv(small_result, "result/small_df_speedup.csv")
-write.csv(medium_result, "result/medium_df_speedup.csv")
-write.csv(full_result, "result/full_df_speedup.csv")
+write.csv(small_result, "../result/small_df_speedup.csv")
+write.csv(medium_result, "../result/medium_df_speedup.csv")
+write.csv(full_result, "../result/full_df_speedup.csv")
 
 
 ##Bootstrap 95% confidence interval for the median execution time
-# Combine all data into one data frame with a Language column
+# Combine all data into one data frame with a language column
 combined_data<-rbind(all_time_full_julia%>%mutate(DataSize="Large", Language="Julia"),
                      all_time_medium_julia%>%mutate(DataSize="Medium", Language="Julia"),
                     all_time_small_julia%>%mutate(DataSize="Small", Language="Julia"),
@@ -162,7 +159,7 @@ median_ci_all_save <- median_ci_all %>%
   mutate(TestCase = factor(TestCase, levels = test_case_order)) %>%
   arrange(TestCase)
 
-write.csv(median_ci_all_save, "result/median_ci_all.csv")
+write.csv(median_ci_all_save, "../result/median_ci_all.csv")
 
 ##The Speedup Plot
 median_ci_df <- median_ci_all %>%
@@ -301,16 +298,33 @@ p <- ggplot(median_ci_df ,
   labs(y = "Speedup", x = "Data Size")
 
 #save te plot
-ggsave("result/speedup.pdf", dpi=300, width = 10, height = 5, bg="white")
+ggsave(plot = p, "../result/speedup.pdf", dpi=300, width = 10, height = 5, bg="white")
+ggsave(plot = p, "../result/speedup.png", dpi=300, width = 10, height = 5, bg="white")
 
 # Memory comparison
+test_case_order <- c(
+  "Beta Diversity (Abundance, quant=true)",
+  "Beta Diversity (Abundance, quant=false)",
+  "Beta Diversity (Presence, quant=false)",
+  "Spatial Beta Diversity (Abundance, quant=true)",
+  "Spatial Beta Diversity (Abundance, quant=false)",
+  "Spatial Beta Diversity (Presence, quant=false)",
+  "Temporal Beta Diversity (Abundance, quant=true)",
+  "Temporal Beta Diversity (Abundance, quant=false)",
+  "Temporal Beta Diversity (Presence, quant=false)",
+  "Dispersal-niche continuum index",
+  "Occupied Patches Proportion",
+  "Variability Metrics",
+  "Hypervolume Estimation",
+  "Hypervolume Dissimilarity"
+)
+
 full_result_memory<-full_result_julia%>%
   select(TestCase, memory)%>%
   rename(memory_julia=memory)%>%
   left_join(full_result_r)%>%
   select(TestCase, memory_julia, memory)%>%
   rename(memory_r=memory)%>%
-  filter(!is.na(memory_r))%>%
   mutate(TestCase = case_when(
     TestCase == "beta_diversity_1" ~ "Beta Diversity (Abundance, quant=true)",
     TestCase == "beta_diversity_2" ~ "Beta Diversity (Abundance, quant=false)",
@@ -388,6 +402,6 @@ small_result_memory<-small_result_julia%>%
   arrange(TestCase)
 
 # save the memory comparison results
-write.csv(small_result_memory, "result/small_df_memory.csv")
-write.csv(medium_result_memory, "result/medium_df_memory.csv")
-write.csv(full_result_memory, "result/full_df_memory.csv")
+write.csv(small_result_memory, "../result/small_df_memory.csv")
+write.csv(medium_result_memory, "../result/medium_df_memory.csv")
+write.csv(full_result_memory, "../result/full_df_memory.csv")

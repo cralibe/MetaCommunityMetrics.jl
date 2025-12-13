@@ -730,8 +730,8 @@ DNCI_multigroup_result <- mark(DNCImper:::DNCI_multigroup(comm_small_filtered[, 
                                iterations = 100,
                                check = FALSE,
                                time_unit = "ms")
-saveRDS(DNCI_multigroup_result, "../benchmarks/result/DNCI_small_result.rds")
-DNCI_multigroup_result<-readRDS("../benchmarks/result/DNCI_small_result.rds")
+saveRDS(DNCI_multigroup_result, "../result/DNCI_small_result.rds")
+DNCI_multigroup_result<-readRDS("../result/DNCI_small_result.rds")
 
 #### Benchmark the prop_patches function
 prop_patches_result <- mark(df %>% 
@@ -793,7 +793,7 @@ for (testcase in test_case_list) {
   all_time_small <- rbind(all_time_small, data)
 }
 #Save all trials' time results into a csv file
-write.csv(all_time_small, "../benchmarks/result/all_time_small_df_r.csv")
+write.csv(all_time_small, "../result/all_time_small_df_r.csv")
 
 benchmark_result_small_df<-data.frame(TestCase = c("beta_diversity_1", "beta_diversity_2", "beta_diversity_3",
                                                     "spatial_beta_div_1", "spatial_beta_div_2", "spatial_beta_div_3",
@@ -886,7 +886,7 @@ benchmark_result_small_df<-data.frame(TestCase = c("beta_diversity_1", "beta_div
                                                   as.numeric(hypervolume_dis_result$mem_alloc) / 1024^2))
 
 #Save the summary results into a csv file
-write.csv(benchmark_result_small_df, "../benchmarks/result/benchmark_result_small_df_r.csv")
+write.csv(benchmark_result_small_df, "../result/benchmark_result_small_df_r.csv")
 
 
 
