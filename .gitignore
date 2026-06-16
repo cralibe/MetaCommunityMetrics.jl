@@ -3,3 +3,9 @@ docs/build/
 docs/site/
 .Rproj.user
 src/*.cov
+benchmarks/benchmark_r/.Rdata
+benchmarks/benchmark_r/.Rhistory
+benchmarks/benchmark_r/parallel_log.txt
+.Rdata
+.Rhistory
+parallel_log.txt
