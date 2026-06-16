@@ -4,7 +4,9 @@ CurrentModule = MetaCommunityMetrics
 ```
 Beta diversity is a fundamental concept in ecology that quantifies the variation in species composition between different plots, or over time. In the context of community ecology, beta diversity functions help to assess how community composition changes spatially or temporally.
 
-The `beta_diversity()` functions in `MetaCommunityMetrics` are adapted from the `beta.div.comp()` function in the R package `adespatial`. These methods, originally developed by Legendre (2014), are implemented in Julia to provide a more efficient means of computation for large-scale datasets. The functions use indices from the Podani family, Jaccard-based indices, and Ruzicka-based indices to calculate total beta diversity and its components: replacement and richness difference.
+The `beta_diversity()` functions in `MetaCommunityMetrics` are translated from the `beta.div.comp()` function in the R package `adespatial` 
+(https://github.com/adeverse/adespatial), authored by Pierre Legendre (Université de Montréal) and licensed under GPL-3. The underlying methods are described in Legendre (2014). These functions were translated from R to Julia in August 2024 to provide more efficient computation for large-scale datasets, and are redistributed here under GPL-3 in accordance with the terms of the original license. 
+The functions use indices from the Podani family, Jaccard-based indices, and Ruzicka-based indices to calculate total beta diversity and its components: replacement and richness difference.
 
 ## Functionality Overview
 - Use `beta_diversity()` for a general, comprehensive measure of beta diversity across your dataset. This function provides an overall assessment of how species composition varies between sites or over time, capturing both replacement (the turnover of species) and richness difference (or abundance difference when abundance data is used instead of occurrence data). 

@@ -18,8 +18,7 @@ Returns
 Details
 - User has to remove empty sites (empty rows in the matrix) before calculation.
 - User has to remove species that did not occupy any sites in the data (empty columns in the matrix) before calculation.
-- This function is a translation/adaptation of the `beta.div.comp` function from the R package `adespatial`, licensed under GPL-3.
-- Original package and documentation available at: https://cran.r-project.org/web/packages/adespatial/index.html
+- This function is a translation of the `beta.div.comp` function from the R package `adespatial` (https://github.com/adeverse/adespatial), authored by Pierre Legendre (Université de Montréal) and licensed under GPL-3. First translated from R to Julia in August 2024. Original package documentation available at: https://cran.r-project.org/web/packages/adespatial/index.html
 
 Example
 ```jildoctest

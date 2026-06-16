@@ -117,13 +117,25 @@ Please refer to these sources for full details on the original implementations a
 This project is licensed under the terms of the GNU General Public License v3.0. See the LICENSE file for more details.
 
 ## Contributing
-We welcome contributions! To contribute:
+
+We welcome contributions from the community, especially those familiar with porting R packages to Julia! To contribute:
+
 1. Fork the repository
 2. Create a new branch
-3. Make well commmented commits
+3. Make well commented commits
 4. Submit a pull request
 
 Please follow Julia community coding standards and ensure all tests pass.
+
+### Help Wanted
+
+The following features are planned for future releases and are great opportunities for open-source contributors. See our [open issues](https://github.com/cralibe/MetaCommunityMetrics.jl/issues) for details and to get started.
+
+- **Beta diversity:** add support for the remaining four coefficient families beyond the currently implemented Podani-Jaccard approach: Sørensen-based (Podani), Baselga-Sørensen, Baselga-Jaccard, and the Podani & Schmera (2011) relativized nestedness index. Reference implementation: [`adespatial::beta.div.comp`](https://github.com/adeverse/adespatial/blob/master/R/beta.div.comp.R).
+
+- **`MVNH_dissimilarity`:** add support for additional niche overlap metrics beyond Bhattacharyya distance: Pianka, MacArthur-Levins, and Morisita indices; also accept pre-computed covariance matrices and means as direct input. Reference implementation: [`MVNH::MVNH_dissimilarity`](https://github.com/lvmuyang/MVNH/blob/master/R/MVNH_functions.R).
+
+- **DNCI:** add built-in visualizations (SIMPER/PerSIMPER/E-index plots), a `symmetrize` option for uneven group sizes, support for abundance data, and parallel computing. Reference implementation: [`DNCImper::DNCI_multigroup`](https://github.com/Corentin-Gibert-Paleontology/DNCImper/blob/main/R/DNCI_multigroup.R).
 
 ### Reporting Issues and Needing Support
 If you encounter bugs, have feature requests, or need any support, please open an issue on our 
@@ -131,3 +143,22 @@ If you encounter bugs, have feature requests, or need any support, please open a
 
 ## References
 Ernest, S. M., Yenni, G. M., Allington, G., Bledsoe, E. K., Christensen, E. M., Diaz, R. M., ... & Valone, T. J. (2018). The Portal Project: a long-term study of a Chihuahuan desert ecosystem. BioRxiv, 332783. https://doi.org/10.1101/332783
+
+## Attribution
+
+Several functions in this package are translated or adapted from existing R code. 
+Full attribution details are provided in the documentation for each function.
+
+- `beta_diversity()`: Translated from `beta.div.comp()` in the R package 
+  [`adespatial`](https://github.com/adeverse/adespatial), authored by Pierre 
+  Legendre, licensed under GPL-3.
+- `DNCI_multigroup()`: Adapted from `DNCI_multigroup()` in the R package 
+  [`DNCImper`](https://github.com/Corentin-Gibert-Paleontology/DNCImper), 
+  authored by Corentin Gibert and colleagues, licensed under GPL-3.
+- Hypervolume functions: Translated from the R package 
+  [`MVNH`](https://github.com/lvmuyang/MVNH), authored by Muyang Lu, licensed 
+  under GPL-3.
+- `CV_meta()`: Translated from `var.partition()` in the supplementary material 
+  of Wang et al. (2019), Ecography (https://doi.org/10.1111/ecog.04290). Used 
+  for non-commercial scientific research purposes.
+

@@ -2,7 +2,10 @@
 ```@meta
 CurrentModule = MetaCommunityMetrics
 ```
-Hypervolume is a concept originally proposed by Hutchinson (1957). It provides a framework to calculate the volume of a niche for a given species and thus the niche overlap between two species. It helps to infer how niche breath of species has contributed to the co-occurence of different species in the same location at the same time. Unlike the other metrics in this package which require only abundance or occurrence data, this framework also requires environmental data. The hypervolume functions provide by this package are adapted from the R package `MVNH` (https://github.com/lvmuyang/MVNH).
+Hypervolume is a concept originally proposed by Hutchinson (1957). It provides a framework to calculate the volume of a niche for a given species and thus the niche overlap between two species. It helps to infer how niche breadth of species has contributed to the co-occurrence of different species in the same location at the same time. Unlike the other metrics in this package which require only abundance or occurrence data, this framework also requires environmental data. The hypervolume functions provided by this package are translated from the R package `MVNH` 
+(https://github.com/lvmuyang/MVNH), authored by Muyang Lu (Yale University) and licensed under GPL-3. First translated from R to Julia in August 2024.
+
+Note: The `MVNH` DESCRIPTION file lists the license as MIT, but the LICENSE file in the repository contains the full GPL-3 text. We treat GPL-3 as the operative license and have licensed our translation accordingly.
 
 ## Functionality Overview
 The MVNH framework provides parametric measures for analyzing ecological niches using the multivariate normal distribution model. This framework offers powerful tools for quantifying and comparing the size and dissimilarity of species' niches. There are four hypervolume functions in this package:

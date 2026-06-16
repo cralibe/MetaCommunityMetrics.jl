@@ -21,6 +21,9 @@ Returns
     - `CV_c_l`: Local-scale average community variability.
     - `CV_c_r`: Regional-scale community variability.
 
+Details
+- This function is translated from the R function `var.partition()` in the supplementary material of Wang et al. (2019), published in Ecography (https://doi.org/10.1111/ecog.04290). First translated from R to Julia in August 2024. Used here for non-commercial scientific research purposes in accordance with Wiley's terms and conditions for use of published content.
+
 Example
 ```@jildoctest
 julia> using MetaCommunityMetrics, Pipe

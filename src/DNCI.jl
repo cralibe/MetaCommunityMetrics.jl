@@ -416,10 +416,8 @@ Details
 - When the DNCI value is significantly below zero, dispersal processes are likely the dominant drivers of community composition. 
 - In contrast, a DNCI value significantly above zero suggests that niche processes play a primary role in shaping community composition. 
 - If the DNCI value is not significantly different from zero, it indicates that dispersal and niche processes contribute equally to spatial variations in community composition at a given time point.
-- Different from the original implementation, empty sites and singletons (species that only occupy one site at a given time) are allowed.
-- This function is a adaptation of the function `DNCI_multigroup()` from the R package `DNCImper`, licensed under GPL-3.
-- Original package and documentation available at: https://github.com/Corentin-Gibert-Paleontology/DNCImper
-
+- Different from the original implementation, empty sites and singletons (species that only occupy one site at a given time) are allowed, and a new `Status` column has been added to flag five edge cases where the DNCI calculation will fail, which are common when simulated data are used.
+- This function is an adaptation of `DNCI_multigroup()` from the R package `DNCImper` (https://github.com/Corentin-Gibert-Paleontology/DNCImper), authored by Corentin Gibert, Gilles Escarguel, Annika Vilmi, Jianjun Wang, Aurelien Jamoneau, and Maxime Lopez, and licensed under GPL-3. First adapted from R to Julia in August 2024.
 
 Example
 ```jildoctest
