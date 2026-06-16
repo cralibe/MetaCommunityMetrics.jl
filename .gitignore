@@ -10,3 +10,4 @@ benchmarks/benchmark_r/parallel_log.txt
 .Rhistory
 parallel_log.txt
 .DS_Store
+validation/parallel_log.txt
