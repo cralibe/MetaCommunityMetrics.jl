@@ -1,5 +1,5 @@
 # Example
-Here, we will illustrate how to analyze the rodent data across space and time, first by focusing on how species composition changes across sites and sampling events (using `CV_meta()`, `spatial_beta_div()`, and `temporal_beta_div()`), then determining whether the changes are attributable to dispersal or niche processes (using `create_groups()`, `plot_groups()`, and `DNCI_multigroup()`), and finally estimating the niche space of every species and how the shared space with other species within the metacommunity (using the `niche_overlap()`, `prop_patches()`, `average_MVNH_det()` and, `average_MVNH_dissimilarity()`). 
+Here, we will illustrate how to analyze the rodent data across space and time, first by focusing on how species composition changes across sites and sampling events (using `CV_meta()`, `spatial_beta_div()`, and `temporal_beta_div()`), then determining whether the changes are attributable to dispersal or niche processes (using `DNCI_create_groups()`, `DNCI_plot_groups()`, and `DNCI_multigroup()`), and finally estimating the niche space of every species and how the shared space with other species within the metacommunity (using the `niche_overlap()`, `prop_patches()`, `average_MVNH_det()` and, `average_MVNH_dissimilarity()`). 
 
 First, we will look at how abundance varies across time on species-level and community-level at both local and regional scales using `CV_meta()`:
 ```julia
@@ -40,9 +40,9 @@ Note that `RichDif` here equals to abundance differences because abundance data 
 
 To further determine the relative contribution of the dispersal and niche processes, we will compute DNCI using `DNCI_multigroup()`. Although this index operates on one time point at a time, we do not have to worry about species that are absent or sites that are empty at a given time point, because `DNCI_multigroup()` will filter out species that are completely absent or present everywhere at a given time point in the data before calculating DNCI, and empty sites are allowed in our implementation. 
 
-Before computing the DNCI, we need to group sites using `create_groups()` to make sure we have at least two groups, a minimum of five sites per group, and that the variation in the number of species and sites per group does not exceed 40% and 30%, respectively. We can proceed as follows:
+Before computing the DNCI, we need to group sites using `DNCI_create_groups()` to make sure we have at least two groups, a minimum of five sites per group, and that the variation in the number of species and sites per group does not exceed 40% and 30%, respectively. We can proceed as follows:
 ```julia
-julia> grouping_result = create_groups(df.Sampling_date_order,
+julia> grouping_result = DNCI_create_groups(df.Sampling_date_order,
          df.Latitude, df.Longitude, df.plot, df.Species, df.Presence)
 Warning: Group count fell below 2 at time 10, which is not permissible for 
 DNCI analysis. Groups assigned as missing.
@@ -92,9 +92,9 @@ julia> grouping_result[60]
  456     60      36.5     -108.0     23  SH              0       4
                                                     446 rows omitted
 ```
-Now, we will use `plot_groups()` to visualize the grouping at `Sampling_date_order` = 60:
+Now, we will use `DNCI_plot_groups()` to visualize the grouping at `Sampling_date_order` = 60:
 ```julia
-julia> plot_groups(grouping_result[60].Latitude, grouping_result[60].Longitude, 
+julia> DNCI_plot_groups(grouping_result[60].Latitude, grouping_result[60].Longitude, 
          grouping_result[60].Group; output_file = "groups.svg")
 ```
 ![A plot showing the location of sites and their groups. Different colors represent different groups at `Sampling_date_order` = 60.](assets/groups.svg)

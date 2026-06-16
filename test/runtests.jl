@@ -98,7 +98,7 @@ using .MetaCommunityMetrics.Internal
                                                         atol = 1e-8)
     
     # Test the create_clusters function
-    clustering_result = create_groups(filtered_df.Sampling_date_order, 
+    clustering_result = DNCI_create_groups(filtered_df.Sampling_date_order, 
                                             filtered_df.Latitude, 
                                             filtered_df.Longitude,                                      
                                             filtered_df.plot, 
