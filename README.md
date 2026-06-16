@@ -131,11 +131,13 @@ Please follow Julia community coding standards and ensure all tests pass.
 
 The following features are planned for future releases and are great opportunities for open-source contributors. See our [open issues](https://github.com/cralibe/MetaCommunityMetrics.jl/issues) for details and to get started.
 
-- **Beta diversity:** add support for the remaining four coefficient families beyond the currently implemented Podani-Jaccard approach: Sørensen-based (Podani), Baselga-Sørensen, Baselga-Jaccard, and the Podani & Schmera (2011) relativized nestedness index. Reference implementation: [`adespatial::beta.div.comp`](https://github.com/adeverse/adespatial/blob/master/R/beta.div.comp.R).
+The following features are planned for future releases and are great opportunities for open-source contributors. See our [open issues](https://github.com/cralibe/MetaCommunityMetrics.jl/issues) for details and to get started.
 
-- **`MVNH_dissimilarity`:** add support for additional niche overlap metrics beyond Bhattacharyya distance: Pianka, MacArthur-Levins, and Morisita indices; also accept pre-computed covariance matrices and means as direct input. Reference implementation: [`MVNH::MVNH_dissimilarity`](https://github.com/lvmuyang/MVNH/blob/master/R/MVNH_functions.R).
+- **`beta_diversity()`:** add support for the remaining four coefficient families beyond the currently implemented Podani-Jaccard approach: Sørensen-based (Podani), Baselga-Sørensen, Baselga-Jaccard, and the Podani & Schmera (2011) relativized nestedness index. Reference implementation: [`adespatial::beta.div.comp`](https://github.com/adeverse/adespatial/blob/master/R/beta.div.comp.R).
 
-- **DNCI:** add built-in visualizations (SIMPER/PerSIMPER/E-index plots), a `symmetrize` option for uneven group sizes, support for abundance data, and parallel computing. Reference implementation: [`DNCImper::DNCI_multigroup`](https://github.com/Corentin-Gibert-Paleontology/DNCImper/blob/main/R/DNCI_multigroup.R).
+- **`MVNH_dissimilarity()`:** add support for additional niche overlap metrics beyond Bhattacharyya distance: Pianka, MacArthur-Levins, and Morisita indices; also accept pre-computed covariance matrices and means as direct input. Reference implementation: [`MVNH::MVNH_dissimilarity`](https://github.com/lvmuyang/MVNH/blob/master/R/MVNH_functions.R).
+
+- **`DNCI_multigroup()`:** add built-in visualizations (SIMPER/PerSIMPER/E-index plots), a `symmetrize` option for uneven group sizes, support for abundance data, and parallel computing. Reference implementation: [`DNCImper::DNCI_multigroup`](https://github.com/Corentin-Gibert-Paleontology/DNCImper/blob/main/R/DNCI_multigroup.R).
 
 ### Reporting Issues and Needing Support
 If you encounter bugs, have feature requests, or need any support, please open an issue on our 
