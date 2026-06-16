@@ -11,3 +11,5 @@ benchmarks/benchmark_r/parallel_log.txt
 parallel_log.txt
 .DS_Store
 validation/parallel_log.txt
+validation/.RData
+validation/.Rhistory
