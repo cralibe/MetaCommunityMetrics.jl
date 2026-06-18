@@ -135,13 +135,13 @@ using .MetaCommunityMetrics.Internal
     @test isapprox(niche_overlap(df.Abundance, 
                         df.Species, 
                         df.plot, 
-                        df.Sampling_date_order), DataFrame(mean_niche_overlap_index = 0.0923816,
+                        df.Sampling_date_order).summary, DataFrame(mean_niche_overlap_index = 0.0923816,
                                                                         min_niche_overlap_index = 0.0,
                                                                         max_niche_overlap_index =  0.406837),
                                                                         atol = 1e-5)      
                                                                         
     # Test the prop_patches function
-    @test isapprox(prop_patches(df.Presence, df.Species, df.plot), DataFrame(mean_prop_patches = 0.7346491228070174,
+    @test isapprox(prop_patches(df.Presence, df.Species, df.plot).summary, DataFrame(mean_prop_patches = 0.7346491228070174,
                                                                                                     min_prop_patches = 0.08333333333333333,
                                                                                                     max_prop_patches = 1.0),
                                                                                                     atol = 1e-8)      

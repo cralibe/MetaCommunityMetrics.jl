@@ -721,18 +721,21 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fal
     # Handle edge cases when both dispersal and niche processes are so constraining that there's only one or very limited possible arrangement of species across sites when performing quasi-swap
     if mean_blue == -20 && std_blue == 0  # Case 4
         DNCI = NaN
-        S_DNCI = NaN
-        CI_DNCI = NaN
+        #S_DNCI = NaN
+        CI_lower = NaN
+        CI_upper = NaN
         status = "quasi_swap_permutation_not_possible"
     elseif std_blue == 0  # Case 5
         DNCI = NaN
-        S_DNCI = NaN
-        CI_DNCI = NaN
+        #S_DNCI = NaN
+        CI_lower = NaN
+        CI_upper = NaN
         status = "one_way_to_quasi_swap"
     elseif cv < 0.01  # Case 6
         DNCI = NaN
-        S_DNCI = NaN
-        CI_DNCI = NaN
+        #S_DNCI = NaN
+        CI_lower = NaN
+        CI_upper = NaN        
         status = "inadequate_variation_quasi_swap"
     else  # Normal case
         # Regular DNCI calculation
@@ -741,15 +744,17 @@ function DNCI_ses(comm::Matrix, groups::Vector, Nperm::Int=1000; count::Bool=fal
 
         DNCI = mean(SES_d) - mean(SES_n)
         S_DNCI = sqrt(std(SES_d, corrected=true)^2 + std(SES_n, corrected=true)^2)
-        CI_DNCI = 2 * S_DNCI
+        CI_lower = DNCI - S_DNCI
+        CI_upper = DNCI + S_DNCI
         status = "normal" #Case 1
     end                               
     
     metric = DataFrames.DataFrame(group1= group[1], 
     group2 = group[2], 
     DNCI = DNCI, 
-    CI_DNCI = CI_DNCI, 
-    S_DNCI = S_DNCI,
+    CI_lower = CI_lower,
+    CI_upper = CI_upper,
+    #S_DNCI = S_DNCI,
     status = status)
 
     return metric

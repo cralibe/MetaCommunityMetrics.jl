@@ -1,15 +1,15 @@
 "","TestCase","memory_julia","memory_r"
-"1","Beta Diversity (Abundance, quant=true)",0.434097290039062,0.375663757324219
-"2","Beta Diversity (Abundance, quant=false)",0.134719848632812,0.125167846679688
-"3","Beta Diversity (Presence, quant=false)",0.134719848632812,0.125167846679688
-"4","Spatial Beta Diversity (Abundance, quant=true)",3.91775512695312,4.1092529296875
-"5","Spatial Beta Diversity (Abundance, quant=false)",3.51702880859375,2.66367340087891
-"6","Spatial Beta Diversity (Presence, quant=false)",3.51702880859375,2.66367340087891
-"7","Temporal Beta Diversity (Abundance, quant=true)",16.8830261230469,16.8786926269531
-"8","Temporal Beta Diversity (Abundance, quant=false)",5.65835571289062,5.16758728027344
-"9","Temporal Beta Diversity (Presence, quant=false)",5.65835571289062,5.16758728027344
-"10","Dispersal-niche continuum index",782.059051513672,77.7876892089844
-"11","Occupied Patches Proportion",1.90953826904297,1.99284362792969
-"12","Variability Metrics",12.4573364257812,60.2264251708984
-"13","Hypervolume Estimation",0.0121917724609375,0.002227783203125
-"14","Hypervolume Dissimilarity",0.016815185546875,0.0144500732421875
+"1","Beta Diversity (Abundance, quant=true)",0.43951416015625,0.375663757324219
+"2","Beta Diversity (Abundance, quant=false)",0.0843353271484375,0.125167846679688
+"3","Beta Diversity (Presence, quant=false)",0.0843353271484375,0.125167846679688
+"4","Spatial Beta Diversity (Abundance, quant=true)",4.02035522460938,4.1092529296875
+"5","Spatial Beta Diversity (Abundance, quant=false)",3.56141662597656,2.66367340087891
+"6","Spatial Beta Diversity (Presence, quant=false)",3.56141662597656,2.66367340087891
+"7","Temporal Beta Diversity (Abundance, quant=true)",17.0816802978516,16.8786926269531
+"8","Temporal Beta Diversity (Abundance, quant=false)",5.81820678710938,5.16758728027344
+"9","Temporal Beta Diversity (Presence, quant=false)",5.81820678710938,5.16758728027344
+"10","Dispersal-niche continuum index",803.548385620117,77.7876892089844
+"11","Occupied Patches Proportion",1.97959136962891,1.99284362792969
+"12","Variability Metrics",12.6061096191406,60.2264251708984
+"13","Hypervolume Estimation",0.0118408203125,0.002227783203125
+"14","Hypervolume Dissimilarity",0.0198211669921875,0.0144500732421875

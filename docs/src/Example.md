@@ -159,7 +159,7 @@ The DNCI values at `Sampling_date_order` = 60 do not differ significantly from z
 
 We will now investigate how species share their niche spaces across all sites and time points using `niche_overlap()`, `prop_patches()`, `average_MVNH_det()`, and `average_MVNH_dissimilarity()`. We will start with `niche_overlap()`:
 ```julia
-julia> niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order)
+julia> niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order).summary
 1×3 DataFrame
  Row  mean_niche_overlap_index  min_niche_overlap_index  max_niche_overlap_index 
       Float64                   Float64                  Float64                 
@@ -168,7 +168,7 @@ julia> niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order)
 ```
 Then, we will use `prop_patches()`:
 ```julia
-julia> prop_patches(df.Presence, df.Species, df.plot)
+julia> prop_patches(df.Presence, df.Species, df.plot).summary
 1×3 DataFrame
  Row  mean_prop_patches  min_prop_patches  max_prop_patches 
       Float64            Float64           Float64          
@@ -193,4 +193,10 @@ julia> average_MVNH_dissimilarity(env_data, df.Presence, df.Species;
          var_names = ["Temperature", "Precipitation"])     
 0.03059942936454443
 ```
- Recall that `mean_prop_patches` does not account for the time point a species occupy a site but `mean_niche_overlap_index` accounts for spatiotemporal overlap between a pair of species. Therefore, a high `mean_prop_patches` value and a low `mean_niche_overlap_index` value suggest that most species occupy most of the sites yet at different time points. The MVNH (`average_MVNH_det` and `average_MVNH_dissimilarity`) metrics provide additional context. While their values do not directly reveal the intensity of species co-occurance (since they can take any non-negative value up to infinity), the low value of `average_MVNH_dissimilarity` ($\sim$ 0.03), which is close to zero, suggests high environmental niche similarity. High environmental niche similarity, together with the above result, suggest species experience high temporal turnover, potentially due to temporal niche partitioning, where species rarely co-occur in the same site at the same time even when they share similar environmental niche.
+ Recall that `mean_prop_patches` does not account for the time point a species occupy a site but `mean_niche_overlap_index` accounts for spatiotemporal overlap between a pair of species. Therefore, a high `mean_prop_patches` value and a low `mean_niche_overlap_index` value suggest that most species occupy most of the sites yet at different time points. The MVNH (`average_MVNH_det` and `average_MVNH_dissimilarity`) metrics provide additional context. While their values do not directly reveal the intensity of species co-occurrence (since they can take any non-negative value up to infinity), the low value of `average_MVNH_dissimilarity` ($\sim$ 0.03), which is close to zero, suggests that species tend to occupy similar environmental niches when present. Combined with the high mean_prop_patches and low mean_niche_overlap_index, this pattern suggests that although species are widespread across sites and occupy similar environmental niches, they rarely co-occur at the same site and time, consistent with temporal niche partitioning. Note that the environmental data used here are simulated and do not reflect real environmental conditions, so the MVNH-based interpretation should be treated as illustrative rather than ecologically conclusive.
+ 
+ 
+ 
+ 
+ 
+ 

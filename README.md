@@ -38,7 +38,7 @@ using Pkg
 
 Pkg.add("MetaCommunityMetrics")
 ```
-### Acessing Help File
+### Accessing Help File
 
 For all the functions in this package, detailed instructions and examples can be accessed here or by switching to help mode in the `Julia` REPL. To switch to help mode in the `Julia` REPL, user can press `?` at an empty `julia>` prompt , then type a keyword (e.g. the name of the function) to retrieve the corresponding help file. 
 
@@ -59,7 +59,7 @@ For all the functions in this package, detailed instructions and examples can be
 ## Accessing the Sample Data for exploring the functions
 This package used a subset of rodent data that is available in the Portal Project: a long-term study of a Chihuahuan desert ecosystem (Ernest et al. 2018) as the sample data. The rodent abundance data were selected from 2010 to 2023. Abundance data were collected monthly across 24 sites, and 21 species were recorded in total. There are 117 sampling events in total. Most sampling occurred monthly, though some months during the selected period were not sampled. Additionally, we simulated spatial coordinates, temperature, and precipitation data for all sampling sites, as these are required by some functions in our package.
 
-Before using any functions from this package, we need to remove species that were absent and sites that were empty during the entire selected period, as this can occur when subsetting data. For computational convenience, we converted sampling dates to integers and stored them as `Sampling_date_order`. The sample data provide by our package has been already filtered based on these two conditions. The scripts to download and wrangle the original data can be found here:
+Before using any functions from this package, we need to remove species that were absent and sites that were empty during the entire selected period, as this can occur when subsetting data. For computational convenience, we converted sampling dates to integers and stored them as `Sampling_date_order`. The sample data provided by our package has been already filtered based on these two conditions. The scripts to download and wrangle the original data can be found here:
 
 - [Downloading the rodent data](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/data/01_Downloading_Data.R)
 - [Data Wrangling](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/data/02_Data_Wrangling.jl)
@@ -95,21 +95,25 @@ julia> load_sample_data()
 ```
 
 ## Acknowledgment
-We are grateful to the authors of the pre-existing R package/implementation that we have
-implemented in MetaCommunityMetrics.jl. We express our gratitude to everyone who has
-tried out this package and provided feedback on how to improve it, especially people from
-the Entomological Data Science Lab at Cornell University. 
+We are grateful to the authors of the R packages and scripts that this package builds upon, and to everyone who has tried out MetaCommunityMetrics.jl and provided feedback — especially members of the Entomological Data Science Lab at Cornell University.
 
-This package includes re-implementation and adaptations of functions from the R packages `adespatial` (licensed under GPL-3), `vegan` (licensed under GPL-2 or later), `DNCImper` (licensed under GPL-3), and `MVNH` (licensed under GPL-3). The original packages and their documentation are available at:
+Several functions are translated or adapted from existing R code; full attribution details are also provided in the documentation for each function.
 
-- `adespatial`: [https://cran.r-project.org/web/packages/adespatial/index.html](https://cran.r-project.org/web/packages/adespatial/index.html)
-- `vegan`: [https://cran.r-project.org/web/packages/vegan/index.html](https://cran.r-project.org/web/packages/vegan/index.html)
-- `DNCImper`: [https://github.com/Corentin-Gibert-Paleontology/DNCImper](https://github.com/Corentin-Gibert-Paleontology/DNCImper)
-- `MVNH` : [https://github.com/lvmuyang/MVNH] (https://github.com/lvmuyang/MVNH)
+**R Packages**
 
-This package also includes re-implementation and adaptations of scripts that are provided by these papers:
-- Wang, S., Lamy, T., Hallett, L. M., & Loreau, M. (2019). Stability and synchrony across ecological hierarchies in heterogeneous metacommunities: linking theory to data. Ecography, 42(6), 1200-1211. https://doi.org:https://doi.org/10.1111/ecog.04290
-- Guzman, L. M., Thompson, P. L., Viana, D. S., Vanschoenwinkel, B., Horvath, Z., Ptacnik, R., ... & Chase, J. M. (2022). Accounting for temporal change in multiple biodiversity patterns improves the inference of metacommunity processes. Ecology, 103(6), e3683. https://doi.org:https://doi.org/10.1002/ecy.3683
+| Function(s) | Source | License |
+|---|---|---|
+| `beta_diversity()` | [`adespatial::beta.div.comp`](https://cran.r-project.org/web/packages/adespatial/index.html) by Pierre Legendre | GPL-3 |
+| `DNCI_multigroup()` | [`DNCImper::DNCI_multigroup`](https://github.com/Corentin-Gibert-Paleontology/DNCImper) by Corentin Gibert & colleagues | GPL-3 |
+| Hypervolume functions | [`MVNH`](https://github.com/lvmuyang/MVNH) by Muyang Lu | GPL-3 |
+| Internal functions | [`vegan`](https://cran.r-project.org/web/packages/vegan/index.html) | GPL-2 |
+
+**Papers**
+
+| Function(s) | Source |
+|---|---|
+| `CV_meta()` | Wang et al. (2019), *Ecography* 42(6): 1200–1211. https://doi.org/10.1111/ecog.04290 |
+| Beta diversity Decomposition in Space and Time | Guzman et al. (2022), *Ecology* 103(6): e3683. https://doi.org/10.1002/ecy.3683 |
 
 Please refer to these sources for full details on the original implementations and licenses.
 
@@ -145,22 +149,3 @@ If you encounter bugs, have feature requests, or need any support, please open a
 
 ## References
 Ernest, S. M., Yenni, G. M., Allington, G., Bledsoe, E. K., Christensen, E. M., Diaz, R. M., ... & Valone, T. J. (2018). The Portal Project: a long-term study of a Chihuahuan desert ecosystem. BioRxiv, 332783. https://doi.org/10.1101/332783
-
-## Attribution
-
-Several functions in this package are translated or adapted from existing R code. 
-Full attribution details are provided in the documentation for each function.
-
-- `beta_diversity()`: Translated from `beta.div.comp()` in the R package 
-  [`adespatial`](https://github.com/adeverse/adespatial), authored by Pierre 
-  Legendre, licensed under GPL-3.
-- `DNCI_multigroup()`: Adapted from `DNCI_multigroup()` in the R package 
-  [`DNCImper`](https://github.com/Corentin-Gibert-Paleontology/DNCImper), 
-  authored by Corentin Gibert and colleagues, licensed under GPL-3.
-- Hypervolume functions: Translated from the R package 
-  [`MVNH`](https://github.com/lvmuyang/MVNH), authored by Muyang Lu, licensed 
-  under GPL-3.
-- `CV_meta()`: Translated from `var.partition()` in the supplementary material 
-  of Wang et al. (2019), Ecography (https://doi.org/10.1111/ecog.04290). Used 
-  for non-commercial scientific research purposes.
-

@@ -6,10 +6,10 @@ using DataFrames, Pipe
 """
     CV_meta(abundance::AbstractVector, time::AbstractVector, site::AbstractVector, species::AbstractVector) -> DataFrame
 
-Calculates coefficients of variation for species and community abundances at both local and regional scales within a metacommunity.
+Calculates coefficients of variation for species and community abundances/biomass at both local and regional scales within a metacommunity.
 
 Arguments
-- `abundance::AbstractVector`: Vector representing the abundance (biomass can also be used) of species.
+- `abundance::AbstractVector`: Vector representing the abundance or biomass of species.
 - `time::AbstractVector`: Vector representing sampling dates.
 - `site::AbstractVector`: Vector representing site names or IDs.
 - `species::AbstractVector`: Vector representing species names or IDs.
@@ -23,6 +23,10 @@ Returns
 
 Details
 - This function is translated from the R function `var.partition()` in the supplementary material of Wang et al. (2019), published in Ecography (https://doi.org/10.1111/ecog.04290). First translated from R to Julia in August 2024. Used here for non-commercial scientific research purposes in accordance with Wiley's terms and conditions for use of published content.
+- `CV_s_l` (local-scale average species variability): the sum of the temporal standard deviations of each species' abundance (or biomass) at each site, divided by the mean total metacommunity abundance (or biomass). It captures species-level temporal variability at the local scale.
+- `CV_s_r` (regional-scale average species variability): the sum of the temporal standard deviations of each species' abundance (or biomass) summed across all sites, divided by the mean total metacommunity abundance (or biomass). Because each species' regional abundance is the sum across all sites, this metric implicitly incorporates pairwise temporal covariances between sites for the same species, reflecting spatial synchrony.
+- `CV_c_l` (local-scale average community variability): the sum of the temporal standard deviations of total community abundance (or biomass) at each site, divided by the mean total metacommunity abundance (or biomass). Because total community abundance at each site is the sum of all species abundances, by the variance sum law this metric implicitly incorporates pairwise temporal covariances between species within each site, reflecting the net outcome of biotic interactions such as competition and facilitation.
+- `CV_c_r` (regional-scale community variability): the temporal standard deviation of total metacommunity abundance (or biomass) across all species and sites, divided by the mean total metacommunity abundance (or biomass). This metric implicitly incorporates all pairwise temporal covariances: between species within sites (biotic interactions), between sites for the same species (spatial synchrony), and between different species at different sites.
 
 Example
 ```@jildoctest

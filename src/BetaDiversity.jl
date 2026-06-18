@@ -6,7 +6,7 @@
 Calculate beta diversity decompositions for a given biodiversity data. This function supports both binary (occurrences) and quantitative (abundance) data.
 
 Arguments
-- `mat::Matrix`: A matrix where each row represents a site and each column represents a species. The elements of the matrix should represent the occurrence or abundance of species.
+- `mat::Matrix`: A matrix where each row represents a site/a timestep and each column represents a species. The elements of the matrix should represent the occurrence or abundance of species.
 - `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as occurrences, converting any quantitative values into binary values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
@@ -16,8 +16,8 @@ Returns
     - `RichDif`: When occurrence data is used, it represents the richness difference component of beta diversity, which captures differences in the number of species between communities. When abundance data is used, it represents the abundance difference component of beta diversity, which captures differences in species abundances between communities.
 
 Details
-- User has to remove empty sites (empty rows in the matrix) before calculation.
-- User has to remove species that did not occupy any sites in the data (empty columns in the matrix) before calculation.
+- User has to remove empty sites/timesteps (empty rows in the matrix) before calculation.
+- User has to remove species that did not occupy any sites/timesteps in the data (empty columns in the matrix) before calculation.
 - This function is a translation of the `beta.div.comp` function from the R package `adespatial` (https://github.com/adeverse/adespatial), authored by Pierre Legendre (Université de Montréal) and licensed under GPL-3. First translated from R to Julia in August 2024. Original package documentation available at: https://cran.r-project.org/web/packages/adespatial/index.html
 
 Example
@@ -90,14 +90,14 @@ julia> matrix_with_presence =  @pipe df |>
  0  0  1  0  0
  0  0  0  0  1
 
-julia> result_using_abanduce_data_1 = beta_diversity(matrix_with_abundance; quant=true)
+julia> result_using_abundance_data_1 = beta_diversity(matrix_with_abundance; quant=true)
 1×3 DataFrame
  Row │ BDtotal   Repl     RichDif  
      │ Float64   Float64  Float64  
 ─────┼─────────────────────────────
    1 │ 0.390317   0.2678  0.122517
 
-julia> result_using_abanduce_data_2 = beta_diversity(matrix_with_abundance; quant=false)
+julia> result_using_abundance_data_2 = beta_diversity(matrix_with_abundance; quant=false)
 1×3 DataFrame
  Row │ BDtotal   Repl      RichDif   
      │ Float64   Float64   Float64   
@@ -245,14 +245,14 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                  0.48949                 -1.59416
                                                                                                                                                 53342 rows omitted
 
-julia> result_using_abanduce_data_1 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+julia> result_using_abundance_data_1 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
  Row │ spatial_BDtotal  spatial_Repl  spatial_RichDif 
      │ Float64          Float64       Float64         
 ─────┼────────────────────────────────────────────────
    1 │        0.264822      0.121882         0.142939
         
-julia> result_using_abanduce_data_2 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+julia> result_using_abundance_data_2 = spatial_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
 1×3 DataFrame
  Row │ spatial_BDtotal  spatial_Repl  spatial_RichDif 
      │ Float64          Float64       Float64         
@@ -338,14 +338,14 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                  0.48949                 -1.59416
                                                                                                                                                 53342 rows omitted
 
-julia> result_using_abanduce_data_1 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+julia> result_using_abandance_data_1 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
  Row │ temporal_BDtotal  temporal_Repl  temporal_RichDif 
      │ Float64           Float64        Float64          
 ─────┼───────────────────────────────────────────────────
    1 │         0.311222      0.0995483          0.211674
         
-julia> result_using_abanduce_data_2 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+julia> result_using_abandance_data_2 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
 1×3 DataFrame
  Row │ temporal_BDtotal  temporal_Repl  temporal_RichDif 
      │ Float64           Float64        Float64          

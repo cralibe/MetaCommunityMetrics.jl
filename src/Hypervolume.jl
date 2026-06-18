@@ -114,7 +114,7 @@ Calculate niche dissimilarity between two species based on their environmental v
 
 Arguments
 - `env_data_1::DataFrame`: DataFrame for the first species, where each row represents an observation (presence only, need to filter out absences) and columns represent environmental variables.
-- `env_data_2::DataFrame`: DataFrame for the second species, with the same structure as `data_1`.
+- `env_data_2::DataFrame`: DataFrame for the second species, with the same structure as `env_data_1`.
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
@@ -128,14 +128,14 @@ Each metric contains:
     - `correlation`: The correlation component of the distance measure
     - One value for each environmental variable showing its contribution to the distance
 
-# Details
+Details
 - The Bhattacharyya distance is calculated as the sum of two components:
-  1. Mahalanobis component: (1/8) × (μ₁-μ₂)ᵀ × (S₁+S₂)/2⁻¹ × (μ₁-μ₂)
-  2. Determinant ratio component: (1/2) × log(det((S₁+S₂)/2) / sqrt(det(S₁) × det(S₂)))
-- Each component is further decomposed into individual variable contributions and correlation effects
+  1. Mahalanobis component: (1/8) × (μ₁-μ₂)ᵀ × ((S₁+S₂)/2)⁻¹ × (μ₁-μ₂), and
+  2. Determinant ratio component: (1/2) × log(det((S₁+S₂)/2) / sqrt(det(S₁) × det(S₂))), where μ₁ and μ₂ are the mean vectors of the environmental variables for species 1 and 2 respectively, S₁ and S₂ are the covariance matrices of the environmental variables for species 1 and 2 respectively.
+- Each component is further decomposed into individual variable contributions and correlation effects.
 - Environmental variables are assumed to follow a multivariate normal distribution, otherwise transformation to normal distribution is recommended before using this function.
-- Variables should be standardized_ before using this function to avoid bias from different scales
-- This function is a Julia implementation inspired by the `MVNH` R package (GPL-3)
+- Variables should be standardized before using this function to avoid bias from different scales.
+- This function is a Julia implementation inspired by the `MVNH` R package (GPL-3).
 - Original package and documentation: https://github.com/lvmuyang/MVNH
 
 Example
@@ -370,7 +370,7 @@ julia> env_data = @pipe df |>
  53352 │               0.48949               -1.59416
                                         53342 rows omitted
 
-julia> result = average_MVNH_det(env_ata, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
+julia> result = average_MVNH_det(env_data, df.Presence, df.Species; var_names=["Temperature", "Precipitation"])
 1.2103765096417536
 ```                                                                                                                     
 """

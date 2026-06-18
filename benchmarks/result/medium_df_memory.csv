@@ -1,15 +1,15 @@
 "","TestCase","memory_julia","memory_r"
-"1","Beta Diversity (Abundance, quant=true)",0.24859619140625,0.0357284545898438
-"2","Beta Diversity (Abundance, quant=false)",0.108596801757812,0.0797882080078125
-"3","Beta Diversity (Presence, quant=false)",0.108596801757812,0.0797882080078125
-"4","Spatial Beta Diversity (Abundance, quant=true)",2.38887023925781,2.27374267578125
-"5","Spatial Beta Diversity (Abundance, quant=false)",1.99078369140625,1.83074188232422
-"6","Spatial Beta Diversity (Presence, quant=false)",1.99078369140625,1.83074188232422
-"7","Temporal Beta Diversity (Abundance, quant=true)",15.276123046875,16.2509765625
-"8","Temporal Beta Diversity (Abundance, quant=false)",4.13211059570312,4.53987121582031
-"9","Temporal Beta Diversity (Presence, quant=false)",4.13211059570312,4.53987121582031
-"10","Dispersal-niche continuum index",543.069763183594,59.2854232788086
-"11","Occupied Patches Proportion",0.993766784667969,1.39951324462891
-"12","Variability Metrics",7.67462158203125,32.5536346435547
-"13","Hypervolume Estimation",0.0084991455078125,0.0011138916015625
-"14","Hypervolume Dissimilarity",0.011962890625,0.007720947265625
+"1","Beta Diversity (Abundance, quant=true)",0.250747680664062,0.0357284545898438
+"2","Beta Diversity (Abundance, quant=false)",0.0519866943359375,0.0797882080078125
+"3","Beta Diversity (Presence, quant=false)",0.0519866943359375,0.0797882080078125
+"4","Spatial Beta Diversity (Abundance, quant=true)",2.48643493652344,2.27374267578125
+"5","Spatial Beta Diversity (Abundance, quant=false)",2.03016662597656,1.83074188232422
+"6","Spatial Beta Diversity (Presence, quant=false)",2.03016662597656,1.83074188232422
+"7","Temporal Beta Diversity (Abundance, quant=true)",15.4705657958984,16.2509765625
+"8","Temporal Beta Diversity (Abundance, quant=false)",4.28695678710938,4.53987121582031
+"9","Temporal Beta Diversity (Presence, quant=false)",4.28695678710938,4.53987121582031
+"10","Dispersal-niche continuum index",556.826538085938,59.2854232788086
+"11","Occupied Patches Proportion",1.05771636962891,1.39951324462891
+"12","Variability Metrics",7.81692504882812,32.5536346435547
+"13","Hypervolume Estimation",0.008087158203125,0.0011138916015625
+"14","Hypervolume Dissimilarity",0.0145111083984375,0.007720947265625

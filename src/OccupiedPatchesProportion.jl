@@ -6,6 +6,8 @@
 Calculate the proportion of sites occupied by each species and summarize the results.
 
 This function takes three vectors: `presence`, `species`, and `site`, and performs the following steps:
+1. Calculates the proportion of sites occupied by each species across all sites.
+2. Summarizes the proportions across all species by returning the mean, minimum, and maximum, as well as the full distribution of per-species proportions.
 
 Arguments
 - `presence::AbstractVector`: Vector representing the occurence of species.
@@ -13,8 +15,9 @@ Arguments
 - `site::AbstractVector`: Vector representing site names or IDs.
 
 Returns
-- `DataFrame`: A DataFrame containing the mean, minimum, and maximum proportion of sites 
-               occupied across all species.
+Two outputs:
+- `summary`: A DataFrame containing the mean, minimum, and maximum proportion of sites occupied across all species.
+- `distribution`: A DataFrame containing the proportion of sites occupied for each species, providing the full distribution of per-species proportions to characterize the extent of site occupancy in the community.
 
 Example
 ```@jildoctest
@@ -39,12 +42,32 @@ julia> df = load_sample_data()
                                                                                                                                             53342 rows omitted
 
                                                                                           
-julia> prop_patches(df.Presence, df.Species, df.plot)
+julia> result = prop_patches(df.Presence, df.Species, df.plot)
+
+julia> result.summary
 1×3 DataFrame
  Row │ mean_prop_patches  min_prop_patches  max_prop_patches 
      │ Float64            Float64           Float64          
 ─────┼───────────────────────────────────────────────────────
    1 │          0.734649         0.0833333               1.0
+
+julia> result.distribution
+19×2 DataFrame
+ Row │ Species  prop_patches 
+     │ String3  Float64      
+─────┼───────────────────────
+   1 │ BA          1.0
+   2 │ DM          1.0
+   3 │ DO          0.791667
+   4 │ DS          0.0833333
+   5 │ NA          0.541667
+  ⋮  │    ⋮          ⋮
+  15 │ RF          0.166667
+  16 │ RM          1.0
+  17 │ RO          0.916667
+  18 │ SF          0.833333
+  19 │ SH          0.625
+               9 rows omitted
 ```
 """
 function prop_patches(presence::AbstractVector, species::AbstractVector, site::AbstractVector)
@@ -67,11 +90,17 @@ function prop_patches(presence::AbstractVector, species::AbstractVector, site::A
        combine(_, :Presence => (x -> sum(x) > 0 ? 1 : 0) => :Occupied) |> 
        groupby(_, :Species) |> 
        combine(_, :Occupied => sum => :Total_patches_occupied) |> 
-       transform(_, :Total_patches_occupied => (x -> x ./ total_patches) => :prop_patches) |>
-       combine(_, :prop_patches => mean => :mean_prop_patches,
+       transform(_, :Total_patches_occupied => (x -> x ./ total_patches) => :prop_patches)
+
+    summary_df = combine(prop_patches_df, 
+                   :prop_patches => mean => :mean_prop_patches,
                    :prop_patches => minimum => :min_prop_patches,
                    :prop_patches => maximum => :max_prop_patches)
-    
-    return prop_patches_df
 
+    distribution_df = select(prop_patches_df, [:Species, :prop_patches])
+    
+    return (
+        summary = summary_df,
+        distribution = distribution_df
+    )
 end

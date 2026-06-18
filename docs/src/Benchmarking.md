@@ -7,8 +7,8 @@ CurrentModule = MetaCommunityMetrics
 - **CPU**: Apple M4
 - **Number of Cores**: 10
 - **Memory**: 16GB RAM
-- **Operating System**: macOS Sequoia 15.6
-- **Julia Version**: 1.10.10
+- **Operating System**: macOS Tahoe 26.5.1
+- **Julia Version**: 1.12.6
 - **R Version**: 4.4.2
 
 ## Benchmarking Methods
@@ -40,113 +40,113 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 ### Median Execution Time and Speedup Values
 *Bold text indicates the test cases with maximum and minimum speedup values. 95% confidence interval of the speedup is reported.*
 
-| Test Case | Data Size | `Julia` | `R` | Speedup | Lower CI | Upper CI |
-| --- | --- | --- | --- | --- | --- | --- |
-| Beta Diversity (Abundance, quant=true) | Large | 0.1353 | 2.4174 | 17.8627 | 16.1499 | 19.5014 |
-| Beta Diversity (Abundance, quant=true) | Medium | 0.0781 | 1.3655 | 17.4879 | 16.4085 | 18.3717 |
-| Beta Diversity (Abundance, quant=true) | Small | 0.0407 | 1.1525 | 28.3121 | 27.2751 | 30.5852 |
-| Beta Diversity (Abundance, quant=false) | Large | 0.0169 | 0.2096 | 12.4227 | 11.7001 | 13.475 |
-| Beta Diversity (Abundance, quant=false) | Medium | 0.0091 | 0.2756 | 30.2681 | 27.6289 | 32.9273 |
-| Beta Diversity (Abundance, quant=false) | Small | 0.0063 | 0.3219 | 50.9991 | 47.7958 | 54.1693 |
-| Beta Diversity (Presence, quant=false) | Large | 0.0132 | 0.2101 | 15.929 | 13.0486 | 17.7571 |
-| Beta Diversity (Presence, quant=false) | Medium | 0.0112 | 0.309 | 27.47 | 25.373 | 29.6856 |
-| **Beta Diversity (Presence, quant=false)** | **Small** | **0.0057** | **0.33** | **58.2335** | **55.2126** | **65.2326** |
-| Spatial Beta Diversity (Abundance, quant=true) | Large | 2.1147 | 9.267 | 4.3821 | 4.306 | 4.4893 |
-| Spatial Beta Diversity (Abundance, quant=true) | Medium | 1.9895 | 9.2043 | 4.6263 | 4.471 | 4.7898 |
-| Spatial Beta Diversity (Abundance, quant=true) | Small | 1.1195 | 8.8448 | 7.9007 | 7.7695 | 8.0108 |
-| Spatial Beta Diversity (Abundance, quant=false) | Large | 1.8822 | 6.9715 | 3.7039 | 3.6467 | 3.7513 |
-| Spatial Beta Diversity (Abundance, quant=false) | Medium | 1.6694 | 7.1675 | 4.2934 | 4.2002 | 4.399 |
-| Spatial Beta Diversity (Abundance, quant=false) | Small | 0.9695 | 6.7469 | 6.9593 | 6.8101 | 7.073 |
-| Spatial Beta Diversity (Presence, quant=false) | Large | 1.9022 | 6.9638 | 3.6608 | 3.6186 | 3.73 |
-| Spatial Beta Diversity (Presence, quant=false) | Medium | 1.6716 | 7.2182 | 4.3183 | 4.1722 | 4.4475 |
-| Spatial Beta Diversity (Presence, quant=false) | Small | 0.9669 | 6.6972 | 6.9262 | 6.8451 | 7.0289 |
-| Temporal Beta Diversity (Abundance, quant=true) | Large | 5.8652 | 53.3016 | 9.0878 | 8.7875 | 9.2049 |
-| Temporal Beta Diversity (Abundance, quant=true) | Medium | 5.215 | 54.3208 | 10.4162 | 10.0311 | 10.6263 |
-| Temporal Beta Diversity (Abundance, quant=true) | Small | 4.5515 | 52.5342 | 11.5422 | 11.294 | 11.7076 |
-| Temporal Beta Diversity (Abundance, quant=false) | Large | 2.6689 | 9.769 | 3.6603 | 3.6154 | 3.7156 |
-| Temporal Beta Diversity (Abundance, quant=false) | Medium | 2.2572 | 9.672 | 4.285 | 4.1534 | 4.3805 |
-| Temporal Beta Diversity (Abundance, quant=false) | Small | 1.5722 | 9.0186 | 5.7364 | 5.5521 | 5.9203 |
-| **Temporal Beta Diversity (Presence, quant=false)** | **Large** | **2.7422** | **9.3899** | **3.4242** | **3.3593** | **3.4753** |
-| Temporal Beta Diversity (Presence, quant=false) | Medium | 2.3177 | 9.6286 | 4.1543 | 4.0458 | 4.3004 |
-| Temporal Beta Diversity (Presence, quant=false) | Small | 1.4952 | 9.0206 | 6.0328 | 5.8424 | 6.135 |
-| Dispersal-niche continuum index | Large | 483.221 | 12894.3232 | 26.6841 | 26.4701 | 26.923 |
-| Dispersal-niche continuum index | Medium | 391.8913 | 12608.5208 | 32.1735 | 32.0287 | 32.3104 |
-| Dispersal-niche continuum index | Small | 102.0653 | 3376.0879 | 33.0777 | 32.8155 | 33.4182 |
-| Occupied Patches Proportion | Large | 0.6824 | 8.5893 | 12.5866 | 12.087 | 13.1502 |
-| Occupied Patches Proportion | Medium | 0.5913 | 8.3506 | 14.1222 | 13.5761 | 14.9307 |
-| Occupied Patches Proportion | Small | 0.4209 | 7.9086 | 18.79 | 16.3675 | 20.2831 |
-| Variability Metrics | Large | 13.4022 | 103.596 | 7.7298 | 7.5992 | 9.6017 |
-| Variability Metrics | Medium | 7.8724 | 52.2772 | 6.6405 | 6.5977 | 6.7956 |
-| Variability Metrics | Small | 2.8329 | 14.0789 | 4.9698 | 4.9394 | 4.9936 |
-| Hypervolume Estimation | Large | 0.0042 | 0.0307 | 7.3646 | 7.1158 | 7.5291 |
-| Hypervolume Estimation | Medium | 0.0035 | 0.0264 | 7.4546 | 7.3328 | 7.544 |
-| Hypervolume Estimation | Small | 0.0034 | 0.0266 | 7.8841 | 7.7032 | 7.9327 |
-| Hypervolume Dissimilarity | Large | 0.0087 | 0.1395 | 16.0968 | 15.7783 | 16.5356 |
-| Hypervolume Dissimilarity | Medium | 0.0082 | 0.1109 | 13.5755 | 13.4818 | 13.665 |
-| Hypervolume Dissimilarity | Small | 0.008 | 0.1125 | 13.9913 | 13.9097 | 14.1604 |
+| TestCase                                         | Data Size | `Julia` | `R` | Speedup | Lower CI | Upper CI |
+|--------------------------------------------------|----------|--------------|------------|----------------|----------|----------|
+| Beta Diversity (Abundance, quant=true)           | Large    | 0.1812       | 2.4174     | 13.3375        | 12.0799  | 14.5377  |
+| Beta Diversity (Abundance, quant=true)           | Medium   | 0.1114       | 1.3655     | 12.2583        | 11.4627  | 12.8396  |
+| Beta Diversity (Abundance, quant=true)           | Small    | 0.0595       | 1.1525     | 19.3566        | 18.6617  | 20.9457  |
+| Beta Diversity (Abundance, quant=false)          | Large    | 0.0177       | 0.2096     | 11.8243        | 10.8779  | 12.4595  |
+| Beta Diversity (Abundance, quant=false)          | Medium   | 0.0106       | 0.2756     | 25.9352        | 24.2356  | 27.1469  |
+| Beta Diversity (Abundance, quant=false)          | Small    | 0.0065       | 0.3219     | 49.2100        | 46.2983  | 52.4379  |
+| Beta Diversity (Presence, quant=false)           | Large    | 0.0163       | 0.2101     | 12.9270        | 12.3420  | 13.4511  |
+| Beta Diversity (Presence, quant=false)           | Medium   | 0.0106       | 0.3090     | 29.2013        | 28.0925  | 30.1846  |
+| **Beta Diversity (Presence, quant=false)**           | **Small**    | **0.0065**       | **0.3300**     | **51.0969**        | **48.4746**  | **56.4341**  |
+| Spatial Beta Diversity (Abundance, quant=true)   | Large    | 2.7329       | 9.2670     | 3.3909         | 3.3290   | 3.4431   |
+| Spatial Beta Diversity (Abundance, quant=true)   | Medium   | 2.4153       | 9.2043     | 3.8109         | 3.7377   | 3.8663   |
+| Spatial Beta Diversity (Abundance, quant=true)   | Small    | 2.1866       | 8.8448     | 4.0450         | 3.9465   | 4.0956   |
+| Spatial Beta Diversity (Abundance, quant=false)  | Large    | 2.5410       | 6.9715     | 2.7436         | 2.6972   | 2.7788   |
+| Spatial Beta Diversity (Abundance, quant=false)  | Medium   | 2.1578       | 7.1675     | 3.3217         | 3.2773   | 3.3751   |
+| Spatial Beta Diversity (Abundance, quant=false)  | Small    | 2.0421       | 6.7469     | 3.3039         | 3.2016   | 3.4660   |
+| Spatial Beta Diversity (Presence, quant=false)   | Large    | 2.5390       | 6.9638     | 2.7427         | 2.7186   | 2.7809   |
+| Spatial Beta Diversity (Presence, quant=false)   | Medium   | 2.1149       | 7.2182     | 3.4130         | 3.3462   | 3.4824   |
+| Spatial Beta Diversity (Presence, quant=false)   | Small    | 1.8978       | 6.6972     | 3.5290         | 3.3934   | 3.6422   |
+| Temporal Beta Diversity (Abundance, quant=true)  | Large    | 8.1492       | 53.3016    | 6.5407         | 6.4556   | 6.6366   |
+| Temporal Beta Diversity (Abundance, quant=true)  | Medium   | 7.5846       | 54.3208    | 7.1620         | 6.8459   | 7.2578   |
+| Temporal Beta Diversity (Abundance, quant=true)  | Small    | 6.9116       | 52.5342    | 7.6009         | 7.3612   | 7.7708   |
+| Temporal Beta Diversity (Abundance, quant=false) | Large    | 3.6115       | 9.7690     | 2.7050         | 2.6708   | 2.7459   |
+| Temporal Beta Diversity (Abundance, quant=false) | Medium   | 2.9339       | 9.6720     | 3.2966         | 3.2556   | 3.3588   |
+| Temporal Beta Diversity (Abundance, quant=false) | Small    | 2.5361       | 9.0186     | 3.5561         | 3.4488   | 3.6306   |
+| **Temporal Beta Diversity (Presence, quant=false)**  | **Large**    | **3.5785**       | **9.3899**     | **2.6240**         | **2.5947**   | **2.6491**   |
+| Temporal Beta Diversity (Presence, quant=false)  | Medium   | 2.9062       | 9.6286     | 3.3131         | 3.2565   | 3.3883   |
+| Temporal Beta Diversity (Presence, quant=false)  | Small    | 2.4861       | 9.0206     | 3.6285         | 3.4909   | 3.7086   |
+| Dispersal-niche continuum index                  | Large    | 907.4077     | 12894.3232 | 14.2101        | 14.1180  | 14.3277  |
+| Dispersal-niche continuum index                  | Medium   | 798.0111     | 12608.5208 | 15.7999        | 15.7294  | 15.8767  |
+| Dispersal-niche continuum index                  | Small    | 194.3358     | 3376.0879  | 17.3724        | 17.2196  | 17.5250  |
+| Occupied Patches Proportion                      | Large    | 1.2972       | 8.5893     | 6.6216         | 6.4433   | 6.8796   |
+| Occupied Patches Proportion                      | Medium   | 1.0354       | 8.3506     | 8.0648         | 7.7983   | 8.4388   |
+| Occupied Patches Proportion                      | Small    | 0.6840       | 7.9086     | 11.5627        | 10.8227  | 12.2746  |
+| Variability Metrics                              | Large    | 22.5348      | 103.5960   | 4.5972         | 4.4800   | 5.7010   |
+| Variability Metrics                              | Medium   | 13.9600      | 52.2772    | 3.7448         | 3.6965   | 3.8230   |
+| Variability Metrics                              | Small    | 4.9041       | 14.0789    | 2.8708         | 2.8454   | 2.9271   |
+| Hypervolume Estimation                           | Large    | 0.0077       | 0.0307     | 3.9814         | 3.8569   | 4.0704   |
+| Hypervolume Estimation                           | Medium   | 0.0064       | 0.0264     | 4.1418         | 4.0791   | 4.1708   |
+| Hypervolume Estimation                           | Small    | 0.0059       | 0.0266     | 4.4970         | 4.4214   | 4.5571   |
+| Hypervolume Dissimilarity                        | Large    | 0.0131       | 0.1395     | 10.6629        | 10.4523  | 11.0205  |
+| Hypervolume Dissimilarity                        | Medium   | 0.0099       | 0.1109     | 11.1792        | 11.0556  | 11.2418  |
+| Hypervolume Dissimilarity                        | Small    | 0.0096       | 0.1125     | 11.6639        | 11.3601  | 11.7950  |
 
 ### Memory Usage
 #### Benchmarked using Large Dataset
 *Bold text indicates the test case with the biggest memory usage difference between `Julia` and `R`.*
 
-| Test Case | `Julia` | `R` |
-|----------|------------------|---------------|
-| Beta Diversity (Abundance, quant=true) | 0.4341 | 0.3757 |
-| Beta Diversity (Abundance, quant=false) | 0.1347 | 0.1252 |
-| Beta Diversity (Presence, quant=false) | 0.1347 | 0.1252 |
-| Spatial Beta Diversity (Abundance, quant=true) | 3.9178 | 4.1093 |
-| Spatial Beta Diversity (Abundance, quant=false) | 3.5170 | 2.6637 |
-| Spatial Beta Diversity (Presence, quant=false) | 3.5170 | 2.6637 |
-| Temporal Beta Diversity (Abundance, quant=true) | 16.8830 | 16.8787 |
-| Temporal Beta Diversity (Abundance, quant=false) | 5.6584 | 5.1676 |
-| Temporal Beta Diversity (Presence, quant=false) | 5.6584 | 5.1676 |
-| **Dispersal-niche continuum index** | **782.0591** | **77.7877** |
-| Occupied Patches Proportion | 1.9095 | 1.9928 |
-| Variability Metrics | 12.4573 | 60.2264 |
-| Hypervolume Estimation | 0.0122 | 0.0022 |
-| Hypervolume Dissimilarity | 0.0168 | 0.0145 |
+| TestCase                                         | `Julia`    | `R`       |
+|--------------------------------------------------|----------|---------|
+| Beta Diversity (Abundance, quant=true)           | 0.4395   | 0.3757  |
+| Beta Diversity (Abundance, quant=false)          | 0.0843   | 0.1252  |
+| Beta Diversity (Presence, quant=false)           | 0.0843   | 0.1252  |
+| Spatial Beta Diversity (Abundance, quant=true)   | 4.0204   | 4.1093  |
+| Spatial Beta Diversity (Abundance, quant=false)  | 3.5614   | 2.6637  |
+| Spatial Beta Diversity (Presence, quant=false)   | 3.5614   | 2.6637  |
+| Temporal Beta Diversity (Abundance, quant=true)  | 17.0817  | 16.8787 |
+| Temporal Beta Diversity (Abundance, quant=false) | 5.8182   | 5.1676  |
+| Temporal Beta Diversity (Presence, quant=false)  | 5.8182   | 5.1676  |
+| **Dispersal-niche continuum index**                  | **803.5484** | **77.7877** |
+| Occupied Patches Proportion                      | 1.9796   | 1.9928  |
+| Variability Metrics                              | 12.6061  | 60.2264 |
+| Hypervolume Estimation                           | 0.0118   | 0.0022  |
+| Hypervolume Dissimilarity                        | 0.0198   | 0.0145  |
 
 #### Benchmarked using Medium Dataset
 *The test case with the biggest memory usage difference between `Julia` and `R` is highligthed.*
 
-| Test Case | `Julia` | `R` |
-|----------|------------------|---------------|
-| Beta Diversity (Abundance, quant=true) | 0.2486 | 0.0357 |
-| Beta Diversity (Abundance, quant=false) | 0.1086 | 0.0798 |
-| Beta Diversity (Presence, quant=false) | 0.1086 | 0.0798 |
-| Spatial Beta Diversity (Abundance, quant=true) | 2.3889 | 2.2737 |
-| Spatial Beta Diversity (Abundance, quant=false) | 1.9908 | 1.8307 |
-| Spatial Beta Diversity (Presence, quant=false) | 1.9908 | 1.8307 |
-| Temporal Beta Diversity (Abundance, quant=true) | 15.2761 | 16.2510 |
-| Temporal Beta Diversity (Abundance, quant=false) | 4.1321 | 4.5399 |
-| Temporal Beta Diversity (Presence, quant=false) | 4.1321 | 4.5399 |
-| **Dispersal-niche continuum index** | **543.0698** | **59.2854** |
-| Occupied Patches Proportion | 0.9938 | 1.3995 |
-| Variability Metrics | 7.6746 | 32.5536 |
-| Hypervolume Estimation | 0.0085 | 0.0011 |
-| Hypervolume Dissimilarity | 0.0120 | 0.0077 |
+| TestCase                                         | `Julia`  | `R`     |
+|--------------------------------------------------|----------|---------|
+| Beta Diversity (Abundance, quant=true)           | 0.2507   | 0.0357  |
+| Beta Diversity (Abundance, quant=false)          | 0.0520   | 0.0798  |
+| Beta Diversity (Presence, quant=false)           | 0.0520   | 0.0798  |
+| Spatial Beta Diversity (Abundance, quant=true)   | 2.4864   | 2.2737  |
+| Spatial Beta Diversity (Abundance, quant=false)  | 2.0302   | 1.8307  |
+| Spatial Beta Diversity (Presence, quant=false)   | 2.0302   | 1.8307  |
+| Temporal Beta Diversity (Abundance, quant=true)  | 15.4706  | 16.2510 |
+| Temporal Beta Diversity (Abundance, quant=false) | 4.2870   | 4.5399  |
+| Temporal Beta Diversity (Presence, quant=false)  | 4.2870   | 4.5399  |
+| **Dispersal-niche continuum index**                  | **556.8265** | **59.2854** |
+| Occupied Patches Proportion                      | 1.0577   | 1.3995  |
+| Variability Metrics                              | 7.8169   | 32.5536 |
+| Hypervolume Estimation                           | 0.0081   | 0.0011  |
+| Hypervolume Dissimilarity                        | 0.0145   | 0.0077  |
 
 #### Benchmarked using Small Dataset
 *The test case with the biggest memory usage difference between `Julia` and `R` is highligthed.*
 
-| Test Case | `Julia` | `R` |
-|----------|------------------|---------------|
-| Beta Diversity (Abundance, quant=true) | 0.1220 | 0.0195 |
-| Beta Diversity (Abundance, quant=false) | 0.0883 | 0.0444 |
-| Beta Diversity (Presence, quant=false) | 0.0883 | 0.0444 |
-| Spatial Beta Diversity (Abundance, quant=true) | 1.1326 | 1.2127 |
-| Spatial Beta Diversity (Abundance, quant=false) | 0.7660 | 0.7697 |
-| Spatial Beta Diversity (Presence, quant=false) | 0.7660 | 0.7697 |
-| Temporal Beta Diversity (Abundance, quant=true) | 12.8803 | 15.4342 |
-| Temporal Beta Diversity (Abundance, quant=false) | 2.8934 | 3.7231 |
-| Temporal Beta Diversity (Presence, quant=false) | 2.8934 | 3.7231 |
-| **Dispersal-niche continuum index** | **192.6010** | **11.1107** |
-| Occupied Patches Proportion | 0.2610 | 0.4932 |
-| Variability Metrics | 3.8483 | 10.5805 |
-| Hypervolume Estimation** | 0.0059 | 0.0003 |
-| Hypervolume Dissimilarity | 0.0082 | 0.0014 |
+| TestCase                                         | `Julia`  | `R`     |
+|--------------------------------------------------|----------|---------|
+| Beta Diversity (Abundance, quant=true)           | 0.1217   | 0.0195  |
+| Beta Diversity (Abundance, quant=false)          | 0.0276   | 0.0444  |
+| Beta Diversity (Presence, quant=false)           | 0.0276   | 0.0444  |
+| Spatial Beta Diversity (Abundance, quant=true)   | 1.1605   | 1.2127  |
+| Spatial Beta Diversity (Abundance, quant=false)  | 0.7342   | 0.7697  |
+| Spatial Beta Diversity (Presence, quant=false)   | 0.7342   | 0.7697  |
+| Temporal Beta Diversity (Abundance, quant=true)  | 13.0601  | 15.4342 |
+| Temporal Beta Diversity (Abundance, quant=false) | 3.0505   | 3.7231  |
+| Temporal Beta Diversity (Presence, quant=false)  | 3.0505   | 3.7231  |
+| **Dispersal-niche continuum index**                  | **198.9489** | **11.1107** |
+| Occupied Patches Proportion                      | 0.2843   | 0.4932  |
+| Variability Metrics                              | 3.9590   | 10.5805 |
+| Hypervolume Estimation                           | 0.0055   | 0.0003  |
+| Hypervolume Dissimilarity                        | 0.0108   | 0.0014  |
 
-## Datesets used for this benchmark
+## Datasets used for this benchmark
 ### Large Dataset
 ```@jildoctest
 53352×12 DataFrame
@@ -202,7 +202,7 @@ All times are in millisecond (ms), and memory is in mebibytes (MiB). All values 
 ```
 
 ## Remarks
-- For `DNCI_multigroup_result`, 100 permutations per sample are used in both the `Julia` and `R` implementation, and `parallelComputing` was set to be `TRUE` when benchmarking `DNCImper:::DNCI_multigroup()` in `R`.
+- For `DNCI_multigroup_result`, 100 permutations per sample are used in both the `Julia` and `R` implementation, and `parallelComputing` was set to be `TRUE` when benchmarking `DNCImper:::DNCI_multigroup()` in `R`. This means the R implementation distributes permutations across multiple cores, reducing the peak memory footprint per core, which likely contributes to the substantially lower memory usage reported for R compared to Julia. Additionally, direct memory comparisons should be interpreted with caution as Julia reports total memory allocated during execution while R only tracks heap allocations.
 
 ## The Scripts Used for Benchmarking
 - [`Julia`](https://github.com/cralibe/MetaCommunityMetrics.jl/blob/main/benchmarks/benchmark_julia.jl)

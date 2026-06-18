@@ -5,19 +5,22 @@
     niche_overlap(abundance::AbstractVector, species::AbstractVector, site::AbstractVector, time::AbstractVector) -> DataFrame
 
 Calculates the overall mean, maximum, and minimum values of the niche overlap index from all species pairs in the provided data.
-# Arguments
+
+Arguments
 - `abundance::AbstractVector`: Vector representing the abundance of species.
 - `species::AbstractVector`: Vector representing species names or IDs. 
 - `site::AbstractVector`: Vector representing site names or IDs. 
 - `time::AbstractVector`: Vector representing sampling dates. 
 
-# Description
+Description
 The niche overlap index is calculated based on the method suggested by Pianka (1973), with the assumption that the proportional use of resources by a species at a specific site and time is equivalent to its relative abundance at that location and time period across all sampled sites and times.
 
-# Returns
-- `DataFrame`: A DataFrame containing the overall mean, maximum, and minimum values of the niche overlap index from all species pairs.
+Returns
+Two outputs:
+- `summary`: A DataFrame containing the overall mean, maximum, and minimum values of the niche overlap index from all species pairs.
+- `distribution`: A DataFrame containing the niche overlap index for all species pairs, providing the full distribution of pairwise niche overlap values to characterize the extent of species niche overlap in the community.
 
-# Example
+Example
 ```@jildoctest
 julia> using MetaCommunityMetrics
 
@@ -40,11 +43,31 @@ julia> df = load_sample_data()
                                                                                                                                             53342 rows omitted
                                                                                           
 julia> result = niche_overlap(df.Abundance, df.Species, df.plot, df.Sampling_date_order)
+
+julia> result.summary
 1×3 DataFrame
  Row │ mean_niche_overlap_index  min_niche_overlap_index  max_niche_overlap_index 
      │ Float64                   Float64                  Float64                 
 ─────┼────────────────────────────────────────────────────────────────────────────
    1 │                0.0923816                      0.0                 0.406837
+
+julia> result.distribution
+171×1 DataFrame
+ Row │ niche_overlap_index 
+     │ Float64             
+─────┼─────────────────────
+   1 │           0.146211
+   2 │           0.183296
+   3 │           0.0
+   4 │           0.0594079
+   5 │           0.201671
+  ⋮  │          ⋮
+ 167 │           0.177417
+ 168 │           0.171602
+ 169 │           0.110503
+ 170 │           0.0603179
+ 171 │           0.0328823
+           161 rows omitted
 ```
 """
 function niche_overlap(abundance::AbstractVector, species::AbstractVector, site::AbstractVector, time::AbstractVector)
@@ -105,9 +128,13 @@ function niche_overlap(abundance::AbstractVector, species::AbstractVector, site:
     # Round to avoid floating point precision errors
     rounded_scores = round.(pairwise_scores, digits = 10)
     
-    return DataFrame(
+    return (
+    summary = DataFrame(
         mean_niche_overlap_index = mean(rounded_scores),
         min_niche_overlap_index  = minimum(rounded_scores),
         max_niche_overlap_index  = maximum(rounded_scores)
-    )
+    ),
+    distribution = DataFrame(
+        niche_overlap_index = rounded_scores
+    ))
 end

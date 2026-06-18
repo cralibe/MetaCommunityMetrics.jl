@@ -7,6 +7,7 @@ using CSV
 using MetaCommunityMetrics
 using DataFrames
 using Pipe
+using JLD2
 
 #Read in the sample data (small, medium and full sizes)
 full_df = load_sample_data()
@@ -56,23 +57,24 @@ temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_dat
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
 ## Benchmark the DNCI functions
-clustering_result = create_groups(df.Sampling_date_order, 
+#=clustering_result = DNCI_create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
                                             df.Species, 
-                                            df.Presence)
+                                            df.Presence)=#
 
 # Save the wrangled data to CSV files for the R benchmarks
-group_df = @pipe df |>
+#=group_df = @pipe df |>
                 filter(row -> row[:Sampling_date_order] == 60, _) |>
                 select(_, [:plot, :Species, :Presence]) |>
                 innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
                 select(_, [:plot, :Species, :Presence, :Group]) |>
-                unstack(_, :Species, :Presence, fill=0)
+                unstack(_, :Species, :Presence, fill=0)=#
 
 #Save the data to CSV files for the R benchmarks
-CSV.write("data/data_for_testing/comm_full_df.csv", group_df)
+#CSV.write("data/data_for_testing/comm_full_df.csv", group_df)
+group_df = CSV.read("data/data_for_testing/comm_full_df.csv", DataFrame)
 
 # Prepare the community matrix for the DNCI_multigroup function
 comm= @pipe group_df |>
@@ -82,7 +84,7 @@ comm= @pipe group_df |>
 # Benchmark the DNCI_multigroup function
 DNCI_multigroup_result = @benchmark DNCI_multigroup(comm, group_df.Group, 100; Nperm_count = false) samples=100 evals=1 seconds=1800
 save_object("benchmarks/result/DNCI_multigroup_full_df_result.jld2", DNCI_multigroup_result)
-                                                                        
+
 ## Benchmark the prop_patches function
 prop_patches_result = @benchmark prop_patches(df.Presence, df.Species, df.plot) samples=100 evals=1
 
@@ -203,6 +205,7 @@ benchmark_result_full_df[:, 7] .= benchmark_result_full_df[:, 7] ./ (1024^2)
 # Save the summary to a CSV file
 CSV.write("benchmarks/result/benchmark_result_full_df_julia.csv", benchmark_result_full_df)
 
+
 ##Medium dataset
 df=medium_df
 ### The abundance matrix
@@ -240,23 +243,25 @@ temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_dat
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
 ## Benchmark the DNCI functions
-clustering_result = create_groups(df.Sampling_date_order, 
+#=clustering_result = DNCI_create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
                                             df.Species, 
-                                            df.Presence)
+                                            df.Presence)=#
 
 # Save the wrangled data to CSV files for the R benchmarks
-group_df = @pipe df |>
+#=group_df = @pipe df |>
                 filter(row -> row[:Sampling_date_order] == 60, _) |>
                 select(_, [:plot, :Species, :Presence]) |>
                 innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
                 select(_, [:plot, :Species, :Presence, :Group]) |>
-                unstack(_, :Species, :Presence, fill=0)
+                unstack(_, :Species, :Presence, fill=0)=#
 
 #Save the data to CSV files for the R benchmarks
-CSV.write("data/data_for_testing/comm_medium_df.csv", group_df)
+#CSV.write("data/data_for_testing/comm_medium_df.csv", group_df)
+group_df = CSV.read("data/data_for_testing/comm_medium_df.csv", DataFrame)
+
 
 # Prepare the community matrix for the DNCI_multigroup function
 comm= @pipe group_df |>
@@ -425,23 +430,24 @@ temporal_beta_div_2 = @benchmark temporal_beta_div(df.Abundance, df.Sampling_dat
 temporal_beta_div_3 = @benchmark temporal_beta_div(df.Presence, df.Sampling_date_order, df.plot, df.Species; quant=false) samples=100 evals=1
 
 ## Benchmark the DNCI functions
-clustering_result = create_groups(df.Sampling_date_order, 
+#=clustering_result = DNCI_create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
                                             df.Species, 
-                                            df.Presence)
+                                            df.Presence)=#
 
 # Save the wrangled data to CSV files for the R benchmarks
-group_df = @pipe df |>
+#=group_df = @pipe df |>
                 filter(row -> row[:Sampling_date_order] == 60, _) |>
                 select(_, [:plot, :Species, :Presence]) |>
                 innerjoin(_, clustering_result[60], on = [:plot => :Site, :Species], makeunique = true)|>
                 select(_, [:plot, :Species, :Presence, :Group]) |>
-                unstack(_, :Species, :Presence, fill=0)
+                unstack(_, :Species, :Presence, fill=0)=#
 
 #Save the data to CSV files for the R benchmarks
-CSV.write("data/data_for_testing/comm_small_df.csv", group_df)
+#CSV.write("data/data_for_testing/comm_small_df.csv", group_df)
+group_df = CSV.read("data/data_for_testing/comm_small_df.csv", DataFrame)
 
 # Prepare the community matrix for the DNCI_multigroup function
 comm= @pipe group_df |>

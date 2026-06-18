@@ -39,7 +39,7 @@ _[:, sum(_, dims=1)[1, :] .!= 0] |> # Remove columns with sum of zero
 _[sum(_, dims=2)[:, 1] .!= 0,:] # Remove rows with sum of zero
 
 #Data for the DNCI analysis
-clustering_result = create_groups(df.Sampling_date_order, 
+clustering_result = DNCI_create_groups(df.Sampling_date_order, 
                                             df.Latitude, 
                                             df.Longitude,                                      
                                             df.plot, 
@@ -336,7 +336,7 @@ save_object("validation/output/dnci_values_julia.jld2", dnci_values_julia)
 dnci_values_julia=load_object("validation/output/dnci_values_julia.jld2")
 
 ##Occupied Patches Proportion
-prop_patches_result_julia = prop_patches(df.Presence, df.Species, df.plot)
+prop_patches_result_julia = prop_patches(df.Presence, df.Species, df.plot).summary
 
 ##Variability metric
 CV_result_julia = CV_meta(df.Abundance, df.Sampling_date_order, df.plot, df.Species)
