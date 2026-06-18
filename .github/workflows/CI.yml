@@ -23,24 +23,36 @@ jobs:
         version: ['1.10', '1']
         os: [ubuntu-latest, macos-latest, windows-latest]
         arch: [x64, arm64]
-        include:
-          - dataframes-version: '1.0'
-            distributions-version: '0.25.111'
-            statsbase-version: '0.34.3'
-          - dataframes-version: '1.6'
-            distributions-version: '0.25'
-            statsbase-version: '0.34.3'
-          - dataframes-version: '1.6'
-            distributions-version: '0.25.111'
-            statsbase-version: '0.33'
-          - dataframes-version: '1.6'
-            distributions-version: '0.25.111'
-            statsbase-version: '0.34.3'
+        dataframes-version: ['1.6']
+        distributions-version: ['0.25.111']
+        statsbase-version: ['0.34.3']
         exclude:
           - os: windows-latest
             arch: arm64
           - os: macos-latest
             arch: x64
+        include:
+          # Test DataFrames minimum
+          - version: '1.10'
+            os: ubuntu-latest
+            arch: x64
+            dataframes-version: '1.0'
+            distributions-version: '0.25.111'
+            statsbase-version: '0.34.3'
+          # Test Distributions minimum
+          - version: '1.10'
+            os: ubuntu-latest
+            arch: x64
+            dataframes-version: '1.6'
+            distributions-version: '0.25'
+            statsbase-version: '0.34.3'
+          # Test StatsBase minimum
+          - version: '1.10'
+            os: ubuntu-latest
+            arch: x64
+            dataframes-version: '1.6'
+            distributions-version: '0.25.111'
+            statsbase-version: '0.33'
 
     steps:
       - uses: actions/checkout@v4
@@ -59,11 +71,14 @@ jobs:
 
       - name: Install dependencies
         run: |
-          julia -e 'import Pkg; Pkg.instantiate(); \
-            Pkg.add(Pkg.PackageSpec(name="DataFrames", version="${{ matrix.dataframes-version }}")); \
-            Pkg.add(Pkg.PackageSpec(name="Distributions", version="${{ matrix.distributions-version }}")); \
-            Pkg.add(Pkg.PackageSpec(name="StatsBase", version="${{ matrix.statsbase-version }}")); \
-            Pkg.add("Coverage")'
+          julia -e '
+            import Pkg
+            Pkg.instantiate()
+            Pkg.add(Pkg.PackageSpec(name="DataFrames", version="${{ matrix.dataframes-version }}"))
+            Pkg.add(Pkg.PackageSpec(name="Distributions", version="${{ matrix.distributions-version }}"))
+            Pkg.add(Pkg.PackageSpec(name="StatsBase", version="${{ matrix.statsbase-version }}"))
+            Pkg.add("Coverage")
+          '
 
       - uses: julia-actions/julia-buildpkg@v1
 

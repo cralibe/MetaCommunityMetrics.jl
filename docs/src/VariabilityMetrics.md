@@ -2,8 +2,7 @@
 ```@meta
 CurrentModule = MetaCommunityMetrics
 ```
-
-The variability metrics functions in `MetaCommunityMetrics` are designed to capture changes in dispersal and density-dependent biotic interactions by investigating temporal variability across spatial scales and organizational levels within a metacommunity. These functions are based on Wang et al. (2019), which provides a framework for quantifying variability at different scales and contexts within a community.
+The variability metrics functions in `MetaCommunityMetrics.jl` are designed to quantify temporal variability in species and community abundances across spatial scales and organizational levels within a metacommunity. By partitioning variability at the species and community levels, both locally and regionally, these metrics implicitly reflect the net outcomes of ecological processes such as biotic interactions and spatial synchrony. These functions are based on Wang et al. (2019), which provides a framework for partitioning variability at different hierarchical levels within a metacommunity.
 
 ## Functionality Overview
 In `MetaCommunityMetrics`, the `CV_meta()` function is translated from the R function `var.partition()` in the supplementary material of Wang et al. (2019), published in Ecography (https://doi.org/10.1111/ecog.04290). This function was first translated from R to Julia in August 2024 and is used here for non-commercial scientific research purposes in accordance with Wiley's terms and conditions for use of published content.

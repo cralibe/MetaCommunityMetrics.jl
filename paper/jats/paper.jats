@@ -89,11 +89,11 @@ a Creative Commons Attribution 4.0 International License (CC BY
   <monospace>R</monospace> packages, particularly for datasets with a
   limited number of sites and sampling events. However, community
   ecology today is growing beyond small-scale, single-dataset analyses.
-  Large biodiversity databases have expanded the sets of spatio-temporal
+  Large biodiversity databases have expanded the sets of spatiotemporal
   community data, and there is a growing interest in using simulations
   to study ecological processes. While <monospace>R</monospace> packages
   can achieve high performance through tools such as
-  <monospace>Rcpp</monospace>, this requires reimplementation in
+  <monospace>Rcpp</monospace>, this requires re-implementation in
   <monospace>C++</monospace>, which presents a barrier for most
   ecologists. <monospace>Julia</monospace> offers native high
   performance while remaining as accessible as <monospace>R</monospace>,
@@ -209,7 +209,7 @@ a Creative Commons Attribution 4.0 International License (CC BY
         </tr>
         <tr>
           <td align="left">Occupied patches proportion</td>
-          <td align="left"><monospace>prop_patche()</monospace></td>
+          <td align="left"><monospace>prop_patches()</monospace></td>
           <td align="left">Re-implementation of <monospace>R</monospace>
           script from Guzman et al.
           (<xref alt="2022" rid="ref-guzman2022accounting" ref-type="bibr">2022</xref>)</td>
@@ -429,14 +429,14 @@ a Creative Commons Attribution 4.0 International License (CC BY
   et al., 2023</xref>), achieving up to <inline-formula><alternatives>
   <tex-math><![CDATA[\sim]]></tex-math>
   <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>∼</mml:mo></mml:math></alternatives></inline-formula>
-  58× faster execution times while maintaining methodological
+  51× faster execution times while maintaining methodological
   consistency (see
   <xref alt="[speedup]" rid="speedup">[speedup]</xref>). As shown in
   <xref alt="[speedup]" rid="speedup">[speedup]</xref>, performance
   gains range from <inline-formula><alternatives>
   <tex-math><![CDATA[\sim]]></tex-math>
   <mml:math display="inline" xmlns:mml="http://www.w3.org/1998/Math/MathML"><mml:mo>∼</mml:mo></mml:math></alternatives></inline-formula>
-  3× to 58× across all re-implemented functions using
+  3× to 51× across all re-implemented functions using
   <ext-link ext-link-type="uri" xlink:href="https://cralibe.github.io/MetaCommunityMetrics.jl/Benchmarking/#Datesets-used-for-this-benchmark">three
   testing datasets</ext-link> (large: 53,352 observations; medium:
   26,676 observations; small: 5,325 observations), positioning
@@ -447,12 +447,12 @@ a Creative Commons Attribution 4.0 International License (CC BY
   between <monospace>Julia</monospace> and <monospace>R</monospace>
   implementations, with notable reductions in
   <monospace>Julia</monospace> for the variability metrics function
-  (e.g., 12.46 MiB vs 60.23 MiB for the large dataset). However, the
+  (e.g., 12.60 MiB vs 60.23 MiB for the large dataset). However, the
   DNCI implementation requires substantially more memory in
   <monospace>Julia</monospace> than in <monospace>R</monospace> (e.g.,
-  782 MiB vs 77.79 MiB for the large dataset). This difference is likely
-  related to the fact that the <monospace>R</monospace> implementation
-  uses parallelization across multiple cores while our
+  803.55 MiB vs 77.79 MiB for the large dataset). This difference is
+  likely related to the fact that the <monospace>R</monospace>
+  implementation uses parallelization across multiple cores while our
   <monospace>Julia</monospace> implementation currently does not, though
   direct comparisons should be interpreted with caution given the
   differences in how each language measures memory allocation (see

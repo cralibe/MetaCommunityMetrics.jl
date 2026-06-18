@@ -137,22 +137,4 @@ If you encounter bugs, have feature requests, or need any support, please open a
 ## References
 Ernest, S. M., Yenni, G. M., Allington, G., Bledsoe, E. K., Christensen, E. M., Diaz, R. M., ... & Valone, T. J. (2018). The Portal Project: a long-term study of a Chihuahuan desert ecosystem. BioRxiv, 332783. https://doi.org/10.1101/332783
 
-## Attribution
-
-Several functions in this package are translated or adapted from existing R code. 
-Full attribution details are provided in the documentation for each function.
-
-- `beta_diversity()`: Translated from `beta.div.comp()` in the R package 
-  [`adespatial`](https://github.com/adeverse/adespatial), authored by Pierre 
-  Legendre, licensed under GPL-3.
-- `DNCI_multigroup()`: Adapted from `DNCI_multigroup()` in the R package 
-  [`DNCImper`](https://github.com/Corentin-Gibert-Paleontology/DNCImper), 
-  authored by Corentin Gibert and colleagues, licensed under GPL-3.
-- Hypervolume functions: Translated from the R package 
-  [`MVNH`](https://github.com/lvmuyang/MVNH), authored by Muyang Lu, licensed 
-  under GPL-3.
-- `CV_meta()`: Translated from `var.partition()` in the supplementary material 
-  of Wang et al. (2019), Ecography (https://doi.org/10.1111/ecog.04290). Used 
-  for non-commercial scientific research purposes.
-
 
