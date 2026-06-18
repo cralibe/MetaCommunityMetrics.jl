@@ -6,7 +6,7 @@
 </table>
 
 
-`MetaCommunityMetrics` is a collection of metrics for analyzing ecological community datasets across space and time in Julia. The current version is compatible with `julia` version 1.9.3.
+`MetaCommunityMetrics` is a collection of tools and utilities for analyzing meta-communities in Julia. The current version is compatible with Julia 1.10 and above.
 
 [![Build Status](https://github.com/cralibe/MetaCommunityMetrics.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/cralibe/MetaCommunityMetrics.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![](https://img.shields.io/badge/docs-stable-blue.svg)](https://cralibe.github.io/MetaCommunityMetrics.jl/)
