@@ -4,8 +4,8 @@
 """
     niche_overlap(abundance::AbstractVector, species::AbstractVector, site::AbstractVector, time::AbstractVector) -> DataFrame
 
-Calculates the overall mean, maximum, and minimum values of the niche overlap index from all species pairs in the provided data.
-
+Calculates the niche overlap index for all species pairs in the provided data, returning both summary statistics and the full distribution of pairwise niche overlap values.
+    
 Arguments
 - `abundance::AbstractVector`: Vector representing the abundance of species.
 - `species::AbstractVector`: Vector representing species names or IDs. 

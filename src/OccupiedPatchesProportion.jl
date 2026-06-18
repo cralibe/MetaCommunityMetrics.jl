@@ -3,14 +3,14 @@
 """
     prop_patches(presence::AbstractVector, species::AbstractVector, site::AbstractVector) -> DataFrame
 
-Calculate the proportion of sites occupied by each species and summarize the results.
+Calculate the proportion of sites occupied by each species, returning both summary statistics and the full distribution of per-species proportions.
 
 This function takes three vectors: `presence`, `species`, and `site`, and performs the following steps:
 1. Calculates the proportion of sites occupied by each species across all sites.
 2. Summarizes the proportions across all species by returning the mean, minimum, and maximum, as well as the full distribution of per-species proportions.
 
 Arguments
-- `presence::AbstractVector`: Vector representing the occurence of species.
+- `presence::AbstractVector`: Vector representing the occurrence of species.
 - `species::AbstractVector`: Vector representing species names or IDs.
 - `site::AbstractVector`: Vector representing site names or IDs.
 

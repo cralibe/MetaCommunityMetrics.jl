@@ -11,7 +11,7 @@ Arguments
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
-`DataFrame`: A DataFrame containing:
+- `DataFrame`: A DataFrame containing:
     - `Correlation`: The correlation component (calculated as det(COV)/prod(variances))
     - One column for each environmental variable showing its variance
     - `total`: The total hypervolume (calculated as the determinant of the covariance matrix)
@@ -118,7 +118,7 @@ Arguments
 - `var_names::Vector{String}=String[]`: Optional vector specifying names for the environmental variables. If empty, default names "variable1", "variable2", etc. will be used.
 
 Returns
-`DataFrame`: A dataframe containing three metrics and their components:
+- `DataFrame`: A DataFrame containing three metrics and their components:
     - `"Bhattacharyya_distance"`: The total Bhattacharyya distance and its components
     - `"Mahalanobis_distance"`: The Mahalanobis component of the Bhattacharyya distance
     - `"Determinant_ratio"`: The determinant ratio component of the Bhattacharyya distance

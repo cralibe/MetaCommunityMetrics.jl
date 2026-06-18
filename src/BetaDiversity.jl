@@ -216,7 +216,7 @@ Arguments
 - `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as binary presence/absence, converting any quantitative values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
-- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness/abundance difference components in space. Columns are `spatial_BDtotal`, `spatial_Repl`, and `spatial_RichDif`.
+- A DataFrame containing the values of total beta diversity, replacement, and richness/abundance difference components in space. Columns are `spatial_BDtotal`, `spatial_Repl`, and `spatial_RichDif`.
 
 Details
 - This function uses the `beta_diversity` function to calculate beta diversity decompositions after aggregating individual species abundances/occurrences across time.
@@ -309,7 +309,7 @@ Arguments
 - `quant::Bool`: Specifies the data type for analysis. When `false`, treats data as occurrences, converting any quantitative values into binary values and applying Jaccard-based indices. When `true`, treats data as abundance data and applies Ruzicka-based indices.
 
 Returns
-- `DataFrame`: A DataFrame containing the values of total beta diversity, replacement, and richness/abundance difference components in time. Columns are `temporal_BDtotal`, `temporal_Repl`, and `temporal_RichDif`.
+- A DataFrame containing the values of total beta diversity, replacement, and richness/abundance difference components in time. Columns are `temporal_BDtotal`, `temporal_Repl`, and `temporal_RichDif`.
 
 Details
 - This function uses the `beta_diversity` function to calculate beta diversity decompositions after aggregating individual species abundances/occurrences across sites.
@@ -338,14 +338,14 @@ julia> df = load_sample_data()
  53352 │  2023      3     21                  117     23  SH               0         0      36.5     -108.0                  0.48949                 -1.59416
                                                                                                                                                 53342 rows omitted
 
-julia> result_using_abandance_data_1 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
+julia> result_using_abundance_data_1 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=true)
 1×3 DataFrame
  Row │ temporal_BDtotal  temporal_Repl  temporal_RichDif 
      │ Float64           Float64        Float64          
 ─────┼───────────────────────────────────────────────────
    1 │         0.311222      0.0995483          0.211674
         
-julia> result_using_abandance_data_2 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
+julia> result_using_abundance_data_2 = temporal_beta_div(df.Abundance, df.Sampling_date_order, df.plot, df.Species; quant=false)
 1×3 DataFrame
  Row │ temporal_BDtotal  temporal_Repl  temporal_RichDif 
      │ Float64           Float64        Float64          
