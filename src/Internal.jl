@@ -231,7 +231,7 @@ function check_condition_and_fix(grouped_df)
     return grouped_df
 end
 
-# A function to generate random binary matrices acoording to the assigned algorithm
+# A function to generate random binary matrices according to the assigned algorithm
 # This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
 # Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for present/absence data
@@ -269,8 +269,6 @@ function permatfull(data::Matrix{Int}, fixedmar::String, Nperm::Int) #only for p
     return permat
     
 end
-
-
     
 # A function to generate null models acoording to the assigned algorithm
 # This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
@@ -333,33 +331,42 @@ end
 # This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
 # Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function nullmodel_quasiswap(comm::AbstractMatrix{Int}, times::Int)
-
     n, m = size(comm)
     nullmodels = Vector{Matrix{Int}}(undef, times)
 
     for t in 1:times
-        # Initialize nullmodel with the original matrix to preserve sums.
         nullmodel = copy(comm)
-        
-        # Randomly select pairs for potential swaps multiple times.
-        for _ in 1:(10 * n * m) # Increase iterations for more thorough randomization.
-            # Select two distinct rows and columns at random.
-            rows = randperm(n)[1:2]
-            cols = randperm(m)[1:2]
-            
-            # Extract the 2x2 submatrix.
-            submatrix = nullmodel[rows, cols]
-            
-            # Determine if a quasiswap is possible while maintaining row/col sums.
-            if sum(submatrix) == 2 && (submatrix[1, 1] + submatrix[2, 2] == 2 || submatrix[1, 2] + submatrix[2, 1] == 2)
-                # Perform quasiswap if it leads to a valid configuration.
-                nullmodel[rows, cols] .= 1 .- submatrix
+
+        for _ in 1:(10 * n * m)
+            # FIX: draw 2 distinct random indices directly
+            # instead of shuffle! on full array
+            r1 = rand(1:n)
+            r2 = rand(1:n)
+            while r2 == r1
+                r2 = rand(1:n)
+            end
+
+            c1 = rand(1:m)
+            c2 = rand(1:m)
+            while c2 == c1
+                c2 = rand(1:m)
+            end
+
+            a, b = nullmodel[r1, c1], nullmodel[r1, c2]
+            c, d = nullmodel[r2, c1], nullmodel[r2, c2]
+
+            s = a + b + c + d
+            if s == 2 && (a + d == 2 || b + c == 2)
+                nullmodel[r1, c1] = 1 - a
+                nullmodel[r1, c2] = 1 - b
+                nullmodel[r2, c1] = 1 - c
+                nullmodel[r2, c2] = 1 - d
             end
         end
 
         nullmodels[t] = nullmodel
     end
-    
+
     return nullmodels
 end
 
@@ -397,108 +404,79 @@ end
 # This function is a translation/adaptation of a function from the R package `vegan`, licensed under GPL-2 or later.
 # Original package and documentation available at: https://cran.r-project.org/web/packages/vegan/index.html
 function simper(comm::Matrix, groups::Vector)
-    # Set EPS to square root of machine epsilon
     EPS = sqrt(eps(Float64))
-
-    # Here is different from the orginal simper() in R
-    # We use Zero-adjusted Bray-Curtis instead of the original Bray-Curtis
-    # We added pseudo-species with value 1 to all sites 
     val = 1
-    
+
     # Add pseudo-species column to every site
     comm_with_pseudo_species = hcat(comm, fill(val, size(comm, 1)))
 
-    # Create a lower triangular matrix indicating whether each element (i, j) satisfies i > j
     tri = [i > j for i in 1:size(comm_with_pseudo_species, 1), j in 1:size(comm_with_pseudo_species, 1)]
-    
-    ## Species contributions of differences needed for every species,
-    ## but denominator is constant. Bray-Curtis is actually
-    ## manhattan/(mean(rowsums)) and this is the way we collect data
-    # Calculate row sums to obtain the total richness of the community at each site
+
     rs = sum(comm_with_pseudo_species, dims=2)
-    # Calculate pairwise sums and extract lower triangular part
     pairwise_sums = rs .+ transpose(rs)
     result = pairwise_sums[tri]
 
-    # Initialize an empty array to store species contributions
-    spcontr = Matrix{Float64}(undef, 0, 0)
-    
-    # Iterate over each pair of sites in the community matrix
-    for col_index in 1:size(comm_with_pseudo_species, 2)
-        # Extract the ith column of the community matrix
+    n_rows = size(comm_with_pseudo_species, 1)
+    n_cols = size(comm_with_pseudo_species, 2)
+    n_pairs = n_rows * (n_rows - 1) ÷ 2
+
+    # FIX: preallocate spcontr instead of growing with hcat
+    spcontr = Matrix{Float64}(undef, n_pairs, n_cols)
+
+    for col_index in 1:n_cols
         column_i = comm_with_pseudo_species[:, col_index:col_index]
-        ZAP = 1e-15 #a threshold for setting small distances to zero in the distance matrix
-        n_rows = size(column_i, 1)
-        d = zeros(n_rows, n_rows)  # Initialize distance matrix
-         # Calculate pairwise distances only for the lower triangular part
+        ZAP = 1e-15
+        d = zeros(n_rows, n_rows)
+
         for i in 2:n_rows
             for j in 1:i-1
-                # Compute Manhattan distance between rows i and j
                 distance = sum(abs.(column_i[i] .- column_i[j]))
                 d[i, j] = distance < ZAP ? 0 : distance
             end
         end
-        # Extract the lower triangle of the distance matrix and store it as a vector
+
         lower_triangle = d[tril(trues(size(d)), -1)]
-        lower_triangle = reshape(lower_triangle, length(lower_triangle), 1)
-        # Concatenate the lower triangle vector to spcontr
-        if isempty(spcontr)
-            spcontr = lower_triangle
-        else
-            spcontr = hcat(spcontr, lower_triangle)
-        end
+
+        # FIX: write directly into column instead of hcat
+        spcontr[:, col_index] = lower_triangle
     end
-    # Divide every value in each column of spcontr by the corresponding element in result
+
+    # Divide by result (normalize)
     spcontr ./= result
 
-    #remove the last column of spcontr, which is the pseudo-species
+    # Remove pseudo-species column
     spcontr = spcontr[:, 1:end-1]
 
-    #Get all combinations of 2 elements from unique_group
     comp = collect(combinations(unique(groups), 2))
+    outlist = Dict{String, Any}()
 
-    outlist = Dict{String, Any}() # Initialize an empty dictionary to store the output
-
-
-    # function to match constrasts
-    function contrmatch(X, Y, patt)
-                
-        return (X != Y) && any(in(X, p) for p in patt) && any(in(Y, p) for p in patt)
-
-    end
-   
-    # Initialize an empty vector to store averages
     average_values = Matrix{Float64}[]
-    # Iterate over patterns
+
     for k in 1:size(comp, 1)
-        # Extract the current pattern
         patt = comp[k, :]
-        # Initialize tmat as an array of booleans
+
         tmat = falses(length(groups), length(groups))
-        # Compute tmat for the current pattern
         for i in 1:length(groups)
             for j in 1:length(groups)
-                tmat[i, j] = contrmatch(groups[i], groups[j], patt)
+                tmat[i, j] = (groups[i] != groups[j]) && 
+                              any(in(groups[i], p) for p in patt) && 
+                              any(in(groups[j], p) for p in patt)
             end
         end
-        take = tmat[tril(trues(size(tmat)), -1)]
-        # Initialize an array to store the selected rows for each column
-        selected_rows = Vector[]
 
-        # Iterate over each column of spcontr
+        take = tmat[tril(trues(size(tmat)), -1)]
+
+        selected_rows = Vector[]
         for col in eachcol(spcontr)
-            # Extract the selected rows based on the true values in take
             selected = col[take]
             push!(selected_rows, selected)
         end
-        selected_matrix = hcat(selected_rows...)
-        
-        #Species contribution to average between-group dissimilarity
-        average=mean(selected_matrix, dims=1)
 
-        # Store the average for the current k
+        selected_matrix = hcat(selected_rows...)
+        average = mean(selected_matrix, dims=1)
         push!(average_values, average)
     end
+
     return average_values
 end
 
