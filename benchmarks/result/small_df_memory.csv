@@ -8,7 +8,7 @@
 "7","Temporal Beta Diversity (Abundance, quant=true)",13.0601348876953,15.4341812133789
 "8","Temporal Beta Diversity (Abundance, quant=false)",3.050537109375,3.72307586669922
 "9","Temporal Beta Diversity (Presence, quant=false)",3.050537109375,3.72307586669922
-"10","Dispersal-niche continuum index",198.948944091797,11.110710144043
+"10","Dispersal-niche continuum index",41.7434234619141,11.110710144043
 "11","Occupied Patches Proportion",0.284278869628906,0.493209838867188
 "12","Variability Metrics",3.958984375,10.5804595947266
 "13","Hypervolume Estimation",0.005523681640625,0.0002899169921875
