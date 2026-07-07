@@ -12,7 +12,7 @@ data and the community matrices permuted by the three null models, where dissimi
 ## Functionality Overview
 Unlike the other metrics in this package, DNCI analysis operates on only one time point at a time. Positive DNCI values suggest niche processes dominate community assembly, while negative DNCI values suggest dispersal limitation is more influential at a given time point. DNCI values that do not differ significantly from zero suggest equal contributions from both processes at a given time point. 
 
-Before calculating the DNCI, groupings of sites are required, as the DNCI relies on analyzing community composition across site groups. This package provides `DNCI_create_groups()` to perform the necessary groupings for all time points, and  `DNCI_plot_groups()` to visualize the groupings at a given time points, which are not available in the R implementation. 
+Before calculating the DNCI, sites must be assigned to groups, as the DNCI relies on analyzing community composition across site groups. This package provides `DNCI_create_groups()` to perform the grouping suggested by Vilmi et al. (2021) for all time points, and `DNCI_plot_groups()` to visualize the groups at a given time point—neither of which is available in the R implementation. However, using `DNCI_create_groups()` is optional; users can perform their own grouping as long as it follows the grouping criteria suggested by Vilmi et al. (2021): (1) at least 2 groups; (2) a minimum of 5 sites per group; and (3) the difference in the number of taxa and sites between any two groups, relative to the larger group, does not exceed 40% and 30%, respectively. Grouping that does not meet these criteria may bias the DNCI value.
 
 ## The Functions 
 ```@docs

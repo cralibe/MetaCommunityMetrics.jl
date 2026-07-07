@@ -14,3 +14,7 @@ validation/parallel_log.txt
 validation/.RData
 validation/.Rhistory
 paper/paper.pdf
+**/*.cov
+*.cov
+*.cov.*
+/Users/yc2864/Documents/research/MetaCommunityMetrics.jl/test/runtests.jl.47666.cov

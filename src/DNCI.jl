@@ -32,7 +32,7 @@ Details
     - At least 2 groups
     - A minimum of 5 sites per group
     - The difference in the number of taxa and sites between any two groups, relative to the larger group, does not exceed 40% and 30%, respectively 
-    These conditions are critical for calculating an unbiased DNCI value. If the conditions are not met, the function first attempts to fix the groupings iteratively: if the smallest group contains only one site, that site is merged into the nearest neighbouring group; otherwise, the nearest site from any other group is reassigned into the smallest group based on its distance to the smallest group's centroid. If the conditions are still not met after this adjustment, k is decremented by 1 and the process repeats, until either the conditions are satisfied or k falls below 2 (in which case the grouping is returned as missing).
+    These conditions are critical for calculating an unbiased DNCI value. If the conditions are not met, the function first attempts to fix the groupings iteratively: if the smallest group contains only one site, that site is merged into the nearest neighboring group; otherwise, the nearest site from any other group is reassigned into the smallest group based on its distance to the smallest group's centroid. If the conditions are still not met after this adjustment, k is decremented by 1 and the process repeats, until either the conditions are satisfied or k falls below 2 (in which case the grouping is returned as missing).
 - Empty sites are allowed.
 Example
 ```jildoctest
@@ -405,9 +405,9 @@ The returned DataFrame will have the following columns:
 - `CI_upper`: The upper bound of the 95% confidence interval for the DNCI.
 - `Status`: A string indicating how the DNCI is calculated. It is mainly used to flag edge cases as follows:
     - `normal` indicates that the DNCI is calculated as normal.
-    - `empty_community` indicates no species existed in any sites in a given group pair, `DNCI`, `CI_lower`, and `CI_upper` are returned as `NaN`.
+    - `empty_community` indicates no species existed at any sites in a given group pair, `DNCI`, `CI_lower`, and `CI_upper` are returned as `NaN`.
     - `only_one_species_exists` indicates that only one species existed in a given group pair, which is not possible to calculate relative species contribution to overall dissimilarity. `DNCI`, `CI_lower`, and `CI_upper` are returned as `NaN`.
-    - `quasi_swap_permutation_not_possible` indicates that the quasi-swap permutation (a matrix permutation algorithms that preserves row and column sums) is not possible due to extreme matrix constraints that prevent any rearrangement of species across sites. `DNCI`, `CI_lower`, and `CI_upper` are returned as `NaN`.
+    - `quasi_swap_permutation_not_possible` indicates that the quasi-swap permutation (a matrix permutation algorithm that preserves row and column sums) is not possible due to extreme matrix constraints that prevent any rearrangement of species across sites. `DNCI`, `CI_lower`, and `CI_upper` are returned as `NaN`.
     - `one_way_to_quasi_swap` indicates that only one arrangement is possible under quasi-swap constraints, preventing generation of a null distribution. `DNCI`, `CI_lower`, and `CI_upper` are returned as `NaN`.
     - `inadequate_variation_quasi_swap` indicates that quasi-swap permutations generated insufficient variation (coefficient of variation <1%) for reliable statistical inference. `DNCI`, `CI_lower`, and `CI_upper` are returned as `NaN`.
 
@@ -415,6 +415,10 @@ Details
 - The function calculates the DNCI for each pair of groups in the input data. See the `DNCI` column description above for interpretation.
 - Different from the original implementation, empty sites and singletons (species that only occupy one site at a given time) are allowed, and a new `Status` column has been added to flag five edge cases where the DNCI calculation will fail, which are common when simulated data are used.
 - This function is an adaptation of `DNCI_multigroup()` from the R package `DNCImper` (https://github.com/Corentin-Gibert-Paleontology/DNCImper), authored by Corentin Gibert, Gilles Escarguel, Annika Vilmi, Jianjun Wang, Aurelien Jamoneau, and Maxime Lopez, and licensed under GPL-3. First adapted from R to Julia in August 2024.
+- Before calculating the DNCI, sites must be assigned to groups, as the DNCI relies on analyzing community composition across site groups. This package provides `DNCI_create_groups()` to perform the grouping suggested by Vilmi et al. (2021) for all time points, and `DNCI_plot_groups()` to visualize the groups at a given time point—neither of which is available in the R implementation. However, the use of `DNCI_create_groups()` is optional; users can perform their own grouping as long as it fulfills the group requirements suggested by Vilmi et al. (2021):
+    - At least 2 groups
+    - A minimum of 5 sites per group
+    - The difference in the number of taxa and sites between any two groups, relative to the larger group, does not exceed 40% and 30%, respectively.
 
 Example
 ```jildoctest
