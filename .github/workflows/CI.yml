@@ -65,7 +65,7 @@ jobs:
           version: ${{ matrix.version }}
           arch: ${{ matrix.arch }}
 
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
         with:
           key: ${{ runner.os }}-julia-${{ matrix.version }}-${{ hashFiles('Project.toml', 'Manifest.toml') }}
           restore-keys: |
